@@ -1,0 +1,342 @@
+\documentclass[aspectratio=169]{beamer}
+\usefonttheme{professionalfonts}
+\mode<presentation>{
+  \usetheme{Madrid}
+  \usecolortheme{crane}
+  %\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+  %\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+  \setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+\setbeamersize{text margin left=15pt,text margin right=25pt}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{ragged2e} % For justifying text
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage[final]{pdfpages}
+\usepackage{hyperref}
+\usepackage{pgffor}
+\usepackage[makeroom]{cancel}
+\usepackage{xcolor,colortbl}
+\graphicspath{{/afs/cern.ch/user/h/htong/www/}} % Specifies the directory where pictures are stored
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\hypersetup{colorlinks=true}
+\setbeamertemplate{title page}{
+  \vbox{}
+  \begingroup
+  \centering{
+    \usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}\vskip0.55em
+  \begin{beamercolorbox}[sep=8pt,center]{title}
+    \usebeamerfont{title}\inserttitle\par%
+    \ifx\insertsubtitle\@empty%
+    \else%
+    \vskip0.25em{%
+      \usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi%
+  \end{beamercolorbox}%
+  \vskip1em\par
+  \begin{beamercolorbox}[sep=8pt,center]{author}
+    \usebeamerfont{author}\insertauthor
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=8pt,center]{institute}
+    \usebeamerfont{institute}\insertinstitute
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=8pt,center]{date}
+    \usebeamerfont{date}\insertdate
+  \end{beamercolorbox}
+  \endgroup
+  \vfill
+}
+% TITLE PAGE
+\titlegraphic{\includegraphics[width=1cm]{cms.jpg}\hspace*{9cm}~%
+  \includegraphics[width=1cm]{ncu.png}
+}
+\title[]{\LARGE{Background studies and preliminary expected limit for the $Z' \rightarrow ZH \rightarrow llbb$ analysis}} % The short title appears at the bottom of every slide, the full title is only on the title page
+\author[Henry Tong]{\Large{Yee-Shian Henry Tong}\\[3mm] \scriptsize{Shin-Shan Eiko Yu, Raman Khurana, Yun-Ju Lu, Yu-Hsiang Chang, Jun-Yi Wu, Ji-Kong Huang, Ching-Wei Chen}} % Your name
+\institute[NCU]{ % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+  National Central University \\ % Your institution for the title page
+  \medskip
+  \textit{Dibosons Resonance Meeting}
+}
+\date{\today} % Date, can be changed to a custom date
+\begin{document}
+\begin{frame}
+  \vspace*{-1cm}
+  \enlargethispage{1cm}
+  \titlepage % Print the title page as the first slide
+\end{frame}
+% PRESENTATION SLIDES
+\everymath{\displaystyle}
+\renewcommand{\arraystretch}{1.3}
+\begin{frame}
+  \frametitle{Monte-Carlo Samples}
+  \justifying 
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}{ | l | l | }
+        \hline
+        \bf SPRING15 25-ns samples & \bf Cross sections (pb) \\
+        \hline
+        DYJetsToLL\_M-50\_HT-100to200\_13TeV-madgraphMLM-pythia8
+        & 139.4 $\times$ 1.23  \\
+        \hline
+        DYJetsToLL\_M-50\_HT-200to400\_13TeV-madgraphMLM-pythia8
+        & 42.75 $\times$ 1.23  \\
+        \hline
+        DYJetsToLL\_M-50\_HT-400to600\_13TeV-madgraphMLM-pythia8
+        & 5.497 $\times$ 1.23  \\
+        \hline
+        DYJetsToLL\_M-50\_HT-600toInf\_13TeV-madgraphMLM-pythia8
+        & 2.21 $\times$ 1.23   \\
+        \hline  
+        TT\_TuneCUETP8M1\_13TeV-powheg-pythia8MC25ns
+        & 831.76      \\
+        \hline
+        WW\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 118.7       \\
+        \hline
+        WZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 47.13       \\
+        \hline
+        ZZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 16.523      \\
+        \hline
+      \end{tabular}
+      \captionof{table}{\footnotesize{MC samples used and corresponding cross section values (K-factors for DY samples are included for normalization). The MC samples are miniAOD V1. MC weights are applied for amcAtNLO samples.}}
+    \end{center}
+  \end{tiny}
+\end{frame}
+\begin{frame}
+  \LARGE{\centerline{Study of backgrounds by using MC}}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction}
+  \justifying
+  \begin{footnotesize}
+    This study is to test the fitting and $\alpha$ method by splitting the MC samples into one half, one is used to build $\alpha$ ratio and the other is used as
+    pseudo sideband data and used to perform fits.
+  \end{footnotesize}
+\end{frame}
+\begin{frame}
+  \frametitle{Procedure of doing $\alpha$ method}
+  \justifying
+  \begin{footnotesize}
+    The $\alpha$ ratio is a ratio of number of events in $M_{ZH}$ distribution.
+    \begin{equation}
+      \alpha(M_{ZH}) = \frac{N^{MC,bkg}_{signal}(M_{ZH})}{N^{MC,bkg}_{side}(M_{ZH})}
+    \end{equation}
+    Choose corrected pruned mass of $H (\rightarrow b\bar{b})$ jets as control variable, in order to decide signal region and side band.
+    To account the background in signal region of pseudo-data:
+    \begin{equation}
+      N_{bkg}(M_{ZH}) = N^{pseudo\ data}_{sideband}(M_{ZH})\times \alpha(M_{ZH})
+    \end{equation}
+    It is better to use data (pseudo-data) itself to constrain the normalization.
+    The approch is to fit the sidebands of the distribution of the pruned jet mass observed in data (pseudo-data) by using
+    \begin{equation}
+      f_{ErfExp}(x) = p_0\exp(p_1x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}
+    \end{equation}
+  \end{footnotesize}
+\end{frame}
+\renewcommand{\arraystretch}{1.1}
+\begin{frame}
+  \frametitle{Preselections}
+  \justifying
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        HLT       
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
+        \hline
+        nVtx 
+        & $>=$ 1                                         \\
+        \hline
+        \multirow{7}{*}{Electrons} 
+        & $|\eta|$ $<$ 2.5                               \\
+        & remove 1.4442 $<$ $|\eta|$ $<$ 1.566           \\
+        & HEEP NoIso ID                                  \\
+        & mini Iso $<$ 0.1                               \\
+        & Leading electron $p_T$ $>$ 115 GeV             \\
+        & Sub-leading electron $p_T$ $>$ 35 GeV          \\
+        & Two electrons have opposite charge             \\
+        \hline
+        \multirow{8}{*}{Muons}
+        & Custom Teacker Muon ID                         \\ 
+        & One of both pass High $p_T$ Muon ID            \\
+        & mini Iso $<$ 0.1                               \\
+        & Leading muon $p_T$ $>$ 50 GeV                  \\
+        & Leading muon $|\eta|$ $<$ 2.1                  \\
+        & Sub-leading muon $p_T$ $>$ 20 GeV              \\
+        & Sub-leading muon $|\eta|$ $<$ 2.4              \\ 
+        & Two muons have opposite charge                 \\
+        \hline
+        \multirow{2}{*}{Z bosons}
+        & 70GeV $<$ $M_{ll}$ $<$ 110 GeV                 \\
+        & $p_{Tll}$ $>$ 200 GeV                          \\
+        \hline
+        \multirow{6}{*}{AK8 jets}
+        & $|\eta|$ $<$ 2.4                               \\ 
+        & $p_T$ $>$ 200 GeV                              \\
+        & FATjetPassIDLoose                              \\
+        & $\Delta R$ between jet and lepton $>$ 0.8      \\
+        & side band: 40 GeV $<$ corrPRmass $<$ 65 GeV, corrPRmass $>$ 145 GeV \\
+        & signal region: 105 GeV $<$ corrPRmass $<$ 135 GeV \\
+        \hline
+        $ZH$ mass                 
+        & $>$ 500 GeV                                    \\
+        \hline      
+      \end{tabular}
+      \captionof{table}{\footnotesize{Preselections for the toy MC study.}}
+    \end{center}   
+  \end{tiny}
+\end{frame}
+\begin{frame}
+  \frametitle{Comparison of pruned mass with and without subjet CSV cut}
+  \begin{center}
+    \begin{tabular}{ll}
+      \includegraphics[width=0.5\textwidth]{withCSV.jpg} &
+      \includegraphics[width=0.5\textwidth]{withoutCSV.jpg} \\
+    \end{tabular}
+    \captionof{table}{\footnotesize{The pruned mass distribution with (left) and without (right) subjet CSV cut. It show that the event is reduced so much if subjet CSV cut is apply. Both distributions are normalize to L = 837.1 $pb^{-1}$.}}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{Corrected pruned mass}
+  \begin{center}
+    \includegraphics[page=1,width=0.8\textwidth]{alphaRatio.pdf}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{Corrected pruned mass without signal region}
+  \begin{center}
+    \begin{tabular}{ll}
+      \includegraphics[page=2,width=0.5\textwidth]{alphaRatio.pdf} &
+      \includegraphics[page=3,width=0.5\textwidth]{alphaRatio.pdf} \\
+    \end{tabular}
+    \captionof{table}{\footnotesize{Number of backgrounds in signal region: 172.231 + 17.792 - 22.8458}}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{$ZH$ mass in signal region and side band of MC}
+  \begin{center}
+    \begin{tabular}{ll}
+      \includegraphics[page=4,width=0.5\textwidth]{alphaRatio.pdf} &
+      \includegraphics[page=5,width=0.5\textwidth]{alphaRatio.pdf} \\
+    \end{tabular}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{$\alpha$ ratio of MC}
+  \begin{center}
+    \includegraphics[page=6,width=0.8\textwidth]{alphaRatio.pdf}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{$ZH$ mass in signal region of pseudo-data}
+  \begin{center}
+    \includegraphics[page=7,width=0.8\textwidth]{alphaRatio.pdf}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \LARGE{\centerline{Study of limit setting in muon channel}}
+\end{frame}
+\renewcommand{\arraystretch}{1.2}
+\begin{frame}
+  \frametitle{Preselections}
+  \justifying
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        HLT
+        & HLT\_Mu45\_eta2p1\_*                           \\
+        \hline
+        nVtx                   
+        & $>=$ 1                                         \\
+        \hline
+        \multirow{8}{*}{Muons}
+        & Custom Teacker Muon ID                         \\
+        & One of both pass High $p_T$ Muon ID            \\
+        & mini Iso $<$ 0.1                               \\
+        & Leading muon $p_T$ $>$ 50 GeV                  \\
+        & Leading muon $|\eta|$ $<$ 2.1                  \\
+        & Sub-leading muon $p_T$ $>$ 20 GeV              \\
+        & Sub-leading muon $|\eta|$ $<$ 2.4              \\
+        & Two muons have opposite charge                 \\
+        \hline
+        \multirow{2}{*}{Z bosons}
+        & 70GeV $<$ $M_{ll}$ $<$ 110 GeV                 \\
+        & $p_{Tll}$ $>$ 200 GeV                          \\
+        \hline
+        \multirow{6}{*}{AK8 jets}
+        & $|\eta|$ $<$ 2.4                               \\
+        & $p_T$ $>$ 200 GeV                              \\
+        & FATjetPassIDLoose                              \\
+        & $\Delta R$ between jet and lepton $>$ 0.8      \\
+        & 105 GeV $<$ corrPRmass $<$ 135 GeV             \\
+        & both subjetSDCSV $>$ 0.605                     \\
+        \hline
+        $ZH$ mass             
+        & $>$ 700 GeV                                    \\
+        \hline
+      \end{tabular}
+      \captionof{table}{\footnotesize{Preselections for limit setting study in muon channel.}}
+    \end{center}
+  \end{tiny}
+\end{frame}
+\begin{frame}
+  \frametitle{Event numbers}
+  \justifying
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}{ | l | l | }
+        \hline
+        DATA  & 0           \\
+        DY    & 4.63644     \\
+        TTBAR & 0.107106    \\
+        M800  & 1.68957     \\
+        M1000 & 1.33141     \\
+        M1200 & 0.764917    \\
+        M1400 & 0.404699    \\
+        M1600 & 0.222166    \\
+        M1800 & 0.117793    \\
+        M2000 & 0.0676144   \\
+        M2500 & 0.0160615   \\
+        M3000 & 0.00388558  \\
+        M3500 & 0.00103232  \\
+        M4000 & 0.000265883 \\
+        \hline
+      \end{tabular}
+      \captionof{table}{\footnotesize{Event numbers of backgrounds and signal samples (normalize to L = 3 $fb^{-1}$).}}
+    \end{center}
+  \end{tiny}
+\end{frame}
+\begin{frame}
+  \frametitle{Results}
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{XZHllbb_Counting_Asymptotic_log.pdf}
+  \end{center}
+\end{frame}
+\begin{frame}
+  \frametitle{Conclusions and To-dos}
+  \justifying 
+  \begin{footnotesize}
+    \begin{enumerate}[1.]
+      \setcounter{enumi}{0} %{-1}
+    \item A preliminary test of background estimation has been performed using MC samples without applying the subjet CSV cuts.
+    \item Preliminary expected limits (cut and count) are shown. 
+    \item Will perform more studies of expected limits with different b-tagging selections and use the shapes of $M_{ZH}$ instead of cut and count.
+    \item Will perform more fitting tests by generating 100-1000 sets of pseudo-data based on MC.
+    \item Will update with the same lepton selections as Jose.
+    \end{enumerate}
+  \end{footnotesize}
+\end{frame}
+\begin{frame}
+  \Huge{\centerline{Thanks for your Listening!}}
+\end{frame}
+\end{document}
