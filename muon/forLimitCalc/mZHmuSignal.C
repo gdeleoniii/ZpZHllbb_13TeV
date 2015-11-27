@@ -2,13 +2,13 @@
 #include <string>
 #include <iostream>
 #include <TH1D.h>
-#include <TMath.h>
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../isPassZmumu.h"
 #include "../../readSample.h"
+#include "../../dataFilter.h"
+#include "../../isPassZmumu.h"
 
 void mZHmuSignal(std::string inputFile, std::string outputFile){
 
@@ -22,8 +22,8 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
      
-  TH1D* h_mZprime     = new TH1D("h_mZprime", "mZprime", 100, 400, 5000);
-  TH1D* h_eventWeight = new TH1D("h_eventWeight", "eventWeight", 100, -1, 1);
+  TH1D* h_mZprime     = new TH1D("h_mZprime",     "", 100, 400, 5000);
+  TH1D* h_eventWeight = new TH1D("h_eventWeight", "",   2,  -1,    1);
 
   h_mZprime->Sumw2();
   h_mZprime->GetXaxis()->SetTitle("mZprime");
@@ -38,6 +38,7 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t          nVtx              = data.GetInt("nVtx");
+    Bool_t         isData            = data.GetBool("isData");
     Float_t        mcWeight          = data.GetFloat("mcWeight");    
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -63,26 +64,19 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
     
     if( nVtx < 1 ) continue;
 
-    // data trigger cut (muon channel)
-
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data filter and trigger cut
       
-      if( thisTrig.find("HLT_Mu45") != std::string::npos && results==1 ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
+    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
+    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
+    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
+    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger ) continue;
+    if( isData && !CSCT ) continue;
+    if( isData && !eeBadSc ) continue;
+    if( isData && !Noise ) continue;
+    if( isData && !NoiseIso ) continue;
   
     // select good muons
       
@@ -157,12 +151,10 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  std::string h_name[2] = {"mZprime","eventWeight"};
-
   TFile* outFile = new TFile(Form("%s_mZHmuSignal.root",outputFile.c_str()), "recreate");
 
-  h_mZprime    ->Write(h_name[0].data());
-  h_eventWeight->Write(h_name[1].data());
+  h_mZprime    ->Write("mZprime");
+  h_eventWeight->Write("eventWeight");
 
   outFile->Write();
   

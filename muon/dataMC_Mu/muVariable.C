@@ -2,13 +2,12 @@
 #include <string>
 #include <iostream>
 #include <TH1D.h>
-#include <TMath.h>
 #include <TFile.h>
-#include <TProfile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
 #include "../../readSample.h"
+#include "../../dataFilter.h"
 
 void muVariable(std::string inputFile, std::string outputFile){
 
@@ -34,36 +33,33 @@ void muVariable(std::string inputFile, std::string outputFile){
 
   for(Int_t i = 0; i < 2; i++){
 
-    Int_t nBin = 20;
-    
-    h_muHits[i]      = new TH1D(Form("h_muHits%d",i), "muHits", 60, -0.5, 59.5);
-    h_muMatches[i]   = new TH1D(Form("h_muMatches%d",i), "muMatches", 7, -0.5, 6.5);
-    h_muTrkLayers[i] = new TH1D(Form("h_muTrkLayers%d",i), "muTrkLayers", 18, -0.5, 17.5);
-    h_muPixelHits[i] = new TH1D(Form("h_muPixelHits%d",i), "muPixelHits", 8, -0.5, 7.5);
-    h_muTrkPtErrdvTrkPt[i] = new TH1D(Form("h_muTrkPtErrdvTrkPt%d",i), "muTrkPtErrdvTrkPt", nBin, 0, 0.15);
-    h_mudxy[i]       = new TH1D(Form("h_mudxy%d",i), "mudxy", nBin, -0.01, 0.01);
-    h_mudz[i]        = new TH1D(Form("h_mudz%d",i), "mudz", nBin, -0.05, 0.05);  
-    h_muMiniIsoEA[i] = new TH1D(Form("h_muMiniIsoEA%d",i), "muMiniIsoEA", nBin, 0, 0.15);
-    h_eventWeight[i] = new TH1D(Form("h_eventWeight%d",i), "eventWeight", 100, -1, 1);
+    h_muHits[i]            = new TH1D(Form("h_muHits%d",i),            "",  60,  -0.5, 59.5);
+    h_muMatches[i]         = new TH1D(Form("h_muMatches%d",i),         "",   7,  -0.5,  6.5);
+    h_muTrkLayers[i]       = new TH1D(Form("h_muTrkLayers%d",i),       "",  18,  -0.5, 17.5);
+    h_muPixelHits[i]       = new TH1D(Form("h_muPixelHits%d",i),       "",   8,  -0.5,  7.5);
+    h_muTrkPtErrdvTrkPt[i] = new TH1D(Form("h_muTrkPtErrdvTrkPt%d",i), "",  20,     0, 0.15);
+    h_mudxy[i]             = new TH1D(Form("h_mudxy%d",i),             "",  20, -0.01, 0.01);
+    h_mudz[i]              = new TH1D(Form("h_mudz%d",i),              "",  20, -0.05, 0.05);  
+    h_muMiniIsoEA[i]       = new TH1D(Form("h_muMiniIsoEA%d",i),       "",  20,     0, 0.15);
+    h_eventWeight[i]       = new TH1D(Form("h_eventWeight%d",i),       "", 100,    -1,    1);
 
-    h_muHits[i]     ->Sumw2();
-    h_muMatches[i]  ->Sumw2();
-    h_muTrkLayers[i]->Sumw2();
-    h_muPixelHits[i]->Sumw2();
+    h_muHits[i]           ->Sumw2();
+    h_muMatches[i]        ->Sumw2();
+    h_muTrkLayers[i]      ->Sumw2();
+    h_muPixelHits[i]      ->Sumw2();
     h_muTrkPtErrdvTrkPt[i]->Sumw2();
-    h_mudxy[i]      ->Sumw2();
-    h_mudz[i]       ->Sumw2();
-    h_muMiniIsoEA[i]->Sumw2();
+    h_mudxy[i]            ->Sumw2();
+    h_mudz[i]             ->Sumw2();
+    h_muMiniIsoEA[i]      ->Sumw2();
 
-    h_muHits[i]     ->GetXaxis()->SetTitle("muHits");
-    h_muMatches[i]  ->GetXaxis()->SetTitle("muMatches");
-    h_muTrkLayers[i]->GetXaxis()->SetTitle("muTrkLayers");
-    h_muPixelHits[i]->GetXaxis()->SetTitle("muPixelHits");
+    h_muHits[i]           ->GetXaxis()->SetTitle("muHits");
+    h_muMatches[i]        ->GetXaxis()->SetTitle("muMatches");
+    h_muTrkLayers[i]      ->GetXaxis()->SetTitle("muTrkLayers");
+    h_muPixelHits[i]      ->GetXaxis()->SetTitle("muPixelHits");
     h_muTrkPtErrdvTrkPt[i]->GetXaxis()->SetTitle("muTrkPtErrdvTrkPt");
-    h_mudxy[i]      ->GetXaxis()->SetTitle("mudxy");
-    h_mudz[i]       ->GetXaxis()->SetTitle("mudz");
-    h_muMiniIsoEA[i]->GetXaxis()->SetTitle("muMiniIsoEA");
-    h_eventWeight[i]->GetXaxis()->SetTitle("eventWeight");
+    h_mudxy[i]            ->GetXaxis()->SetTitle("mudxy");
+    h_mudz[i]             ->GetXaxis()->SetTitle("mudz");
+    h_muMiniIsoEA[i]      ->GetXaxis()->SetTitle("muMiniIsoEA");
 
   }
 
@@ -88,6 +84,7 @@ void muVariable(std::string inputFile, std::string outputFile){
     Float_t* mudxy       = data.GetPtrFloat("mudxy");
     Float_t* mudz        = data.GetPtrFloat("mudz");
     Float_t* muMiniIsoEA = data.GetPtrFloat("muMiniIsoEA");
+    Bool_t   isData      = data.GetBool("isData");
     TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
     vector<bool>& isGlobalMuon  = *((vector<bool>*) data.GetPtr("isGlobalMuon"));
     vector<bool>& isTrackerMuon = *((vector<bool>*) data.GetPtr("isTrackerMuon"));
@@ -105,26 +102,19 @@ void muVariable(std::string inputFile, std::string outputFile){
 
     if( nVtx < 1 ) continue;
 
-    // data trigger cut (muon channel)
-
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data filter and trigger cut
       
-      if( thisTrig.find("HLT_Mu45") != std::string::npos && results==1 ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
+    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
+    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
+    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
+    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger ) continue;
+    if( isData && !CSCT ) continue;
+    if( isData && !eeBadSc ) continue;
+    if( isData && !Noise ) continue;
+    if( isData && !NoiseIso ) continue;
 
     // choosing muon
 
@@ -234,24 +224,21 @@ void muVariable(std::string inputFile, std::string outputFile){
     
   TFile* outFile[2];
 
-  std::string h_name[9] = {"muMatches","muTrkLayers","muPixelHits","muTrkPtErrdvTrkPt",
-			   "mudxy","mudz","muMiniIsoEA","muHits","eventWeight"};
-
   std::string region[2] = {"highptMuon","customizeTrackerMuon"};
 
   for(Int_t i = 0; i < 2; i++){
 
     outFile[i] = new TFile(Form("%s_%s.root",outputFile.c_str(),region[i].c_str()), "recreate");
       
-    h_muMatches[i]        ->Write(h_name[0].data());
-    h_muTrkLayers[i]      ->Write(h_name[1].data());
-    h_muPixelHits[i]      ->Write(h_name[2].data());
-    h_muTrkPtErrdvTrkPt[i]->Write(h_name[3].data());
-    h_mudxy[i]            ->Write(h_name[4].data());
-    h_mudz[i]             ->Write(h_name[5].data());
-    h_muMiniIsoEA[i]      ->Write(h_name[6].data());
-    h_muHits[i]           ->Write(h_name[7].data());
-    h_eventWeight[i]      ->Write(h_name[8].data());
+    h_muMatches[i]        ->Write("muMatches");
+    h_muTrkLayers[i]      ->Write("muTrkLayers");
+    h_muPixelHits[i]      ->Write("muPixelHits");
+    h_muTrkPtErrdvTrkPt[i]->Write("muTrkPtErrdvTrkPt");
+    h_mudxy[i]            ->Write("mudxy");
+    h_mudz[i]             ->Write("mudz");
+    h_muMiniIsoEA[i]      ->Write("muMiniIsoEA");
+    h_muHits[i]           ->Write("muHits");
+    h_eventWeight[i]      ->Write("eventWeight");
 
     outFile[i]->Write();
 

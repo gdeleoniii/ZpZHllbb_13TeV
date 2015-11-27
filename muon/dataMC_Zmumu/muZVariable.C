@@ -2,12 +2,12 @@
 #include <string>
 #include <iostream>
 #include <TH1D.h>
-#include <TMath.h>
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
 #include "../../readSample.h"
+#include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
 
 void muZVariable(std::string inputFile, std::string outputFile){
@@ -22,17 +22,15 @@ void muZVariable(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
      
-  Int_t nBin = 20;
-
-  TH1D* h_Zmass        = new TH1D("h_Zmass", "Zmass", nBin, 60, 120);
-  TH1D* h_Zpt          = new TH1D("h_Zpt", "Zpt", nBin, 0, 1000);
-  TH1D* h_Zeta         = new TH1D("h_Zeta", "Zeta", nBin, -4, 4);
-  TH1D* h_ZRapidity    = new TH1D("h_ZRapidity", "ZRapidity", nBin, -4, 4);
-  TH1D* h_leadMuPt     = new TH1D("h_leadMuPt", "leadMuPt", nBin, 0, 1000);
-  TH1D* h_leadMuEta    = new TH1D("h_leadMuEta", "leadMuEta", nBin, -4, 4);
-  TH1D* h_subleadMuPt  = new TH1D("h_subleadMuPt", "subleadMuPt", nBin, 0, 500);
-  TH1D* h_subleadMuEta = new TH1D("h_subleadMuEta", "subleadMuEta", nBin, -4, 4);
-  TH1D* h_eventWeight  = new TH1D("h_eventWeight", "eventWeight", 100, -1, 1);
+  TH1D* h_Zmass        = new TH1D("h_Zmass",        "", 30, 60,  120);
+  TH1D* h_Zpt          = new TH1D("h_Zpt",          "", 50,  0, 1000);
+  TH1D* h_Zeta         = new TH1D("h_Zeta",         "", 40, -4,    4);
+  TH1D* h_ZRapidity    = new TH1D("h_ZRapidity",    "", 40, -4,    4);
+  TH1D* h_leadMuPt     = new TH1D("h_leadMuPt",     "", 50,  0, 1000);
+  TH1D* h_leadMuEta    = new TH1D("h_leadMuEta",    "", 40, -4,    4);
+  TH1D* h_subleadMuPt  = new TH1D("h_subleadMuPt",  "", 25,  0,  500);
+  TH1D* h_subleadMuEta = new TH1D("h_subleadMuEta", "", 40, -4,    4);
+  TH1D* h_eventWeight  = new TH1D("h_eventWeight",  "",  2, -1,    1);
 
   h_Zmass       ->Sumw2();
   h_Zpt         ->Sumw2();
@@ -51,7 +49,6 @@ void muZVariable(std::string inputFile, std::string outputFile){
   h_leadMuEta   ->GetXaxis()->SetTitle("leadMuEta");
   h_subleadMuPt ->GetXaxis()->SetTitle("subleadMuPt");   
   h_subleadMuEta->GetXaxis()->SetTitle("subleadMuEta"); 
-  h_eventWeight ->GetXaxis()->SetTitle("eventWeight");
     
   // begin of event loop
 
@@ -63,6 +60,7 @@ void muZVariable(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t    nVtx      = data.GetInt("nVtx");
+    Bool_t   isData    = data.GetBool("isData");
     Float_t  mcWeight  = data.GetFloat("mcWeight");    
     TClonesArray* muP4 = (TClonesArray*) data.GetPtrTObject("muP4");
 
@@ -78,26 +76,19 @@ void muZVariable(std::string inputFile, std::string outputFile){
 
     if( nVtx < 1 ) continue;
     
-    // data trigger cut (muon channel)
-
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data filter and trigger cut
       
-      if( thisTrig.find("HLT_Mu45") != std::string::npos && results==1 ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
+    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
+    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
+    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
+    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger ) continue;
+    if( isData && !CSCT ) continue;
+    if( isData && !eeBadSc ) continue;
+    if( isData && !Noise ) continue;
+    if( isData && !NoiseIso ) continue;
 
     // select good muons
       
@@ -134,20 +125,17 @@ void muZVariable(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  std::string h_name[9] = {"Zmass","Zpt","Zeta","ZRapidity","leadMuPt","leadMuEta",
-			   "subleadMuPt","subleadMuEta","eventWeight"};
-
   TFile* outFile = new TFile(Form("%s_ZmumuVariable.root",outputFile.c_str()), "recreate");
       
-  h_Zmass       ->Write(h_name[0].data());  
-  h_Zpt         ->Write(h_name[1].data());  
-  h_Zeta        ->Write(h_name[2].data());    
-  h_ZRapidity   ->Write(h_name[3].data());
-  h_leadMuPt    ->Write(h_name[4].data()); 
-  h_leadMuEta   ->Write(h_name[5].data());   
-  h_subleadMuPt ->Write(h_name[6].data());
-  h_subleadMuEta->Write(h_name[7].data());    
-  h_eventWeight ->Write(h_name[8].data());
+  h_Zmass       ->Write("Zmass");
+  h_Zpt         ->Write("Zpt");
+  h_Zeta        ->Write("Zeta");
+  h_ZRapidity   ->Write("ZRapidity");
+  h_leadMuPt    ->Write("leadMuPt");
+  h_leadMuEta   ->Write("leadMuEta");
+  h_subleadMuPt ->Write("subleadMuPt");
+  h_subleadMuEta->Write("subleadMuEta");
+  h_eventWeight ->Write("eventWeight");
   
   outFile->Write();
   

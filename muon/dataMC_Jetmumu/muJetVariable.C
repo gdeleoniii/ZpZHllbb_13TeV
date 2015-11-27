@@ -36,7 +36,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
   TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "", nBin,   0,  800);
   TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "", nBin,  -4,    4);
   TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "", nBin,   0,  1.2);
-  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "",    3,  -1,    1);
+  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "",    2,  -1,    1);
 
   h_FATjetPt        ->Sumw2();   
   h_FATjetEta       ->Sumw2();

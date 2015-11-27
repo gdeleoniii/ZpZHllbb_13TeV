@@ -25,11 +25,11 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
   const Double_t varBins[] = {600,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4500};
   Int_t nvarBins = sizeof(varBins)/sizeof(varBins[0])-1;
      
-  TH1D* h_ZprimeSign    = new TH1D("h_ZprimeSign", "ZprimeSign", nvarBins, varBins);
-  TH1D* h_ZprimeSide    = new TH1D("h_ZprimeSide", "ZprimeSide", nvarBins, varBins);
-  TH1D* h_corrPRmass    = new TH1D("h_corrPRmass", "corrPRmass", 70, 40, 250);
-  TH1D* h_corrPRmassAll = new TH1D("h_corrPRmassAll", "corrPRmass", 80, 0, 240);
-  TH1D* h_eventWeight   = new TH1D("h_eventWeight", "eventWeight", 100, -1, 1);
+  TH1D* h_ZprimeSign    = new TH1D("h_ZprimeSign",    "", nvarBins, varBins);
+  TH1D* h_ZprimeSide    = new TH1D("h_ZprimeSide",    "", nvarBins, varBins);
+  TH1D* h_corrPRmass    = new TH1D("h_corrPRmass",    "",  40, 40, 240);
+  TH1D* h_corrPRmassAll = new TH1D("h_corrPRmassAll", "",  48,  0, 240);
+  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "",   2, -1,   1);
 
   h_ZprimeSign    ->Sumw2();
   h_ZprimeSide    ->Sumw2();
@@ -40,7 +40,6 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
   h_ZprimeSide    ->GetXaxis()->SetTitle("ZprimeSide");
   h_corrPRmass    ->GetXaxis()->SetTitle("corrPRmass");
   h_corrPRmassAll ->GetXaxis()->SetTitle("corrPRmass");
-  h_eventWeight   ->GetXaxis()->SetTitle("eventWeight");
 
   // begin of event loop
 
@@ -52,6 +51,7 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t          nVtx              = data.GetInt("nVtx");
+    Bool_t         isData            = data.GetBool("isData");
     Float_t        mcWeight          = data.GetFloat("mcWeight");    
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -59,7 +59,6 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
     Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
-    //vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
   
     Double_t eventWeight = mcWeight;
     if( inputFile.find("DYJets") != std::string::npos ){
@@ -73,26 +72,19 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
         
     if( nVtx < 1 ) continue;
 
-    // data trigger cut (muon channel)
-
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data filter and trigger cut
       
-      if( thisTrig.find("HLT_Mu45") != std::string::npos && results==1 ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
+    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
+    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
+    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
+    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger ) continue;
+    if( isData && !CSCT ) continue;
+    if( isData && !eeBadSc ) continue;
+    if( isData && !Noise ) continue;
+    if( isData && !NoiseIso ) continue;
 
     // select good muons
       
@@ -114,9 +106,7 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
       if( thisJet->Pt() < 200 ) continue;
       if( fabs(thisJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
-      if( FATnSubSDJet[ij] != 2 ) continue;
       if( thisJet->DeltaR(*thisMu) < 0.8 || thisJet->DeltaR(*thatMu) < 0.8 ) continue;
-      //if( FATsubjetSDCSV[ij][0] < 0.605 || FATsubjetSDCSV[ij][1] < 0.605 ) continue;
 
       goodFATJetID = ij;
       break;
@@ -127,7 +117,7 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
 
     Float_t mllbb = (*thisMu+*thatMu+*thisJet).M();  
 
-    if( mllbb < 400 ) continue;
+    if( mllbb < 500 ) continue;
 
     h_corrPRmassAll->Fill(corrPRmass[goodFATJetID],eventWeight);
 

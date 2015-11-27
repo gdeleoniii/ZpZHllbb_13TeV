@@ -2,12 +2,12 @@
 #include <string>
 #include <iostream>
 #include <TH1D.h>
-#include <TMath.h>
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
 #include "../../readSample.h"
+#include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
 
 void mZHmu(std::string inputFile, std::string outputFile){
@@ -24,15 +24,15 @@ void mZHmu(std::string inputFile, std::string outputFile){
 
   Int_t nBin = 20;
      
-  TH1D* h_mZprime          = new TH1D("h_mZprime", "mZprime", nBin, 0, 5000);
-  TH1D* h_mZ               = new TH1D("h_mZ", "mZ", nBin, 50, 150);
-  TH1D* h_ptZ              = new TH1D("h_ptZ", "ptZ", nBin, 0, 1000);
-  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt", "FATjetPt", nBin, 100, 1000);
-  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass", "FATjetSDmass", nBin, 50, 200);
-  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass", "FATjetPRmass", nBin, 50, 200);
-  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1", nBin, 0, 1);
-  TH1D* h_cutFlow          = new TH1D("h_cutFlow", "cutFlow", 4, 0, 4);
-  TH1D* h_eventWeight      = new TH1D("h_eventWeight", "eventWeight", 100, -1, 1);
+  TH1D* h_mZprime          = new TH1D("h_mZprime",          "", nBin,   0, 5000);
+  TH1D* h_mZ               = new TH1D("h_mZ",               "", nBin,  50,  150);
+  TH1D* h_ptZ              = new TH1D("h_ptZ",              "", nBin,   0, 1000);
+  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "", nBin, 100, 1000);
+  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "", nBin,  50,  200);
+  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "", nBin,  50,  200);
+  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "", nBin,   0,    1);
+  TH1D* h_cutFlow          = new TH1D("h_cutFlow",          "",    4,   0,    4);
+  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "",    2,  -1,    1);
 
   h_mZprime         ->Sumw2();
   h_mZ              ->Sumw2();
@@ -51,7 +51,6 @@ void mZHmu(std::string inputFile, std::string outputFile){
   h_FATjetPRmass    ->GetXaxis()->SetTitle("FATjetPRmass");
   h_FATjetTau2dvTau1->GetXaxis()->SetTitle("FATjetTau2dvTau1");
   h_cutFlow         ->GetXaxis()->SetTitle("cutFlow");  
-  h_eventWeight     ->GetXaxis()->SetTitle("eventWeight");  
     
   // begin of event loop
 
@@ -65,6 +64,7 @@ void mZHmu(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t          nVtx              = data.GetInt("nVtx");
+    Bool_t         isData            = data.GetBool("isData");
     Float_t        mcWeight          = data.GetFloat("mcWeight");    
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -90,26 +90,20 @@ void mZHmu(std::string inputFile, std::string outputFile){
     if( nVtx < 1 ) continue;
     nPass[0]++;
 
-    // data trigger cut (muon channel)
-
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data filter and trigger cut
       
-      if( thisTrig.find("HLT_Mu45") != std::string::npos && results==1 ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
+    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
+    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
+    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
+    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger ) continue;
+    if( isData && !CSCT ) continue;
+    if( isData && !eeBadSc ) continue;
+    if( isData && !Noise ) continue;
+    if( isData && !NoiseIso ) continue;
+
     nPass[1]++;
 
     // select good muons
@@ -177,20 +171,17 @@ void mZHmu(std::string inputFile, std::string outputFile){
 
   }
 
-  std::string h_name[9] = {"mZprime","mZ","ptZ","FATjetPt","FATjetSDmass",
-			   "FATjetPRmass","FATjetTau2dvTau1","cutFlow","eventWeight"};
-
   TFile* outFile = new TFile(Form("%s_mZHmu.root",outputFile.c_str()), "recreate");
 
-  h_mZprime         ->Write(h_name[0].data());
-  h_mZ              ->Write(h_name[1].data());
-  h_ptZ             ->Write(h_name[2].data());
-  h_FATjetPt        ->Write(h_name[3].data());
-  h_FATjetSDmass    ->Write(h_name[4].data());
-  h_FATjetPRmass    ->Write(h_name[5].data());
-  h_FATjetTau2dvTau1->Write(h_name[6].data());
-  h_cutFlow         ->Write(h_name[7].data());
-  h_eventWeight     ->Write(h_name[8].data());
+  h_mZprime         ->Write("mZprime");
+  h_mZ              ->Write("mZ");
+  h_ptZ             ->Write("ptZ");
+  h_FATjetPt        ->Write("FATjetPt");
+  h_FATjetSDmass    ->Write("FATjetSDmass");
+  h_FATjetPRmass    ->Write("FATjetPRmass");
+  h_FATjetTau2dvTau1->Write("FATjetTau2dvTau1");
+  h_cutFlow         ->Write("cutFlow");
+  h_eventWeight     ->Write("eventWeight");
 
   outFile->Write();
   
