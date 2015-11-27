@@ -1,0 +1,81 @@
+
+\documentclass[12pt]{article} % Default font size is 12pt, it can be changed here
+\usepackage{geometry} % Required to change the page size to A4
+\geometry{a4paper} % Set the page size to be A4 as opposed to the default US Letter
+\usepackage{graphicx} % Required for including pictures
+\usepackage{float} % Allows putting an [H] in \begin{figure} to specify the exact location of the figure
+\usepackage{wrapfig} % Allows in-line images such as the example fish picture
+\linespread{1.2} % Line spacing
+\setlength\parindent{2em} % Uncomment to remove all indentation from paragraphs
+\setlength{\parskip}{1em}
+\graphicspath{{Pictures/}} % Specifies the directory where pictures are stored
+\setlength{\oddsidemargin}{0pt}
+\setlength{\textwidth}{460pt}
+\setlength{\textheight}{660pt}
+\usepackage{chngcntr}
+\usepackage{hyperref}
+%\counterwithin{figure}{section}
+%\counterwithin{table}{section}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}} 
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{indentfirst}
+
+\begin{document}
+
+\section{Background systematic uncertainties} % Major section
+
+Table~\ref{tab:unc} shows the summary of the systematic uncertainties for X to ZH analysis (8 TeV data). The uncertainty on the total number of backgrounds in signal region comes from the uncertainties on the fit parameters when fitting the pruned jet mass distribution. The jet energy scale uncertainty (Table~\ref{tab:jec}) is derived as a function of $p_T$ and $\eta$. It is mainly due to different response of detectors towards different components inside jets (heavy flavor/gluon/light quarks) and toward pileups. This uncertainty will affect the alpha ratio which is used to estimate the number of backgrounds in signal region. It will also affect the MC background shape, and the data side band shape.
+
+\begin{center}
+  \begin{tabular}{| c | c | c |}
+    \hline
+    \tabincell{c}{\bf Source of \\ \bf systematic uncertainties} &
+    \tabincell{c}{\bf How much \\ \bf vary the source} &
+    \tabincell{c}{\bf Center value \\ \bf with uncertainties} \\
+    \hline
+    Pruned jet mass fitting parameters & 1 $\sigma$ & 123 +8 -7 \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Summary of sources of systematic uncertainties, the variation of sources, and the value of uncertainties.}
+  \label{tab:unc}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{| c | c |}
+    \hline
+    \bf Pruned jet mass (GeV) &
+    \bf relative uncertainty \\
+    \hline
+    680-720 & \\
+    720-760 & \\
+    760-800 & \\
+    800-840 & \\
+    840-920 & \\
+    920-1000 & \\
+    1000-1100 & \\
+    1100-1250 & \\
+    1250-1400 & \\
+    1400-1600 & \\
+    1600-1800 & \\
+    1800-2000 & \\
+    2000-2400 & \\ 
+    \hline
+  \end{tabular}
+  \captionof{table}{Jet energy scale uncertainties.}
+  \label{tab:jec}
+\end{center}
+
+\begin{figure}[H]
+  \center{\includegraphics[width=0.6\linewidth]{alphaRatio.pdf}}
+  \caption{Alpha ratio with fitting.}
+  \label{fig:alp}
+\end{figure}
+
+\begin{figure}[H]
+  \center{\includegraphics[width=0.6\linewidth]{numbkgData.pdf}}
+  \caption{Total number of background events in signal region of data.}
+  \label{fig:num}
+\end{figure}
+
+\end{document}

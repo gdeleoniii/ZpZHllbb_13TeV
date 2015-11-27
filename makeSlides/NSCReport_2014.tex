@@ -1,0 +1,504 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NSC Report for 2014
+% CERN working period: 29/7 - 30/8
+% Edit by Henry Tong
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[12pt]{article} % Default font size is 12pt, it can be changed here
+\usepackage{geometry} % Required to change the page size to A4
+\geometry{a4paper} % Set the page size to be A4 as opposed to the default US Letter
+\usepackage{graphicx} % Required for including pictures
+\usepackage{float} % Allows putting an [H] in \begin{figure} to specify the exact location of the figure
+\usepackage{wrapfig} % Allows in-line images such as the example fish picture
+\linespread{1.2} % Line spacing
+\setlength\parindent{2em} % Uncomment to remove all indentation from paragraphs
+\setlength{\parskip}{1em}
+\graphicspath{{Pictures/}} % Specifies the directory where pictures are stored
+\setlength{\oddsidemargin}{0pt}
+\setlength{\textwidth}{460pt}
+\setlength{\textheight}{660pt}
+\usepackage{chngcntr}
+\usepackage{hyperref}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}} 
+\usepackage{caption}
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{titlepage}
+
+  \newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+  \center % Center everything on the page
+
+  \textsc{\LARGE National Center University}\\[1.5cm] % Name of your university/college
+  \textsc{\Large Department of Physics}\\[0.5cm] % Major heading such as course name
+  \textsc{\large NSC Report 2014}\\[0.5cm] % Minor heading such as course title
+
+  \HRule \\[0.4cm]
+         { \huge \bfseries X to ZH Study}\\[0.4cm] % Title of your document
+         \HRule \\[1.5cm]
+
+         \begin{minipage}{0.4\textwidth}
+           \begin{flushleft} \large
+             \emph{Author:}\\
+             Tong \textsc{Henry Yee-Shian} % Your name
+           \end{flushleft}
+         \end{minipage}
+         ~
+         \begin{minipage}{0.4\textwidth}
+           \begin{flushright} \large
+             \emph{Supervisor:} \\
+             Yu \textsc{Shin-Shan} % Supervisor's Name
+           \end{flushright}
+         \end{minipage}\\[4cm]
+
+         {\large \today}\\[3cm] % Date, change the \today to a set date if you want to be precise
+
+         %\includegraphics{Logo}\\[1cm] % Include a department/university logo - this will require the graphicx package
+
+         \vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS
+%----------------------------------------------------------------------------------------
+
+\tableofcontents % Include a table of contents
+
+\newpage % Begins the essay on a new page instead of on the same page as the table of contents 
+
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section{Introduction} % Major section
+
+In this report, we introduce some steps for searching a TeV resonances going to ZH final states. We will introduce some lepton selections. These selections are kept voluntarily loose in order not to depend too much on the nature of the TeV resonance. In particular, the Z boson is selected leptonically (with electron or muon final state) while the Higgs is chosen to decay fully hadronically ($q\bar{q}$ or $gg$).
+
+Despite the small final branching ratio, this channel is found to be a reasonable compromise between a strong signature and an acceptable statistics. The two leptons are easily identified by the detector and limit the presence of the background, while the hadronic Higgs decay collects the largest possible fraction of Higgs events. 
+
+\newpage
+
+
+%----------------------------------------------------------------------------------------
+%	MAJOR SECTION 1
+%----------------------------------------------------------------------------------------
+
+\section{Pre-selection} % Major section
+
+As a fundamental step of the analysis, we need to check the accuracy of the MC simulation and allows us to study in detail the physical process under consideration. In this section, the selection criteria of leptons are discussed, then all relevant data and MC distributions are shown.
+
+
+\subsection{Muon requirement} % Sub-section
+
+In this analysis, we use both tracker muons and global muons. We select muon candidates with $p_T>$ 20 GeV and  at least one of the two muons must have a transverse momentum higher than 40 GeV. The kinematic cuts are the lowest possible compatible with trigger efficiencies flat in $p_T$. Furthermore, the muons must pass one of these two off-line selections. 
+
+\noindent
+The high-$p_T$ muon selection:
+
+\noindent
+$\bullet$ muon identified as a Global Muon \\
+$\bullet$ number of muon hits larger than 0 \\
+$\bullet$ number of matched muon stations larger than 1 \\
+$\bullet$ number of pixel hits larger than 0 \\
+$\bullet$ number of tracker layer with hits larger than 5 \\
+$\bullet$ transverse impact parameter $d_{xy}$ with respect to the primary vertex smaller than 0.2 cm \\
+$\bullet$ longitudinal impact parameter $d_z$ with respect to the primary vertex smaller than 0.5 cm \\
+$\bullet$ relative error on the track transverse momentum $\sigma _{p_T} / p_T <$ 0.3
+
+Another important variable which is useful for the lepton identification is called the isolation. It is defined as the scalar sum of the $p_T$ of the reconstructed objects within a cone in the ($\eta - \phi$) space around the lepton track. The typical size of the cone is $\Delta R$ = 0.3. Obviously, the transverse momentum of the lepton itself is not included in the sum. A relative isolation definition, obtained dividing the simple isolation by the lepton $p_T$ ( $I_{rel} = Iso / p^{lep}_T$ ), is more frequently used. 
+
+An isolation requirement helps in the identification of leptons produced directly in the high $p_T$ collision, which are expected to be isolated, and rejects leptons originated inside jets. 
+
+In this analysis, the two muons originated from decays of high-$p_T$ Z are close to each other due to the boost of the boson and consequently the presence of each muon could spoil the isolation of the other muon in the pair. In order to solve this problem we use a track-based isolation relative quantity, explicitely removing from the momentum flow any other muon passing our muon selection. Moreover, a tracker-based isolation is well motivated also by two additional aspects: it is more independent of pile up (pile-up tracks tipically do not match the primary vertex) and does not include possible muon radiation.
+
+Finally, the modified requirement is $I^{mod}_{trkrel} <$ 0.1.
+
+
+\subsection{Electron requirement} % Sub-section
+
+Electrons are selected with $p_T >$ 40 GeV. Other identification requirements are:
+
+\noindent
+$\bullet$ supercluster pseudorapidity ($\eta _{SC}$) smaller than 1.442 (for barrel electrons) or in the range 1.56-2.5 (for endcap electrons) \\
+$\bullet$ ratio of hadronic energy (HCAL deposit) to electromagnetic energy (ECAL deposit) smaller than 0.12 (for barrel electrons) or 0.1 (for endcap electrons) \\
+$\bullet$ number of inner layer lost hits smaller than 0 \\
+$\bullet$ have $d_{xy}$ smaller than 0.02 cm for barrel and endcap electrons
+
+\noindent
+
+Here we need a redefinition of the isolation requirement because of the small $\Delta R$ between electrons. In this case there are three variables that have to be changed:
+
+\noindent
+$\bullet$ the track isolation variable $I_{trk}$ is defined as the scalar $p_T$ sum of the tracks within a $\Delta R$ = 0.3 cone around the electron, excluding both an inner core of dimensions 0.03 x 0.3 in ($\eta$, $\phi$) around the electron in question and additional cones of dimensions 0.03 x 0.3 in ($\eta$, $\phi$) around any other electron passing the criteria given above. 
+
+\noindent
+$\bullet$ the electromagnetic calorimeter isolation $I_{ECAL}$ is defined as the scalar sum of $E_T$ of the crystals in a $\Delta R$ = 0.3 cone around the electron, excluding both an inner area of full-width 3 crystals around the electron in question and a 4-crystals $\Delta$R cone around any other electron.
+ 
+\noindent
+$\bullet$ the hadronic calorimeter isolation variable IHCAL1 is defined as the scalar sum of ET of the HCAL caloTowers with centres in a $\Delta R$ = 0 cone around the electron, excluding those lying within $\Delta$R = 0.5 of the electron itself and of any other electron.
+
+The final modified tracker isolation requirement is $I^{mod}_{trk} <$ 5 GeV, while, for the ECAL and HCAL isolations, a threshold varying with the electron transverse energy is chosen.
+
+
+
+\subsection{Pre-selection of MC signal and background} % Sub-section
+
+In this section all the control plots at the pre-selection level are presented. Table~\ref{tab:selection} reports a summary of the pre-selection requirement described in the above sections. Figure~\ref{fig:muVariable} present the event variables for the muon selections; and Figure~\ref{fig:eleVariable01} to Figure~\ref{fig:eleVariable04} present the identification variables for the electron selections, which are introduced in the previous section. The data and MC comparison generally presents a fair agreement. 
+
+For the electron channel, Figure~\ref{fig:eleVariable05} and Figure~\ref{fig:eleVariable06} shows kinematic distributions. the electron $\eta$ distribution presents a gap due to the veto in the barrel/endcaps transition region of the selection. Figures~\ref{fig:eleVariable07} and Figure~\ref{fig:eleVariable08} show the modified isolation variables. Figure~\ref{fig:eleVariable09} and Figure~\ref{fig:eleVariable10} shows the $p_T$ and $\eta$ difference between super cluster electron and incoming tracker particle trace. Figure~\ref{fig:eleVariable11} shows the $\sigma_{I\eta I\eta}$ of the electron. Figure~\ref{fig:eleVariable12} shows the energy over momentum of electron. Lastly, Figure~\ref{fig:eleVariable13} shows the electrons that not from photon conversion. Figure~\ref{fig:dilepMass} shows the resolution in the reconstruction of the Z boson in the two leptonic channels. 
+
+Since the requirement on the sub-leading lepton $p_T$ is different for the electron and muon channels, as a consequence of the different trigger threshold, the SM background is more populated (roughly twice) in the muon channel than in the electron channel. On the contrary, the predicted signal yield is similar in the two channels because it has little sensitivity to the low threshold applied in the preselection. The sensitivity is low because the signal has high $p_T$ bosons in the final state.
+
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{muVariable.png}}
+  \caption{Muon event variables. Left: number of vertex hits; Right: corrected track isolation.}
+  \label{fig:muVariable}
+\end{figure}
+
+\begin{center}
+  \begin{tabular}{ c c c }
+    \hline
+    \bf Selection &
+    \bf Value &
+    \bf Comments \\
+    \hline
+    Trigger & & \\ \cline{1-1}
+    & HLT\_Mu22\_TkMu8 & DoubleMuon dataset \\
+    & HLT\_DoubleEle33 & DoublePhoton dataset \\ \hline
+    Lepton selections & & \\ \cline{1-1}
+    Leading lepton $p_T$ & $p_T$ $>$ 40 GeV & Same for electrons and muons \\ 
+    Subleading lepton $p_T$ & $p_T$ $>$ 40 GeV & For electrons \\ 
+    Subleading lepton $p_T$ & $p_T$ $>$ 20 GeV & For muons \\ 
+    Muon $\eta$ & $\left|{\eta}\right|$ $<$ 2.4 &  \\
+    Electron $\eta$ & $\left|{\eta}\right|$ $<$ 2.5 & Avoid the ECAL gap \\
+    Electron fiducial & $\left|{\eta}\right|$ out of [1.4442, 1.566] &  \\ \cline{1-1}
+    Muon ID & High $p_T$ &  \\
+    Muon Isol. $I^{mod}_{trkrel}$ & $<$ 0.1 &  \\ \cline{1-1}
+    Electron ID & ? &  \\
+    Ele. Isol. & &  \\
+    $I^{mod}_{trk}$ & $<$ 5 GeV &  \\
+    $I^{mod}_{HCAL}$ + $I^{mod}_{ECAL}$ & $<$ 2 GeV + 0.03 $E_T$ & EB electrons \\
+    & $<$ 2.5 GeV & EE ele. with $E_T$ < 50 GeV \\
+    & $<$ 2.5 GeV + 0.03 $E_T$ & EE ele. with $E_T$ > 50 GeV \\ \hline
+    Jet selections & & \\  \cline{1-1}
+    Jet ID & Loose working point & \\
+    Jet $p_T$ & $p_T$ $>$ 30 GeV & \\
+    Jet $\eta$ & $\left|{\eta}\right|$ $<$ 2.4 & \\ \hline
+    Boson selections & & \\  \cline{1-1}
+    $m_{LL}$ & 70 $<$ $m_{LL}$ $<$ 110 GeV & \\
+    $m_{J}$ & $m_{J}$ $>$ 40 GeV & \\
+    Z $p_T$ & $p_T$ $>$ 80 GeV & \\
+    H $p_T$ & $p_T$ $>$ 80 GeV & \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Pre-selection requirements used in the analysis.}
+  \label{tab:selection}
+\end{center}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable04.png}}
+  \caption{Electron identification and selection variables. Energy ratio of 5 pieces 5x5 ECAL crystal and 1 piece HCAL crystal in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable01}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable09.png}}
+  \caption{Electron identification and selection variables. Missing hits in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable02}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable05.png}}
+  \caption{Electron identification and selection variables. Transverse impact parameter with respect to the primary vertex in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable03}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable06.png}}
+  \caption{Electron identification and selection variables. Longitudinal impact parameter with respect to the primary vertex in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable04}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable10.png}}
+  \caption{Electron identification and selection variables. $p_T$ of electrons in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable05}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable11.png}}
+  \caption{Electron identification and selection variables. Eta of electrons in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable06}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable12.png}}
+  \caption{Electron identification and selection variables. Track isolation of electrons in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable07}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable13.png}}
+  \caption{Electron identification and selection variables. HCAL+ECAL isolation of electrons in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable08}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable01.png}}
+  \caption{Electron identification and selection variables. Eta difference between super cluster electron and incoming tracker particle trace in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable09}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable02.png}}
+  \caption{Electron identification and selection variables. Phi difference between super cluster electron and incoming tracker particle trace in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable10}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable03.png}}
+  \caption{Electron identification and selection variables. Sigma IetaIeta in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable11}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable07.png}}
+  \caption{Electron identification and selection variables. Energy over momentum in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable12}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{eleVariable08.png}}
+  \caption{Electron identification and selection variables. Electron that not from photon conversion in barrel region (left) and in end-cap region (right).}
+  \label{fig:eleVariable13}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{dileptonMass.png}}
+  \caption{Recostructed Z mass in the muon (left) and electron (right) channel.}
+  \label{fig:dilepMass}
+\end{figure}
+
+
+\newpage
+
+
+%----------------------------------------------------------------------------------------
+%	MAJOR SECTION 2
+%----------------------------------------------------------------------------------------
+
+\section{Final Selection} 
+
+At this step, we need to select our best candidate by choosing the one with the lowest value of the variable $D = (m_\mu - M_Z)^2 + (M_J - M_H)^2$.
+
+
+\subsection{Signal region} % Sub-section
+ 
+The most discriminating tool to separate signal from the dominant background is the requirement on the pruned mass of the jet. In this analysis the pruned mass of the jet is required to be in the range [110, 140] GeV in order to pass the final selection. The range is chosen in order to contain as much signal as possible without overlapping the signal region of this analysis with other searches of new resonances.
+
+Figure~\ref{fig:fitZpMass} shows the signal region superimposed on the pruned mass ratio distribution. The gaussian fit on the peak of the distribution has as output parameters a mean value around 0.97 and $\sigma$ around 0.056. The difference of the peak mass respect to the real value of the Higgs mass is due to the pruning algorithm applied to the jet, that reduces its reconstructed mass.
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=0.8\linewidth]{fitZpMass.png}}
+  \caption{Jet pruned mass distribution for a MC signal of 1000 GeV whose peak is fitted with a gaussian function. The signal region is painted in green.}
+  \label{fig:fitZpMass}
+\end{figure}
+
+
+\subsection{Isolation cut optimization} % Sub-section
+
+In this section we want to study the performances and the optimization procedure of the selection on the isolation. In searches for new phenomena it is important to define the sensitivity of the experiment, in order to maximize the potentiality of the analysis. There are different way of computing signal significance: 
+
+\noindent
+$\bullet$ $S/B$ \\
+$\bullet$ $S/\sqrt{B}$ \\
+$\bullet$ Signal Efficiency/$(1+\sqrt{B})$
+
+For each mass point we want to establish which is the best value of the isolation/$p_T$ ratio to discriminate signal from background. The procedure is implemented as follows:
+
+\noindent
+$\bullet$ set a window of $\pm12\%$ around the signal resonance mass; \\
+$\bullet$ plot the expected isolation/$p_T$ variable for signal and background, for the events that passed all the other selection requirements; \\
+$\bullet$ integrate the expected isolation/$p_T$ distributions of signal and background up to a threshold isolation/$p_T$. The values obtained are an estimation of the signal selection efficiency and the amount of background; \\
+$\bullet$ computing signal significance. 
+
+This procedure is repeated for values of $(Iso/p_T)_{max}$ ranging form 0 to 0.1 in steps of 0.01. In figures~\ref{fig:mu1000},~\ref{fig:mu1500}, and~\ref{fig:mu2000} the results of the optimization of tracker isolation procedure for signal of 1000, 1500 and 2000 GeV in muon channel are reported. In figures~\ref{fig:eletrk1000},~\ref{fig:eletrk1500}, and~\ref{fig:eletrk2000} the results of the optimization of tracker isolation procedure for signal of 1000, 1500 and 2000 GeV in electron channel are reported. In figures~\ref{fig:elecal1000},~\ref{fig:elecal1500}, and~\ref{fig:elecal2000} the results of the optimization of (ECAL+HCAL) isolation procedure for signal of 1000, 1500 and 2000 GeV in electron channel are reported.
+
+Because the footprint left by the nearby muon is not completely removed, and we have checked the isolation efficiency for a wider isolation window (fig.~\ref{fig:fitZpMass}), that is why for higher X mass, background efficiency is higher than signal, and the background still has more tails than signal.
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Muon
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimize_cut1000.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 1000 GeV in muon channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:mu1000}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimize_cut1500.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 1500 GeV in muon channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:mu1500}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimize_cut2000.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 2000 GeV in muon channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:mu2000}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Electron (TrkIso)
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeTrk_cut1000.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 1000 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:eletrk1000}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeTrk_cut1500.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 1500 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:eletrk1500}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeTrk_cut2000.png}}
+  \caption{Optimization procedure of tracker isolation for a signal sample of 2000 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:eletrk2000}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Electron (CalIso)
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeCal_cut1000.png}}
+  \caption{Optimization procedure of HCAL+ECAL isolation for a signal sample of 1000 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:elecal1000}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeCal_cut1500.png}}
+  \caption{Optimization procedure of HCAL+ECAL isolation for a signal sample of 1500 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:elecal1500}
+\end{figure}
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundOptimizeCal_cut2000.png}}
+  \caption{Optimization procedure of HCAL+ECAL isolation for a signal sample of 2000 GeV in electron channel. Top left: distributions of isolation/$p_T$ for signal (red) and background (blue). Top middle: signal (blue) and background (red) efficiencies as function of isolation/$p_T$ cut. Top right: signal efficiency $\times$ background rejection (ROC curve). Bottom left: signal $S$ over background $B$ as function of isolation/$p_T$ cut. Bottom middle: $S/\sqrt{S + B}$ as function of isolation/$p_T$ cut. Bottom right: Punzi significance as function of isolation/$p_T$ cut.}
+  \label{fig:elecal2000}
+\end{figure}
+
+
+\newpage
+
+
+%----------------------------------------------------------------------------------------
+%	MAJOR SECTION 3
+%----------------------------------------------------------------------------------------
+
+\section{Background Extrapolation} % Major section
+
+The final aim of this analysis is to compare the predicted SM background with the observed data, it is important to elaborate a trustworthy strategy for the background estimation. Indeed, despite the good description of the event kinematics provided by the MC simulation, it is more advisable to minimize the dependence on the MC and develop a data driven strategy. 
+
+
+\subsection{Sideband region} % Sub-section
+
+We have already defined our signal region, we need now a sideband region to be used as a pure background control region, where we can check the correct behaviour of the MC (background) simulation compared to the observed data. 
+
+Indeed, such a control region should contain a pure background sample and it is tipically defined as the sidebands of the signal region in the distribution of the main discriminating variables. In our case, we don't consider a right sideband of the pruned mass distribution, higher than 140 GeV, because of the poor statistics and the excessive contribution of $t\bar{t}$ events.
+
+At this point we have to select wisely an adequate left sideband region. The two possible selection of the left sideband regions are:
+
+\noindent
+1. thin sideband: [50, 70] GeV \\
+2. large sideband: [50, 110] GeV 
+
+The weakness of the former choice is the lack of statistics at high masses, due to the small range and low value of the sideband considered. In fact, although the background is exponentially distributed in term of the invariant ZH mass, the jet mass and the final invariant mass are strongly correlated and the extension of the sideband up to 110 GeV largely helps the increasing of the population of the high invariant mass region.
+
+
+\subsection{$\alpha$ ratio} % Sub-section
+
+In order to estimate the final background, we consider the $m_{ZH}$ MC mass spectrum in the signal and sideband region. A ratio $\alpha$($m_{ZH}$) of the two is created. This $\alpha$ factor allows a prediction of the mass spectrum in the signal region starting from the measured distribution in the sideband. Under the assumption that this estrapolation from the sideband to the signal region works in the same way both for data and MC, we can estimate the final background distribution by multipling the mZH mass spectrum observed in the sideband by this $\alpha$ ratio.
+
+We divide the spectrum in 14 not uniform width bins, as shown in Table~\ref{tab:bin}, accordingly to the decreasing statistics in the high mass tail.
+
+The MC background distribution in the signal region is used to explore the range where the invariant mass is well described by an exponential function.
+
+\begin{center}
+  \begin{tabular}{ c | c }
+    \hline
+    \bf Bin & \bf GeV \\
+    \hline
+    \hline
+    1 & [680, 720] \\
+    2 & [720, 760] \\
+    3 & [760, 800] \\
+    4 & [800, 840] \\
+    5 & [840, 920] \\
+    6 & [920, 1000] \\
+    7 & [1000, 1100] \\
+    8 & [1100, 1250] \\
+    9 & [1250, 1400] \\
+    10 & [1400, 1600] \\
+    11 & [1600, 1800] \\
+    12 & [1800, 2000] \\
+    13 & [2000, 2200] \\
+    14 & [2200, 2400] \\
+    \hline
+  \end{tabular}
+  \captionof{table}{Binning of the X invariant mass range.}
+  \label{tab:bin}
+\end{center}
+
+Finally, we can take the product of the $\alpha$ ratio obtained (fig.~\ref{fig:alpha}) and the sideband data $M_x$ to get the prediction of background in the signal region.
+
+\begin{figure}[H] % Image
+  \center{\includegraphics[width=1\linewidth]{backgroundEstimation.png}}
+  \caption{MC $m_{ZH}$ observed distribution in the sideband region (top left) and in the signal region (top middle); Data $m_{ZH}$ observed distribution in the sideband region (bottom left) and in the signal region (bottom middle). Bottom right: $\alpha$ ($m_{ZH}$) ratio computation.}
+  \label{fig:alpha}
+\end{figure}
+
+
+\newpage
+
+
+%----------------------------------------------------------------------------------------
+%	CONCLUSION
+%----------------------------------------------------------------------------------------
+
+\section{Future Progress} % Major section
+
+Beside the above description, we still need to apply the $\tau_{21}$ selection on boosted CA8 jet comes form the dacay of Higgs, and to do the optimization cut on it. The next step of this analysis is to do the data-driven bakground estimation, once we have the $\alpha$ ratio already. Also, we need to check the shape of signal of data. The last thing to do is to calculate the systematic uncertainties on signal yield.
+
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{9} % Bibliography - this is intentionally simple in this template
+
+\bibitem{Erdos01} Andrea Mauri, \emph{Search for new exotic resonances in semileptonic ZH final state at CMS}, 3 February 2014.
+
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

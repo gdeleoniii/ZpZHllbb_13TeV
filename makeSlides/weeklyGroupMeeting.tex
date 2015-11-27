@@ -1,0 +1,185 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation: Group Meeting 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+\mode<presentation>{
+  \usetheme{Madrid}
+  \usecolortheme{crane}
+  %\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+  %\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+  \setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+\setbeamercolor{itemize item}{fg=red}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{ragged2e} % For justifying text
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage[final]{pdfpages}
+\usepackage{hyperref}
+\usepackage{pgffor}
+\usepackage[makeroom]{cancel}
+\usepackage{xcolor,colortbl}
+\definecolor{RoyalYellow}{RGB}{250,218,94}
+\graphicspath{{Pictures/}} % Specifies the directory where pictures are stored
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}} 
+\hypersetup{colorlinks=true}
+\setbeamertemplate{title page}{
+  \vbox{}
+  \begingroup
+  \centering{
+    \usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}\vskip0.5em
+  \begin{beamercolorbox}[sep=8pt,center]{title}
+    \usebeamerfont{title}\inserttitle\par%
+    \ifx\insertsubtitle\@empty%
+    \else%
+    \vskip0.25em{%
+      \usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi%
+  \end{beamercolorbox}%
+  \vskip1em\par
+  \begin{beamercolorbox}[sep=8pt,center]{author}
+    \usebeamerfont{author}\insertauthor
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=8pt,center]{institute}
+    \usebeamerfont{institute}\insertinstitute
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[sep=8pt,center]{date}
+    \usebeamerfont{date}\insertdate
+  \end{beamercolorbox}
+  \endgroup
+  \vfill
+}
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+% logo of my university
+\titlegraphic{\includegraphics[width=2cm]{cms.jpg}\hspace*{8cm}~%
+  \includegraphics[width=2cm]{ncu.png}
+}
+
+\title[]{Study of $Z' \rightarrow ZH \rightarrow llbb$} % The short title appears at the bottom of every slide, the full title is only on the title page
+\author[Henry Tong]{Yee-Shian Henry Tong} % Your name
+\institute[NCU]{ % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+  National Central University \\ % Your institution for the title page
+  \medskip
+  \textit{NCU HEP Group Meeting} % Your email address
+}
+\date{\today} % Date, can be changed to a custom date
+
+\begin{document}
+
+\begin{frame}
+  \vspace*{-1cm}
+  \enlargethispage{1cm}
+  \titlepage % Print the title page as the first slide
+\end{frame}
+
+%----------------------------------------------------------------------------------------
+%	PRESENTATION SLIDES
+%----------------------------------------------------------------------------------------
+
+\begin{frame}
+  \frametitle{Pseudo-MC test: Preselections}
+  \justifying
+  \begin{footnotesize}
+    \begin{center}
+      \begin{tabular}{ | c | c | }
+        \hline
+        isPassZmumu & true \\
+        $\eta$ range & $|\eta|$ $<$ 2.4 \\
+        $p_T$        & $>$ 200 GeV      \\
+        FATjetPassIDLoose & = 1 \\
+        $\Delta R$ btw jet and muon & $>$ 0.8 \\
+        side band & 40 $<$ corrPRmass $<$ 65, corrPRmass $>$ 145 \\
+        signal region & 105 $<$ corrPRmass $<$ 135 \\
+        ZH mass & $>$ 400 GeV \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{footnotesize}
+\end{frame}
+
+\foreach \n in {1,2,3,4,5,6,7}{
+  \begin{frame}
+    \frametitle{Pseudo-MC test}
+    \begin{center}
+      \begin{tabular}{ll}
+        \includegraphics[page=\n,width=0.85\textwidth]{alphaRatioWithoutCSVcut.pdf}
+      \end{tabular}
+    \end{center}
+  \end{frame}
+}
+
+\begin{frame}
+  \frametitle{Limit setting for muon channel: Preselections}
+  \justifying
+  \begin{footnotesize}
+    \begin{center}
+      \begin{tabular}{ | c | c | }
+        \hline
+        isPassZmumu & true \\
+        $\eta$ range & $|\eta|$ $<$ 2.4 \\
+        $p_T$        & $>$ 200 GeV      \\
+        FATjetPassIDLoose & = 1 \\
+        $\Delta R$ btw jet and muon & $>$ 0.8 \\
+        corrPRmass & 105 $<$ corrPRmass $<$ 135 \\
+        subjetSDCSV & both subjetSDCSV $>$ 0.605 \\
+        ZH mass & $>$ 700 GeV \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Event numbers after normalization}
+  \justifying
+  \begin{footnotesize}
+    \begin{center}
+      \begin{tabular}{ | c | c | }
+        \hline
+        DATA  &	0 \\
+        DY    &	1.28537 \\
+        TTBAR &	0.0296933 \\
+        M800  &	1.40521 \\
+        M1000 &	1.10734 \\
+        M1200 &	0.636181 \\
+        M1400 &	0.336587 \\
+        M1600 &	0.184776 \\
+        M1800 &	0.0979685 \\
+        M2000 &	0.0562349 \\
+        M2500 &	0.0133583 \\
+        M3000 &	0.00323163 \\
+        M3500 &	0.000858579 \\
+        M4000 &	0.000221135 \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Limit setting for muon channel}
+  \begin{center}
+    \includegraphics[width=0.75\textwidth]{XZHllbb_Counting_Asymptotic_log.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \Huge{\centerline{The End}}
+\end{frame}
+
+\end{document}
