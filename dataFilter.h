@@ -3,27 +3,52 @@
 #include <vector>
 #include "untuplizer.h"
 
-bool FilterStatus(TreeReader &data, std::string TRIGNAME){
+bool TriggerStatus(TreeReader &data, std::string TRIGGERNAME){
 
   std::string* trigName    = data.GetPtrString("hlt_trigName");
   vector<bool>& trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
 
   bool triggerStat = false;
+
+  for(int it = 0; it < data.GetPtrStringSize(); it++){
+
+    std::string thisTrig = trigName[it];
+    bool results = trigResult[it];
+
+    if( thisTrig.find(TRIGGERNAME) != std::string::npos && results ){
+
+      triggerStat = true;
+      break;
+
+    }
+
+  }
+
+  return triggerStat;
+
+}
+
+bool FilterStatus(TreeReader &data, std::string FILTERNAME){
+
+  std::string* filterName    = data.GetPtrString("hlt_filterName");
+  vector<bool>& filterResult = *((vector<bool>*) data.GetPtr("hlt_filterResult"));
+
+  bool filterStat = false;
     
   for(int it = 0; it < data.GetPtrStringSize(); it++){
     
-    std::string thisTrig = trigName[it];
-    bool results = trigResult[it];
+    std::string thisFilter = filterName[it];
+    bool results = filterResult[it];
       
-    if( thisTrig.find(TRIGNAME) != std::string::npos && results ){
+    if( thisFilter.find(FILTERNAME) != std::string::npos && results ){
 
-      triggerStat = true;
+      filterStat = true;
       break;
 
     }
       
   }
 
-  return triggerStat;
+  return filterStat;
 
 }
