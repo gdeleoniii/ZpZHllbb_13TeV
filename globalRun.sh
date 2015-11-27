@@ -99,7 +99,7 @@ else
 fi
 
 rm -f inputdir.txt
-rm -f *.d *.so
+rm -f *.pcm *.d *.so
 mv *root output*
 
 exit

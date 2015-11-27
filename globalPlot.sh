@@ -42,7 +42,7 @@ else
 
 fi
 
-rm -f *.d *.so
+rm -f *.pcm *.d *.so
 mv *pdf /afs/cern.ch/user/h/htong/www
 
 exit
