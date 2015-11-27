@@ -107,7 +107,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     
     // data filter and trigger cut
       
-    bool muTrigger = FilterStatus(data, "HLT_Mu45");
+    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
     bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
     bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
     bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
