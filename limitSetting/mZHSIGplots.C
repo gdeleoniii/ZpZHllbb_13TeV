@@ -205,10 +205,10 @@ void mZHSIGplots(std::string inputFolder, std::string rootfilename, std::string 
     if( infiles[i].find("M-4000") != std::string::npos )
       f_M4000 = getFile(infiles[i].data(), xSecM4000, &scaleM4000);
 
-    if( infiles[i].find("V3_2015") != std::string::npos )
+    if( infiles[i].find("V12015") != std::string::npos )
       f_data0 = getFile(infiles[i].data(), dummy, &dummy);
 
-    if( infiles[i].find("V4_2015") != std::string::npos )
+    if( infiles[i].find("V42015") != std::string::npos )
       f_data1 = getFile(infiles[i].data(), dummy, &dummy);
 
   }

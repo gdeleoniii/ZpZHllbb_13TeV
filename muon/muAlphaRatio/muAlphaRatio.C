@@ -8,6 +8,7 @@
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
 #include "../../readSample.h"
+#include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
 
 void muAlphaRatio(std::string inputFile, std::string outputFile){

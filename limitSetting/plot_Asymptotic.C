@@ -304,6 +304,6 @@ void plot_Asymptotic(string outputname){
   gPad->RedrawAxis("");
   cMCMC->Update();
   gPad->SetLogy();
-  cMCMC->Print(Form("ZHllbb_%s_Asymptotic.pdf", outputname.data()));
+  cMCMC->Print(Form("zhllbb%sAsymptotic.pdf", outputname.data()));
 
 } //end of main function

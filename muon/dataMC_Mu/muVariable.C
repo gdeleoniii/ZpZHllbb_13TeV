@@ -78,13 +78,13 @@ void muVariable(std::string inputFile, std::string outputFile){
     Int_t*   muMatches   = data.GetPtrInt("muMatches");
     Int_t*   muTrkLayers = data.GetPtrInt("muTrkLayers");
     Int_t*   muPixelHits = data.GetPtrInt("muPixelHits");
+    Bool_t   isData      = data.GetBool("isData");
     Float_t  mcWeight    = data.GetFloat("mcWeight");    
     Float_t* muTrkPtErr  = data.GetPtrFloat("muTrkPtErr");	
     Float_t* muTrkPt     = data.GetPtrFloat("muTrkPt");
     Float_t* mudxy       = data.GetPtrFloat("mudxy");
     Float_t* mudz        = data.GetPtrFloat("mudz");
     Float_t* muMiniIsoEA = data.GetPtrFloat("muMiniIsoEA");
-    Bool_t   isData      = data.GetBool("isData");
     TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
     vector<bool>& isGlobalMuon  = *((vector<bool>*) data.GetPtr("isGlobalMuon"));
     vector<bool>& isTrackerMuon = *((vector<bool>*) data.GetPtr("isTrackerMuon"));

@@ -2,12 +2,12 @@
 #include <string>
 #include <iostream>
 #include <TH1D.h>
-#include <TMath.h>
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../untuplizer.h"
 #include "../readSample.h"
+#include "../dataFilter.h"
 #include "../isPassZmumu.h"
 #include "../isPassZee.h"
 
@@ -23,22 +23,19 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
   // Declare the histogram
 
-  //const Double_t varBins[] = {600,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4500};
-  //Int_t nvarBins = sizeof(varBins)/sizeof(varBins[0])-1;
-
   const Double_t xmin = 500;
   const Double_t xmax = 5000;
   const Int_t nBins = (xmax-xmin)/100;
      
-  TH1D* h_ZprimeSign_pMC   = new TH1D("h_ZprimeSign_pMC",   "ZprimeSign",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSide_pMC   = new TH1D("h_ZprimeSide_pMC",   "ZprimeSide",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSign_pDA   = new TH1D("h_ZprimeSign_pDA",   "ZprimeSign",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSide_pDA   = new TH1D("h_ZprimeSide_pDA",   "ZprimeSide",  nBins, xmin, xmax);
-  TH1D* h_PRmassNoSIG_pDA  = new TH1D("h_PRmassNoSIG_pDA",  "corrPRmass",  40, 40, 240);
-  TH1D* h_PRmassAllLow_pDA = new TH1D("h_PRmassAllLow_pDA", "corrPRmass",  48, 0, 240);
-  TH1D* h_PRmassAll_pDA    = new TH1D("h_PRmassAll_pDA",    "corrPRmass",  40, 40, 240);
-  TH1D* h_eventWeight_pMC  = new TH1D("h_eventWeight_pMC",  "eventWeight", 100, -1, 1);
-  TH1D* h_eventWeight_pDA  = new TH1D("h_eventWeight_pDA",  "eventWeight", 100, -1, 1);
+  TH1D* h_ZprimeSign_pMC   = new TH1D("h_ZprimeSign_pMC",   "",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSide_pMC   = new TH1D("h_ZprimeSide_pMC",   "",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSign_pDA   = new TH1D("h_ZprimeSign_pDA",   "",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSide_pDA   = new TH1D("h_ZprimeSide_pDA",   "",  nBins, xmin, xmax);
+  TH1D* h_PRmassNoSIG_pDA  = new TH1D("h_PRmassNoSIG_pDA",  "",   40, 40, 240);
+  TH1D* h_PRmassAllLow_pDA = new TH1D("h_PRmassAllLow_pDA", "",   48,  0, 240);
+  TH1D* h_PRmassAll_pDA    = new TH1D("h_PRmassAll_pDA",    "",   40, 40, 240);
+  TH1D* h_eventWeight_pMC  = new TH1D("h_eventWeight_pMC",  "",  100, -1,   1);
+  TH1D* h_eventWeight_pDA  = new TH1D("h_eventWeight_pDA",  "",  100, -1,   1);
 
   h_ZprimeSign_pMC   ->Sumw2();
   h_ZprimeSide_pMC   ->Sumw2();
@@ -55,8 +52,6 @@ void pseudoMC(std::string inputFile, std::string outputFile){
   h_PRmassNoSIG_pDA  ->GetXaxis()->SetTitle("corrPRmass");
   h_PRmassAllLow_pDA ->GetXaxis()->SetTitle("corrPRmass");
   h_PRmassAll_pDA    ->GetXaxis()->SetTitle("corrPRmass");
-  h_eventWeight_pMC  ->GetXaxis()->SetTitle("eventWeight");
-  h_eventWeight_pDA  ->GetXaxis()->SetTitle("eventWeight");
 
   // begin of event loop
 
@@ -91,28 +86,13 @@ void pseudoMC(std::string inputFile, std::string outputFile){
       h_eventWeight_pDA->Fill(0.,eventWeight);
 
     if( nVtx < 1 ) continue;
-        
-    // data trigger cut (muon channel)
 
-    std::string* trigName = data.GetPtrString("hlt_trigName");
-    vector<bool> &trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
-    const Int_t nsize = data.GetPtrStringSize();    
-    bool passTrigger = false;
-    
-    for(Int_t it = 0; it < nsize; it++){
-    
-      std::string thisTrig = trigName[it];
-      bool results = trigResult[it];
+    // data trigger cut
       
-      if( (thisTrig.find("HLT_Mu45")   != std::string::npos && results==1) ||
-	  (thisTrig.find("HLT_Ele105") != std::string::npos && results==1) ){
-	passTrigger = true;
-	break;
-      }
-      
-    }
+    bool muTrigger  = TriggerStatus(data, "HLT_Mu45");
+    bool eleTrigger = TriggerStatus(data, "HLT_Ele105");
 
-    if( !passTrigger ) continue;
+    if( !muTrigger || !eleTrigger ) continue;
 
     // select good leptons
       
