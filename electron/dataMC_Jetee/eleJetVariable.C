@@ -142,21 +142,6 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
       if( thisJet->DeltaR(*thisEle) < 0.8 || thisJet->DeltaR(*thatEle) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 145 ) continue;
 
-      for(Int_t is = 0; is < FATnSubSDJet[ij]; is++){
-
-	TLorentzVector l4_subjet(0,0,0,0);
-
-	l4_subjet.SetPxPyPzE(FATsubjetSDPx[ij][is],
-			     FATsubjetSDPy[ij][is],
-			     FATsubjetSDPz[ij][is],
-			     FATsubjetSDE [ij][is]);
-
-	h_FATsubjetPt   ->Fill(l4_subjet.Pt(),eventWeight);
-	h_FATsubjetEta  ->Fill(l4_subjet.Eta(),eventWeight);
-	h_FATsubjetSDCSV->Fill(FATsubjetSDCSV[ij][is],eventWeight);
-
-      }
-
       goodFATJetID = ij;
       break;
 
@@ -172,6 +157,21 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
     h_FATjetTau1      ->Fill(FATjetTau1[goodFATJetID],eventWeight);
     h_FATjetTau2      ->Fill(FATjetTau2[goodFATJetID],eventWeight);
     h_FATjetTau2dvTau1->Fill(FATjetTau2[goodFATJetID]/FATjetTau1[goodFATJetID],eventWeight);
+
+    for(Int_t is = 0; is < FATnSubSDJet[goodFATJetID]; is++){
+
+      TLorentzVector l4_subjet(0,0,0,0);
+
+      l4_subjet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
+			   FATsubjetSDPy[goodFATJetID][is],
+			   FATsubjetSDPz[goodFATJetID][is],
+			   FATsubjetSDE [goodFATJetID][is]);
+
+      h_FATsubjetPt   ->Fill(l4_subjet.Pt(),eventWeight);
+      h_FATsubjetEta  ->Fill(l4_subjet.Eta(),eventWeight);
+      h_FATsubjetSDCSV->Fill(FATsubjetSDCSV[goodFATJetID][is],eventWeight);
+
+    }
 
   } // end of event loop
 
