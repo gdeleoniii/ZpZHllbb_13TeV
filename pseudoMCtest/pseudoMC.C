@@ -92,8 +92,6 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     bool muTrigger  = TriggerStatus(data, "HLT_Mu45");
     bool eleTrigger = TriggerStatus(data, "HLT_Ele105");
 
-    if( !muTrigger || !eleTrigger ) continue;
-
     // select good leptons
       
     vector<Int_t> goodLepID;
@@ -105,6 +103,8 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
     if( isPassZee(data,goodLepID) ){
 	
+      if( !eleTrigger ) continue;
+
       thisLep = (TLorentzVector*)eleP4->At(goodLepID[0]);   
       thatLep = (TLorentzVector*)eleP4->At(goodLepID[1]);   
 
@@ -112,6 +112,8 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     
     else if( isPassZmumu(data,goodLepID) ){
       
+      if( !muTrigger ) continue;
+
       thisLep =  (TLorentzVector*)muP4->At(goodLepID[0]);   
       thatLep =  (TLorentzVector*)muP4->At(goodLepID[1]);   
       
