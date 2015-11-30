@@ -22,8 +22,8 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
      
-  TH1D* h_mZprime     = new TH1D("h_mZprime",     "", 100, 400, 5000);
-  TH1D* h_eventWeight = new TH1D("h_eventWeight", "",   2,  -1,    1);
+  TH1D* h_mZprime     = new TH1D("h_mZprime",     "mZprime",     100, 400, 5000);
+  TH1D* h_eventWeight = new TH1D("h_eventWeight", "eventWeight",   2,  -1,    1);
 
   h_mZprime->Sumw2();
   h_mZprime->GetXaxis()->SetTitle("mZprime");

@@ -23,15 +23,15 @@ void eleZVariable(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
      
-  TH1D* h_Zmass         = new TH1D("h_Zmass",         "", 30, 60,  120);
-  TH1D* h_Zpt           = new TH1D("h_Zpt",           "", 50,  0, 1000);
-  TH1D* h_Zeta          = new TH1D("h_Zeta",          "", 40, -4,    4);
-  TH1D* h_ZRapidity     = new TH1D("h_ZRapidity",     "", 40, -4,    4);
-  TH1D* h_leadElePt     = new TH1D("h_leadElePt",     "", 16,  0,  800);
-  TH1D* h_leadEleEta    = new TH1D("h_leadEleEta",    "", 40, -4,    4);
-  TH1D* h_subleadElePt  = new TH1D("h_subleadElePt",  "", 25,  0,  500);
-  TH1D* h_subleadEleEta = new TH1D("h_subleadEleEta", "", 40, -4,    4);
-  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "",  2, -1,    1);
+  TH1D* h_Zmass         = new TH1D("h_Zmass",         "Zmass",         30, 60,  120);
+  TH1D* h_Zpt           = new TH1D("h_Zpt",           "Zpt",           50,  0, 1000);
+  TH1D* h_Zeta          = new TH1D("h_Zeta",          "Zeta",          40, -4,    4);
+  TH1D* h_ZRapidity     = new TH1D("h_ZRapidity",     "ZRapidity",     40, -4,    4);
+  TH1D* h_leadElePt     = new TH1D("h_leadElePt",     "leadElePt",     16,  0,  800);
+  TH1D* h_leadEleEta    = new TH1D("h_leadEleEta",    "leadEleEta",    40, -4,    4);
+  TH1D* h_subleadElePt  = new TH1D("h_subleadElePt",  "subleadElePt",  25,  0,  500);
+  TH1D* h_subleadEleEta = new TH1D("h_subleadEleEta", "subleadEleEta", 40, -4,    4);
+  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "eventWeight",    2, -1,    1);
 
   h_Zmass        ->Sumw2();
   h_Zpt          ->Sumw2();

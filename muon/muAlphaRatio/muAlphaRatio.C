@@ -23,14 +23,14 @@ void muAlphaRatio(std::string inputFile, std::string outputFile){
 
   // Declare the histogram
 
-  const Double_t varBins[] = {600,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4500};
+  const Double_t varBins[] = {500,700,900,1100,1300,1500,1700,1900,2100,??????};
   Int_t nvarBins = sizeof(varBins)/sizeof(varBins[0])-1;
      
-  TH1D* h_ZprimeSign    = new TH1D("h_ZprimeSign",    "", nvarBins, varBins);
-  TH1D* h_ZprimeSide    = new TH1D("h_ZprimeSide",    "", nvarBins, varBins);
-  TH1D* h_corrPRmass    = new TH1D("h_corrPRmass",    "",  40, 40, 240);
-  TH1D* h_corrPRmassAll = new TH1D("h_corrPRmassAll", "",  48,  0, 240);
-  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "",   2, -1,   1);
+  TH1D* h_ZprimeSign    = new TH1D("h_ZprimeSign",    "ZprimeSign", nvarBins, varBins);
+  TH1D* h_ZprimeSide    = new TH1D("h_ZprimeSide",    "ZprimeSide", nvarBins, varBins);
+  TH1D* h_corrPRmass    = new TH1D("h_corrPRmass",    "corrPRmass",       40, 40, 240);
+  TH1D* h_corrPRmassAll = new TH1D("h_corrPRmassAll", "corrPRmassAll",    48,  0, 240);
+  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "eventWeight",       2, -1,   1);
 
   h_ZprimeSign    ->Sumw2();
   h_ZprimeSide    ->Sumw2();

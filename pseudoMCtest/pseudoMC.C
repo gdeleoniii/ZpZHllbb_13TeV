@@ -27,15 +27,15 @@ void pseudoMC(std::string inputFile, std::string outputFile){
   const Double_t xmax = 5000;
   const Int_t nBins = (xmax-xmin)/100;
      
-  TH1D* h_ZprimeSign_pMC   = new TH1D("h_ZprimeSign_pMC",   "",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSide_pMC   = new TH1D("h_ZprimeSide_pMC",   "",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSign_pDA   = new TH1D("h_ZprimeSign_pDA",   "",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSide_pDA   = new TH1D("h_ZprimeSide_pDA",   "",  nBins, xmin, xmax);
-  TH1D* h_PRmassNoSIG_pDA  = new TH1D("h_PRmassNoSIG_pDA",  "",   40, 40, 240);
-  TH1D* h_PRmassAllLow_pDA = new TH1D("h_PRmassAllLow_pDA", "",   48,  0, 240);
-  TH1D* h_PRmassAll_pDA    = new TH1D("h_PRmassAll_pDA",    "",   40, 40, 240);
-  TH1D* h_eventWeight_pMC  = new TH1D("h_eventWeight_pMC",  "",  100, -1,   1);
-  TH1D* h_eventWeight_pDA  = new TH1D("h_eventWeight_pDA",  "",  100, -1,   1);
+  TH1D* h_ZprimeSign_pMC   = new TH1D("h_ZprimeSign_pMC",   "ZprimeSign_pMC",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSide_pMC   = new TH1D("h_ZprimeSide_pMC",   "ZprimeSide_pMC",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSign_pDA   = new TH1D("h_ZprimeSign_pDA",   "ZprimeSign_pDA",  nBins, xmin, xmax);
+  TH1D* h_ZprimeSide_pDA   = new TH1D("h_ZprimeSide_pDA",   "ZprimeSide_pDA",  nBins, xmin, xmax);
+  TH1D* h_PRmassNoSIG_pDA  = new TH1D("h_PRmassNoSIG_pDA",  "PRmassNoSIG_pDA",    40,   40,  240);
+  TH1D* h_PRmassAllLow_pDA = new TH1D("h_PRmassAllLow_pDA", "PRmassAllLow_pDA",   48,    0,  240);
+  TH1D* h_PRmassAll_pDA    = new TH1D("h_PRmassAll_pDA",    "PRmassAll_pDA",      40,   40,  240);
+  TH1D* h_eventWeight_pMC  = new TH1D("h_eventWeight_pMC",  "eventWeight_pMC",     2,   -1,    1);
+  TH1D* h_eventWeight_pDA  = new TH1D("h_eventWeight_pDA",  "eventWeight_pDA",     2,   -1,    1);
 
   h_ZprimeSign_pMC   ->Sumw2();
   h_ZprimeSide_pMC   ->Sumw2();

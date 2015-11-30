@@ -24,19 +24,19 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
   Int_t nBin = 20;
      
-  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "", nBin, 100, 1000);
-  TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "", nBin,  -4,    4);
-  TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "", nBin,   0,  1.2);
-  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "", nBin,   0,  200);
-  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "", nBin,   0,  200);
-  TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "", nBin,   0,  200);
-  TH1D* h_FATjetTau1       = new TH1D("h_FATjetTau1",       "", nBin,   0,    1);
-  TH1D* h_FATjetTau2       = new TH1D("h_FATjetTau2",       "", nBin,   0,    1);
-  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "", nBin,   0,    1);
-  TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "", nBin,   0,  800);
-  TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "", nBin,  -4,    4);
-  TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "", nBin,   0,  1.2);
-  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "",    2,  -1,    1);
+  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",         nBin, 100, 1000);
+  TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "FATjetEta",        nBin,  -4,    4);
+  TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "FATjetCISVV2",     nBin,   0,  1.2);
+  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "FATjetSDmass",     nBin,   0,  200);
+  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "FATjetPRmass",     nBin,   0,  200);
+  TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "FATjetPRmassCorr", nBin,   0,  200);
+  TH1D* h_FATjetTau1       = new TH1D("h_FATjetTau1",       "FATjetTau1",       nBin,   0,    1);
+  TH1D* h_FATjetTau2       = new TH1D("h_FATjetTau2",       "FATjetTau2",       nBin,   0,    1);
+  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1", nBin,   0,    1);
+  TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "FATsubjetPt",      nBin,   0,  800);
+  TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "FATsubjetEta",     nBin,  -4,    4);
+  TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "FATsubjetSDCSV",   nBin,   0,  1.2);
+  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "eventWeight",         2,  -1,    1);
 
   h_FATjetPt        ->Sumw2();   
   h_FATjetEta       ->Sumw2();
@@ -185,7 +185,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
   h_FATjetCISVV2    ->Write("FATjetCISVV2");
   h_FATjetSDmass    ->Write("FATjetSDmass");
   h_FATjetPRmass    ->Write("FATjetPRmass");
-  h_FATjetPRmassCorr->Write("FATjetPRmassL2L3Corr");
+  h_FATjetPRmassCorr->Write("FATjetPRmassCorr");
   h_FATjetTau1      ->Write("FATjetTau1");
   h_FATjetTau2      ->Write("FATjetTau2");
   h_FATjetTau2dvTau1->Write("FATjetTau2dvTau1");

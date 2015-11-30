@@ -22,15 +22,15 @@ void muZVariable(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
      
-  TH1D* h_Zmass        = new TH1D("h_Zmass",        "", 30, 60,  120);
-  TH1D* h_Zpt          = new TH1D("h_Zpt",          "", 50,  0, 1000);
-  TH1D* h_Zeta         = new TH1D("h_Zeta",         "", 40, -4,    4);
-  TH1D* h_ZRapidity    = new TH1D("h_ZRapidity",    "", 40, -4,    4);
-  TH1D* h_leadMuPt     = new TH1D("h_leadMuPt",     "", 50,  0, 1000);
-  TH1D* h_leadMuEta    = new TH1D("h_leadMuEta",    "", 40, -4,    4);
-  TH1D* h_subleadMuPt  = new TH1D("h_subleadMuPt",  "", 25,  0,  500);
-  TH1D* h_subleadMuEta = new TH1D("h_subleadMuEta", "", 40, -4,    4);
-  TH1D* h_eventWeight  = new TH1D("h_eventWeight",  "",  2, -1,    1);
+  TH1D* h_Zmass        = new TH1D("h_Zmass",        "Zmass",        30, 60,  120);
+  TH1D* h_Zpt          = new TH1D("h_Zpt",          "Zpt",          50,  0, 1000);
+  TH1D* h_Zeta         = new TH1D("h_Zeta",         "Zeta",         40, -4,    4);
+  TH1D* h_ZRapidity    = new TH1D("h_ZRapidity",    "ZRapidity",    40, -4,    4);
+  TH1D* h_leadMuPt     = new TH1D("h_leadMuPt",     "leadMuPt",     50,  0, 1000);
+  TH1D* h_leadMuEta    = new TH1D("h_leadMuEta",    "leadMuEta",    40, -4,    4);
+  TH1D* h_subleadMuPt  = new TH1D("h_subleadMuPt",  "subleadMuPt",  25,  0,  500);
+  TH1D* h_subleadMuEta = new TH1D("h_subleadMuEta", "subleadMuEta", 40, -4,    4);
+  TH1D* h_eventWeight  = new TH1D("h_eventWeight",  "eventWeight",   2, -1,    1);
 
   h_Zmass       ->Sumw2();
   h_Zpt         ->Sumw2();

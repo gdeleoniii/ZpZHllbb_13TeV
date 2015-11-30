@@ -22,17 +22,15 @@ void mZHmu(std::string inputFile, std::string outputFile){
   
   // Declare the histogram
 
-  Int_t nBin = 20;
-     
-  TH1D* h_mZprime          = new TH1D("h_mZprime",          "", nBin,   0, 5000);
-  TH1D* h_mZ               = new TH1D("h_mZ",               "", nBin,  50,  150);
-  TH1D* h_ptZ              = new TH1D("h_ptZ",              "", nBin,   0, 1000);
-  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "", nBin, 100, 1000);
-  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "", nBin,  50,  200);
-  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "", nBin,  50,  200);
-  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "", nBin,   0,    1);
-  TH1D* h_cutFlow          = new TH1D("h_cutFlow",          "",    4,   0,    4);
-  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "",    2,  -1,    1);
+  TH1D* h_mZprime          = new TH1D("h_mZprime",          "mZprime",          20,   0, 5000);
+  TH1D* h_mZ               = new TH1D("h_mZ",               "mZ",               30,  60,  120);
+  TH1D* h_ptZ              = new TH1D("h_ptZ",              "ptZ",              50,   0, 1000);
+  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",         20, 100, 1000);
+  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "FATjetSDmass",     15,  50,  200);
+  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "FATjetPRmass",     15,  50,  200);
+  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1", 20,   0,    1);
+  TH1D* h_cutFlow          = new TH1D("h_cutFlow",          "cutFlow",           4,   0,    4);
+  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "eventWeight",       2,  -1,    1);
 
   h_mZprime         ->Sumw2();
   h_mZ              ->Sumw2();

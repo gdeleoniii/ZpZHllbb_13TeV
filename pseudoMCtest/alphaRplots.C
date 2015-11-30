@@ -221,18 +221,6 @@ double integral_ErfExp(const double c, const double offset, double width, const 
 
 }  
 
-double eiko_fitPRmass(double* v, double* p){
-
-  double x = v[0];
-  double width_tmp = p[3];
-  double binwidth  = p[4];
-
-  if( p[3] < 1e-2 ) width_tmp = 1e-2;
-
-  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/integral_ErfExp(p[1],p[2],width_tmp, 40, 240)*binwidth ; 
-
-}
-
 double hollow_fitPRmass(double* v, double* p){
 
   double x = v[0];
@@ -300,11 +288,15 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, const TMatrixD* corrMatrix){
     
     }
 
+    *corrMatrix.Print();
+
     TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
     TMatrixD negTemp = negRowM*(*corrMatrix*negColM);
     
     posUnc[n] = TMath::Sqrt(posTemp(0,0));
     negUnc[n] = TMath::Sqrt(negTemp(0,0));
+
+    cout << posUnc[n] << "   " << negUnc[n] << endl;
 
     funcX[n] = x;
     funcY[n] = f->Eval(x);

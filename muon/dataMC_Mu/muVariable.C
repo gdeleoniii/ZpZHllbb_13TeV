@@ -33,15 +33,15 @@ void muVariable(std::string inputFile, std::string outputFile){
 
   for(Int_t i = 0; i < 2; i++){
 
-    h_muHits[i]            = new TH1D(Form("h_muHits%d",i),            "",  60,  -0.5, 59.5);
-    h_muMatches[i]         = new TH1D(Form("h_muMatches%d",i),         "",   7,  -0.5,  6.5);
-    h_muTrkLayers[i]       = new TH1D(Form("h_muTrkLayers%d",i),       "",  18,  -0.5, 17.5);
-    h_muPixelHits[i]       = new TH1D(Form("h_muPixelHits%d",i),       "",   8,  -0.5,  7.5);
-    h_muTrkPtErrdvTrkPt[i] = new TH1D(Form("h_muTrkPtErrdvTrkPt%d",i), "",  20,     0, 0.15);
-    h_mudxy[i]             = new TH1D(Form("h_mudxy%d",i),             "",  20, -0.01, 0.01);
-    h_mudz[i]              = new TH1D(Form("h_mudz%d",i),              "",  20, -0.05, 0.05);  
-    h_muMiniIsoEA[i]       = new TH1D(Form("h_muMiniIsoEA%d",i),       "",  20,     0, 0.15);
-    h_eventWeight[i]       = new TH1D(Form("h_eventWeight%d",i),       "", 100,    -1,    1);
+    h_muHits[i]            = new TH1D(Form("h_muHits%d",i),            "muHits",             60,  -0.5, 59.5);
+    h_muMatches[i]         = new TH1D(Form("h_muMatches%d",i),         "muMatches",           7,  -0.5,  6.5);
+    h_muTrkLayers[i]       = new TH1D(Form("h_muTrkLayers%d",i),       "muTrkLayers",        18,  -0.5, 17.5);
+    h_muPixelHits[i]       = new TH1D(Form("h_muPixelHits%d",i),       "muPixelHits",         8,  -0.5,  7.5);
+    h_muTrkPtErrdvTrkPt[i] = new TH1D(Form("h_muTrkPtErrdvTrkPt%d",i), "muTrkPtErrdvTrkPt",  20,     0, 0.15);
+    h_mudxy[i]             = new TH1D(Form("h_mudxy%d",i),             "mudxy",              20, -0.01, 0.01);
+    h_mudz[i]              = new TH1D(Form("h_mudz%d",i),              "mudz",               20, -0.05, 0.05);  
+    h_muMiniIsoEA[i]       = new TH1D(Form("h_muMiniIsoEA%d",i),       "muMiniIsoEA",        20,     0, 0.15);
+    h_eventWeight[i]       = new TH1D(Form("h_eventWeight%d",i),       "eventWeight",       100,    -1,    1);
 
     h_muHits[i]           ->Sumw2();
     h_muMatches[i]        ->Sumw2();
