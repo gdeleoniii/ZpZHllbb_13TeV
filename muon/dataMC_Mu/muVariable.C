@@ -89,14 +89,16 @@ void muVariable(std::string inputFile, std::string outputFile){
     vector<bool>& isGlobalMuon  = *((vector<bool>*) data.GetPtr("isGlobalMuon"));
     vector<bool>& isTrackerMuon = *((vector<bool>*) data.GetPtr("isTrackerMuon"));
 
+    // remove event which is no hard interaction (noise)
+
+    if( nVtx < 1 ) continue;
+
     // Correct the pile-up shape of MC
 
     Double_t eventWeight = correctMCWeight(isData, nVtx);
     
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);
-
-    if( nVtx < 1 ) continue;
 
     // data filter and trigger cut
       
@@ -112,7 +114,7 @@ void muVariable(std::string inputFile, std::string outputFile){
     if( isData && !Noise ) continue;
     if( isData && !NoiseIso ) continue;
 
-    // choosing muon
+    // choosing muon pair
 
     Int_t muId[2] = {-1,-1};
 
