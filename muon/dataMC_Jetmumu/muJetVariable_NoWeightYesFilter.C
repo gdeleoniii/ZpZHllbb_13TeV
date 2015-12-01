@@ -11,7 +11,7 @@
 #include "../../isPassZmumu.h"
 #include "../../correctMCweight.h"
 
-void muJetVariable(std::string inputFile, std::string outputFile){
+void muJetVariable_NoWeightYesFilter(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
@@ -102,7 +102,15 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Float_t  mcWeight    = data.GetFloat("mcWeight");
+    Double_t eventWeight = mcWeight;
+
+    if( inputFile.find("DYJets") != std::string::npos ){
+      if( eventWeight > 0 ) eventWeight = 1;
+      else if( eventWeight < 0 ) eventWeight = -1;
+    }
+    else
+      eventWeight = 1;
     
     h_eventWeight->Fill(0.,eventWeight);
     
@@ -180,7 +188,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_jetmumuVariable.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_jetmumuVariableNoWeightYesFilter.root",outputFile.c_str()), "recreate");
   
   h_nVtx            ->Write("nVtx");
   h_FATjetPt        ->Write("FATjetPt");
