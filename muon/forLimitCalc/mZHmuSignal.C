@@ -9,6 +9,7 @@
 #include "../../readSample.h"
 #include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
+#include "../../correctMCweight.h"
 
 void mZHmuSignal(std::string inputFile, std::string outputFile){
 
@@ -39,7 +40,6 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
 
     Int_t          nVtx              = data.GetInt("nVtx");
     Bool_t         isData            = data.GetBool("isData");
-    Float_t        mcWeight          = data.GetFloat("mcWeight");    
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
@@ -52,17 +52,15 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
     vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
 
-    Double_t eventWeight = mcWeight;
-    if( inputFile.find("DYJets") != std::string::npos ){
-      if( eventWeight > 0 ) eventWeight = 1;
-      else if( eventWeight < 0 ) eventWeight = -1;
-    }
-    else
-      eventWeight = 1;
+    // remove event which is no hard interaction (noise)
+
+    if( nVtx < 1 ) continue;
+
+    // Correct the pile-up shape of MC
+
+    Double_t eventWeight = correctMCWeight(isData, nVtx);
     
     h_eventWeight->Fill(0.,eventWeight);
-    
-    if( nVtx < 1 ) continue;
 
     // data filter and trigger cut
       

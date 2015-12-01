@@ -233,7 +233,7 @@ double hollow_fitPRmass(double* v, double* p){
 
 }
 
-TGraphAsymmErrors* fitUncertainty(const TF1* f, const TMatrixD* corrMatrix){
+TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
   double par[4] = {0};
 

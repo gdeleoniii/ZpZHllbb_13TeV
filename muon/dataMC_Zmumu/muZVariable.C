@@ -9,6 +9,7 @@
 #include "../../readSample.h"
 #include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
+#include "../../correctMCweight.h"
 
 void muZVariable(std::string inputFile, std::string outputFile){
 
@@ -59,22 +60,19 @@ void muZVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t    nVtx      = data.GetInt("nVtx");
-    Bool_t   isData    = data.GetBool("isData");
-    Float_t  mcWeight  = data.GetFloat("mcWeight");    
+    Int_t  nVtx        = data.GetInt("nVtx");
+    Bool_t isData      = data.GetBool("isData");
     TClonesArray* muP4 = (TClonesArray*) data.GetPtrTObject("muP4");
 
-    Double_t eventWeight = mcWeight;
-    if( inputFile.find("DYJets") != std::string::npos ){
-      if( eventWeight > 0 ) eventWeight = 1;
-      else if( eventWeight < 0 ) eventWeight = -1;
-    }
-    else
-      eventWeight = 1;
-    
-    h_eventWeight->Fill(0.,eventWeight);
+    // remove event which is no hard interaction (noise)
 
     if( nVtx < 1 ) continue;
+
+    // Correct the pile-up shape of MC
+
+    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    
+    h_eventWeight->Fill(0.,eventWeight);
     
     // data filter and trigger cut
       

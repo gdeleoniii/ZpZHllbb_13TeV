@@ -9,6 +9,7 @@
 #include "../../untuplizer.h"
 #include "../../readSample.h"
 #include "../../dataFilter.h"
+#include "../../correctMCweight.h"
 
 void eleVariable(std::string inputFile, std::string outputFile){
 
@@ -81,7 +82,6 @@ void eleVariable(std::string inputFile, std::string outputFile){
     Int_t    nEle                    = data.GetInt("nEle");
     Int_t*   eleMissHits             = data.GetPtrInt("eleMissHits");
     Bool_t   isData                  = data.GetBool("isData");
-    Float_t  mcWeight                = data.GetFloat("mcWeight");
     Float_t* eleScEn                 = data.GetPtrFloat("eleScEn");
     Float_t* eleScEt                 = data.GetPtrFloat("eleScEt");
     Float_t* eleScEta                = data.GetPtrFloat("eleScEta");
@@ -97,18 +97,16 @@ void eleVariable(std::string inputFile, std::string outputFile){
     TClonesArray* eleP4              = (TClonesArray*) data.GetPtrTObject("eleP4");
     vector<bool>& eleEcalDrivenSeed  = *((vector<bool>*) data.GetPtr("eleEcalDrivenSeed"));
 
-    Double_t eventWeight = mcWeight;
-    if( inputFile.find("DYJets") != std::string::npos ){
-      if( eventWeight > 0 ) eventWeight = 1;
-      else if( eventWeight < 0 ) eventWeight = -1;
-    }
-    else
-      eventWeight = 1;
+    // remove event which is no hard interaction (noise)
+
+    if( nVtx < 1 ) continue;
+
+    // Correct the pile-up shape of MC
+
+    Double_t eventWeight = correctMCWeight(isData, nVtx);
     
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);
-
-    if( nVtx < 1 ) continue;
       
     // data filter and trigger cut
       

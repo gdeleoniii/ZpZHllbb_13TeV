@@ -10,6 +10,7 @@
 #include "../dataFilter.h"
 #include "../isPassZmumu.h"
 #include "../isPassZee.h"
+#include "../correctMCweight.h"
 
 void pseudoMC(std::string inputFile, std::string outputFile){
 
@@ -63,7 +64,7 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t          nVtx              = data.GetInt("nVtx");
-    Float_t        mcWeight          = data.GetFloat("mcWeight");    
+    Bool_t         isData            = data.GetBool("isData");
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -71,13 +72,13 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
 
-    Double_t eventWeight = mcWeight;
-    if( inputFile.find("DYJets") != std::string::npos ){
-      if( eventWeight > 0 ) eventWeight = 1;
-      else if( eventWeight < 0 ) eventWeight = -1;
-    }
-    else
-      eventWeight = 1;
+    // remove event which is no hard interaction (noise)
+
+    if( nVtx < 1 ) continue;
+
+    // Correct the pile-up shape of MC
+
+    Double_t eventWeight = correctMCWeight(isData, nVtx);
 
     if( ev % 2 == 0 )
       h_eventWeight_pMC->Fill(0.,eventWeight);
@@ -85,7 +86,6 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     else if( ev % 2 == 1 )
       h_eventWeight_pDA->Fill(0.,eventWeight);
 
-    if( nVtx < 1 ) continue;
 
     // data trigger cut
       

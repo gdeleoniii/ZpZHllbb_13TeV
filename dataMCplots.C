@@ -357,7 +357,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
   
   for(unsigned int i = 0; i < h_name.size()-1; i++){
 
-    if( h_name[i]=="eleHoverE" || h_name[i]=="eleMiniIso" || h_name[i]=="muMiniIso" )
+    if( h_name[i]=="eleHoverE" || h_name[i]=="eleMiniIsoEA" || h_name[i]=="muMiniIsoEA" )
       c_up->cd()->SetLogy(1);
     else
       c_up->cd()->SetLogy(0);
