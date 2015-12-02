@@ -109,7 +109,7 @@ void eleVariable(std::string inputFile, std::string outputFile){
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);
       
-    // data filter and trigger cut
+    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
     bool eleTrigger = TriggerStatus(data, "HLT_Ele105");
     bool CSCT       = FilterStatus(data, "Flag_CSCTightHaloFilter");

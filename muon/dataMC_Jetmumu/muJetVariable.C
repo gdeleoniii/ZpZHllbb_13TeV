@@ -25,7 +25,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
   Int_t nBin = 20;
 
-  TH1D* h_nVtx             = new TH1D("h_nVtx",             "nVtx",              100,  -1,   99);     
+  TH1D* h_nVtx             = new TH1D("h_nVtx",             "nVtx",               30,  -1,   29);     
   TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",         nBin, 100, 1000);
   TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "FATjetEta",        nBin,  -4,    4);
   TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "FATjetCISVV2",     nBin,   0,  1.2);
@@ -107,7 +107,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     
     h_eventWeight->Fill(0.,eventWeight);
     
-    // data filter and trigger cut
+    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
     bool muTrigger = TriggerStatus(data, "HLT_Mu45");
     bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");

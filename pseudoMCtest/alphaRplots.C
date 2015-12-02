@@ -288,7 +288,7 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
     
     }
 
-    *corrMatrix.Print();
+    //*corrMatrix.Print();
 
     TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
     TMatrixD negTemp = negRowM*(*corrMatrix*negColM);

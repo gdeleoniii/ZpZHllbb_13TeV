@@ -101,7 +101,7 @@ void muVariable(std::string inputFile, std::string outputFile){
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);
 
-    // data filter and trigger cut
+    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
     bool muTrigger = TriggerStatus(data, "HLT_Mu45");
     bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
@@ -166,7 +166,7 @@ void muVariable(std::string inputFile, std::string outputFile){
 	  if( muTrkPtErr[muId[ie]]/muTrkPt[muId[ie]] > 0.3 && flag != 4 ) continue;
 	  if( fabs(mudxy[muId[ie]]) >  0.2 && flag != 5 ) continue;
 	  if( fabs(mudz[muId[ie]])  >  0.5 && flag != 6 ) continue;
-	  if( muMiniIsoEA[muId[ie]] >= 0.1 && flag != 7 ) continue;
+	  if( muMiniIsoEA[muId[ie]] >  0.2 && flag != 7 ) continue;
 	  	  	    
 	  switch(flag){
 
@@ -196,7 +196,7 @@ void muVariable(std::string inputFile, std::string outputFile){
           if( muTrkPtErr[muId[ie]]/muTrkPt[muId[ie]] > 0.3 && flag != 3 ) continue;
           if( fabs(mudxy[muId[ie]]) >  0.2 && flag != 4 ) continue;
           if( fabs(mudz[muId[ie]])  >  0.5 && flag != 5 ) continue;
-          if( muMiniIsoEA[muId[ie]] >= 0.1 && flag != 6 ) continue;
+          if( muMiniIsoEA[muId[ie]] >  0.2 && flag != 6 ) continue;
 
           switch(flag){
 
