@@ -80,6 +80,7 @@ void muVariable(std::string inputFile, std::string outputFile){
     Int_t*   muTrkLayers = data.GetPtrInt("muTrkLayers");
     Int_t*   muPixelHits = data.GetPtrInt("muPixelHits");
     Bool_t   isData      = data.GetBool("isData");
+    Float_t  pu_nTrueInt = data.GetFloat("pu_nTrueInt");
     Float_t* muTrkPtErr  = data.GetPtrFloat("muTrkPtErr");	
     Float_t* muTrkPt     = data.GetPtrFloat("muTrkPt");
     Float_t* mudxy       = data.GetPtrFloat("mudxy");
@@ -95,7 +96,7 @@ void muVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);

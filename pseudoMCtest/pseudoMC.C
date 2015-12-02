@@ -24,9 +24,9 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
   // Declare the histogram
 
-  const Double_t xmin = 500;
-  const Double_t xmax = 5000;
-  const Int_t nBins = (xmax-xmin)/100;
+  const Double_t xmin  = 500;
+  const Double_t xmax  = 5000;
+  const Int_t    nBins = (xmax-xmin)/100;
      
   TH1D* h_ZprimeSign_pMC   = new TH1D("h_ZprimeSign_pMC",   "ZprimeSign_pMC",  nBins, xmin, xmax);
   TH1D* h_ZprimeSide_pMC   = new TH1D("h_ZprimeSide_pMC",   "ZprimeSide_pMC",  nBins, xmin, xmax);
@@ -65,6 +65,7 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
     Int_t          nVtx              = data.GetInt("nVtx");
     Bool_t         isData            = data.GetBool("isData");
+    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -78,7 +79,7 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
 
     if( ev % 2 == 0 )
       h_eventWeight_pMC->Fill(0.,eventWeight);

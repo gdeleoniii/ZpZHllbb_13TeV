@@ -24,7 +24,8 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
   // Declare the histogram
 
   Int_t nBin = 20;
-     
+
+  TH1D* h_nVtx             = new TH1D("h_nVtx",             "nVtx",              100,  -1,   99);     
   TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",         nBin, 100, 1000);
   TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "FATjetEta",        nBin,  -4,    4);
   TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "FATjetCISVV2",     nBin,   0,  1.2);
@@ -39,6 +40,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
   TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "FATsubjetSDCSV",   nBin,   0,  1.2);
   TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "eventWeight",         2,  -1,    1);
 
+  h_nVtx            ->Sumw2();
   h_FATjetPt        ->Sumw2();   
   h_FATjetEta       ->Sumw2();
   h_FATjetCISVV2    ->Sumw2();
@@ -52,6 +54,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
   h_FATsubjetEta    ->Sumw2();
   h_FATsubjetSDCSV  ->Sumw2();
 
+  h_nVtx            ->GetXaxis()->SetTitle("nVtx");
   h_FATjetPt        ->GetXaxis()->SetTitle("FATjetPt");
   h_FATjetEta       ->GetXaxis()->SetTitle("FATjetEta");
   h_FATjetCISVV2    ->GetXaxis()->SetTitle("FATjetCISVV2");
@@ -79,6 +82,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
+    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
     Float_t*       FATjetCISVV2      = data.GetPtrFloat("FATjetCISVV2");
     Float_t*       FATjetSDmass      = data.GetPtrFloat("FATjetSDmass");
     Float_t*       FATjetPRmass      = data.GetPtrFloat("FATjetPRmass");
@@ -99,7 +103,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight->Fill(0.,eventWeight);
 
@@ -147,6 +151,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
 
     if( goodFATJetID < 0 ) continue;
 
+    h_nVtx            ->Fill(nVtx,eventWeight);
     h_FATjetPt        ->Fill(thisJet->Pt(),eventWeight);
     h_FATjetEta       ->Fill(thisJet->Eta(),eventWeight);
     h_FATjetCISVV2    ->Fill(FATjetCISVV2[goodFATJetID],eventWeight);
@@ -178,6 +183,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
 
   TFile* outFile = new TFile(Form("%s_jeteeVariable.root",outputFile.c_str()), "recreate");
 
+  h_nVtx            ->Write("nVtx");
   h_FATjetPt        ->Write("FATjetPt");
   h_FATjetEta       ->Write("FATjetEta");
   h_FATjetCISVV2    ->Write("FATjetCISVV2");

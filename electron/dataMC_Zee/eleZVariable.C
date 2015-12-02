@@ -61,8 +61,9 @@ void eleZVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t    nVtx       = data.GetInt("nVtx");
-    Bool_t   isData     = data.GetBool("isData");
+    Int_t   nVtx        = data.GetInt("nVtx");
+    Bool_t  isData      = data.GetBool("isData");
+    Float_t pu_nTrueInt = data.GetFloat("pu_nTrueInt");
     TClonesArray* eleP4 = (TClonesArray*) data.GetPtrTObject("eleP4");
 
     // remove event which is no hard interaction (noise)
@@ -71,7 +72,7 @@ void eleZVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight->Fill(0.,eventWeight);
 

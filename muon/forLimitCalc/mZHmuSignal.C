@@ -40,6 +40,7 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
 
     Int_t          nVtx              = data.GetInt("nVtx");
     Bool_t         isData            = data.GetBool("isData");
+    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
@@ -58,7 +59,7 @@ void mZHmuSignal(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight->Fill(0.,eventWeight);
 
