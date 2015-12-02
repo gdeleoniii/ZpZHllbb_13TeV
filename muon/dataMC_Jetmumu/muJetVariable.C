@@ -82,6 +82,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
+    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
     Float_t*       FATjetCISVV2      = data.GetPtrFloat("FATjetCISVV2");
     Float_t*       FATjetSDmass      = data.GetPtrFloat("FATjetSDmass");
     Float_t*       FATjetPRmass      = data.GetPtrFloat("FATjetPRmass");
@@ -102,7 +103,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, nVtx);
+    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight->Fill(0.,eventWeight);
     
