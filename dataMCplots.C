@@ -31,9 +31,11 @@ void myPlot(TH1D* h_DY100,
             Double_t scaleTTbar,
             Double_t scaleWW,
             Double_t scaleWZ,
-            Double_t scaleZZ){
+            Double_t scaleZZ,
+	    TH1D* h_data,
+	    TH1D* h_bkg){
 
-  TH1D* h_data = (TH1D*)h_data0->Clone("h_data");
+  h_data = (TH1D*)h_data0->Clone("h_data");
 
   h_data->Reset();
   h_data->Add(h_data0);
@@ -65,7 +67,7 @@ void myPlot(TH1D* h_DY100,
   h_ZZ->SetFillColor(kPink);
   h_ZZ->SetLineColor(kBlack);
 
-  TH1D *h_bkg = (TH1D*)h_data->Clone("h_bkg");
+  h_bkg = (TH1D*)h_data->Clone("h_bkg");
 
   h_bkg->Reset();
   h_bkg->Add(h_DY);
@@ -358,7 +360,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
 	   scaleTTbar,
 	   scaleWW,
 	   scaleWZ,
-	   scaleZZ
+	   scaleZZ,
 	   h_data,
 	   h_bkg);
 
