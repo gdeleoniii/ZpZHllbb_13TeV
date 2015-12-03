@@ -83,6 +83,7 @@ void myPlot(TH1D* h_DY100,
   h_data->SetLineColor(kBlack);
   h_data->SetMarkerStyle(8);
   h_data->SetMarkerSize(1.5);
+  h_data->GetYaxis()->SetTitleOffset(1.3);
   h_data->GetXaxis()->SetTitle("");
   h_data->GetXaxis()->SetLabelOffset(999);
   h_data->GetXaxis()->SetLabelSize(0);
@@ -93,6 +94,7 @@ void myPlot(TH1D* h_DY100,
     h_stack->GetHistogram()->GetYaxis()->SetTitle("Event Numbers");
     h_stack->GetHistogram()->GetYaxis()->SetTitleSize(h_data->GetYaxis()->GetTitleSize());
     h_stack->GetHistogram()->GetYaxis()->SetLabelSize(h_data->GetYaxis()->GetLabelSize());
+    h_stack->GetHistogram()->GetYaxis()->SetTitleOffset(1.3);
     h_stack->GetHistogram()->GetXaxis()->SetTickLength(0);
     h_stack->GetHistogram()->GetXaxis()->SetLabelOffset(999);
     h_data->Draw("elsame");
@@ -128,14 +130,14 @@ void myPlot(TH1D* h_DY100,
   lar->SetNDC(kTRUE);
   lar->SetTextSize(0.04);
   lar->SetLineWidth(5);
-  lar->DrawLatex(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatex(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatex(0.14, 0.94, "CMS preliminary 2015");
+  lar->DrawLatex(0.63, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
 
 }
 
 void myRatio(TH1D* h_data, TH1D *h_bkg){
 
-  TH1D* h_ratio = (TH1D*)h_data->Clone("h_ratio");
+  TH1D* h_ratio = (TH1D*)h_bkg->Clone("h_ratio");
 
   h_ratio->Reset();
 
@@ -147,12 +149,12 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   Double_t numer_binerror[nbin];
   Double_t denom_binerror[nbin];
 
-  for(Int_t i=1; i<=nbin; i++){
+  for(Int_t i = 1; i <= nbin; i++){
 
     numer_nbincontent[i] = h_data->GetBinContent(i);
-    denom_nbincontent[i] = h_bkg->GetBinContent(i);
-    numer_binerror[i] = h_data->GetBinError(i);
-    denom_binerror[i] = h_bkg->GetBinError(i);
+    denom_nbincontent[i] = h_bkg ->GetBinContent(i);
+    numer_binerror[i]    = h_data->GetBinError(i);
+    denom_binerror[i]    = h_bkg ->GetBinError(i);
 
     if( denom_nbincontent[i] <= 0 || numer_nbincontent[i] <= 0 ) continue;
     if( denom_binerror[i] <= 0 || numer_binerror[i] <= 0 ) continue;
@@ -170,9 +172,11 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   h_ratio->SetMarkerSize(1.5);
   h_ratio->SetTitle("");
   h_ratio->GetYaxis()->SetTitle("data/MC");
-  h_ratio->GetYaxis()->SetTitleOffset(0.3);
+  h_ratio->GetYaxis()->SetTitleOffset(0.45);
   h_ratio->GetXaxis()->SetLabelSize(0.1);
+  h_ratio->GetXaxis()->SetLabelOffset(0.005);
   h_ratio->GetXaxis()->SetTitleSize(0.125);
+  h_ratio->GetXaxis()->SetTitleOffset(0.8);
   h_ratio->GetYaxis()->SetLabelSize(0.1);
   h_ratio->GetYaxis()->SetTitleSize(0.1);
   h_ratio->GetYaxis()->SetNdivisions(505);
@@ -299,7 +303,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
   Double_t dw_correction = 1.455;
   Double_t dw_height     = (1-up_height)*dw_correction;
 
-  TCanvas c("c","",0,0,1920,1080);
+  TCanvas c("c","",0,0,1000,900);
   c.Divide(1,2);
 
   TPad* c_up = (TPad*) c.GetListOfPrimitives()->FindObject("c_1");
