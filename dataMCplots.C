@@ -35,8 +35,6 @@ void myPlot(TH1D* h_DY100,
 	    TH1D* h_data,
 	    TH1D* h_bkg){
 
-  h_data = (TH1D*)h_data0->Clone("h_data");
-
   h_data->Reset();
   h_data->Add(h_data0);
   h_data->Add(h_data1);
@@ -66,8 +64,6 @@ void myPlot(TH1D* h_DY100,
   h_ZZ->Scale(scaleZZ);
   h_ZZ->SetFillColor(kPink);
   h_ZZ->SetLineColor(kBlack);
-
-  h_bkg = (TH1D*)h_data->Clone("h_bkg");
 
   h_bkg->Reset();
   h_bkg->Add(h_DY);
@@ -170,6 +166,8 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   }
 
   h_ratio->SetLineColor(kBlack);
+  h_ratio->SetMarkerStyle(8);
+  h_ratio->SetMarkerSize(1.5);
   h_ratio->SetTitle("");
   h_ratio->GetYaxis()->SetTitle("data/MC");
   h_ratio->GetYaxis()->SetTitleOffset(0.3);
@@ -301,7 +299,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
   Double_t dw_correction = 1.455;
   Double_t dw_height     = (1-up_height)*dw_correction;
 
-  TCanvas c("c","",0,0,1000,800);
+  TCanvas c("c","",0,0,1920,1080);
   c.Divide(1,2);
 
   TPad* c_up = (TPad*) c.GetListOfPrimitives()->FindObject("c_1");
@@ -340,8 +338,8 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
     else
       c_up->cd()->SetLogy(0);
     
-    TH1D *h_data = NULL;
-    TH1D *h_bkg  = NULL;
+    TH1D *h_data = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_data");
+    TH1D *h_bkg  = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_bkg");
 
     myPlot(((TH1D*)(f_DY100->Get(h_name[i].data()))),
 	   ((TH1D*)(f_DY200->Get(h_name[i].data()))),
