@@ -65,6 +65,15 @@ void myPlot(TH1D* h_DY100,
   h_ZZ->SetFillColor(kPink);
   h_ZZ->SetLineColor(kBlack);
 
+  TH1D *h_bkg = (TH1D*)h_data->Clone("h_bkg");
+
+  h_bkg->Reset();
+  h_bkg->Add(h_DY);
+  h_bkg->Add(h_TTbar);
+  h_bkg->Add(h_WW);
+  h_bkg->Add(h_WZ);
+  h_bkg->Add(h_ZZ);
+
   THStack *h_stack = new THStack("h_stack", "");
 
   h_stack->Add(h_DY);
@@ -74,6 +83,8 @@ void myPlot(TH1D* h_DY100,
   h_stack->Add(h_ZZ);
 
   h_data->SetLineColor(kBlack);
+  h_data->SetMarkerStyle(8);
+  h_data->SetMarkerSize(1.5);
   h_data->GetXaxis()->SetTitle("");
   h_data->GetXaxis()->SetLabelOffset(999);
   h_data->GetXaxis()->SetLabelSize(0);
@@ -124,42 +135,7 @@ void myPlot(TH1D* h_DY100,
 
 }
 
-void myRatio(TH1D* h_DY100,
-             TH1D* h_DY200,
-             TH1D* h_DY400,
-             TH1D* h_DY600,
-             TH1D* h_TTbar,
-             TH1D* h_WW,
-             TH1D* h_WZ,
-             TH1D* h_ZZ,
-             TH1D* h_data0,
-	     TH1D* h_data1,
-             Double_t scaleDY100,
-             Double_t scaleDY200,
-             Double_t scaleDY400,
-             Double_t scaleDY600,
-             Double_t scaleTTbar,
-             Double_t scaleWW,
-             Double_t scaleWZ,
-             Double_t scaleZZ){
-
-  TH1D* h_data = (TH1D*)h_data0->Clone("h_data");
-
-  h_data->Reset();
-  h_data->Add(h_data0);
-  h_data->Add(h_data1);
-
-  TH1D *h_bkg = (TH1D*)h_data->Clone("h_bkg");
-
-  h_bkg->Reset();
-  h_bkg->Add(h_DY100, scaleDY100);
-  h_bkg->Add(h_DY200, scaleDY200);
-  h_bkg->Add(h_DY400, scaleDY400);
-  h_bkg->Add(h_DY600, scaleDY600);
-  h_bkg->Add(h_TTbar, scaleTTbar);
-  h_bkg->Add(h_WW, scaleWW);
-  h_bkg->Add(h_WZ, scaleWZ);
-  h_bkg->Add(h_ZZ, scaleZZ);
+void myRatio(TH1D* h_data, TH1D *h_bkg){
 
   TH1D* h_ratio = (TH1D*)h_data->Clone("h_ratio");
 
@@ -362,6 +338,9 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
     else
       c_up->cd()->SetLogy(0);
     
+    TH1D *h_data = NULL;
+    TH1D *h_bkg  = NULL;
+
     myPlot(((TH1D*)(f_DY100->Get(h_name[i].data()))),
 	   ((TH1D*)(f_DY200->Get(h_name[i].data()))),
 	   ((TH1D*)(f_DY400->Get(h_name[i].data()))),
@@ -379,29 +358,15 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
 	   scaleTTbar,
 	   scaleWW,
 	   scaleWZ,
-	   scaleZZ);
+	   scaleZZ
+	   h_data,
+	   h_bkg);
 
     c_up->RedrawAxis();
 
     c_dw->cd();
-    myRatio(((TH1D*)(f_DY100->Get(h_name[i].data()))),
-	    ((TH1D*)(f_DY200->Get(h_name[i].data()))),
-	    ((TH1D*)(f_DY400->Get(h_name[i].data()))),
-	    ((TH1D*)(f_DY600->Get(h_name[i].data()))),
-	    ((TH1D*)(f_TTbar->Get(h_name[i].data()))),
-	    ((TH1D*)(f_WW->Get(h_name[i].data()))),
-	    ((TH1D*)(f_WZ->Get(h_name[i].data()))),
-	    ((TH1D*)(f_ZZ->Get(h_name[i].data()))),
-	    ((TH1D*)(f_data0->Get(h_name[i].data()))),
-	    ((TH1D*)(f_data1->Get(h_name[i].data()))),
-	    scaleDY100,
-	    scaleDY200,
-	    scaleDY400,
-	    scaleDY600,
-	    scaleTTbar,
-	    scaleWW,
-	    scaleWZ,
-	    scaleZZ);
+
+    myRatio(h_data, h_bkg);
 
     c.Draw();
     
