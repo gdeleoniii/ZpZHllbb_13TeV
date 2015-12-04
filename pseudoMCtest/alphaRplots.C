@@ -104,8 +104,8 @@ void myRatio(TH1D* h_numer, TH1D* h_denom){
 
     numer_nbincontent[i] = h_numer->GetBinContent(i);
     denom_nbincontent[i] = h_denom->GetBinContent(i);
-    numer_binerror[i] = h_numer->GetBinError(i);
-    denom_binerror[i] = h_denom->GetBinError(i);
+    numer_binerror[i]    = h_numer->GetBinError(i);
+    denom_binerror[i]    = h_denom->GetBinError(i);
 
     if( denom_nbincontent[i] <= 0 || numer_nbincontent[i] <= 0 ) continue;
     if( denom_binerror[i] <= 0 || numer_binerror[i] <= 0 ) continue;
@@ -254,9 +254,9 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    posFit[i]  = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i] = par[i] + f->GetParError(i);
-    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
+    posFit[i-1] = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    partemp[i]  = par[i] + f->GetParError(i);
+    posFit[i-1]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
@@ -264,9 +264,9 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    negFit[i]  = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i] = par[i] - f->GetParError(i);
-    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
+    negFit[i-1] = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    partemp[i]  = par[i] - f->GetParError(i);
+    negFit[i-1]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
@@ -331,19 +331,19 @@ void fitUncNoBins(const TF1* f, const TMatrixD* corrMatrix, TH1D* h,
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    posFit[i]  = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i] = par[i] + f->GetParError(i);
-    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
+    posFit[i-1] = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    partemp[i]  = par[i] + f->GetParError(i);
+    posFit[i-1]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
-  for( int i = 0; i < 4; i++ ){
+  for( int i = 1; i < 4; i++ ){
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    negFit[i]  = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i] = par[i] - f->GetParError(i);
-    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
+    negFit[i-1] = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    partemp[i]  = par[i] - f->GetParError(i);
+    negFit[i-1]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
@@ -492,7 +492,7 @@ void alphaRplots(std::string outputFolder){
 
   }
 
-  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 4);
+  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 5);
   TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
   TF1* f_fitZpmass = new TF1("f_fitZpmass", fitZpmass, xmin, xmax, 3);
   TF1* f_fitAlphaR = new TF1("f_fitAlphaR", divFunc, xmin, xmax, 6);
@@ -537,7 +537,6 @@ void alphaRplots(std::string outputFolder){
   f_fitPRmass->FixParameter(0,h_corrPRmassAll->Integral());
   
   h_corrPRmassAll->Fit("f_fitPRmass", "", "", 40, 240);
-  h_corrPRmassAll->Fit("f_fitPRmass", "", "", 40, 240);
 
   double chisqr_cpma = f_fitPRmass->GetChisquare();
   int ndf_cpma = f_fitPRmass->GetNDF();
@@ -548,24 +547,23 @@ void alphaRplots(std::string outputFolder){
   f_hollow_fitPRmass->FixParameter(4,h_corrPRmass->GetBinWidth(1));
   f_hollow_fitPRmass->FixParameter(0,h_corrPRmass->Integral());
   h_corrPRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
-  h_corrPRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
 
-  double chisqr_cpm = f_fitPRmass->GetChisquare();
-  int ndf_cpm = f_fitPRmass->GetNDF();
+  double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
+  int ndf_cpm = f_hollow_fitPRmass->GetNDF();
 
-  TFitResultPtr fitptr = h_corrPRmass->Fit(f_fitPRmass, "S");
+  TFitResultPtr fitptr = h_corrPRmass->Fit(f_hollow_fitPRmass, "S");
   TFitResult fitresult = (*fitptr);
   TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
 
-  TGraphAsymmErrors* g_errorBands = fitUncertainty(f_fitPRmass, &corrMatrix);
+  TGraphAsymmErrors* g_errorBands = fitUncertainty(f_hollow_fitPRmass, &corrMatrix);
 
   g_errorBands->SetFillStyle(3004);
 
-  double nBkgSig = f_fitPRmass->Integral(105,135)/h_corrPRmass->GetBinWidth(1);
+  double nBkgSig = f_hollow_fitPRmass->Integral(105,135)/h_corrPRmass->GetBinWidth(1);
   double posUnc  = 0;
   double negUnc  = 0;
 
-  fitUncNoBins(f_fitPRmass, &corrMatrix, h_corrPRmassAll, nBkgSig, &posUnc, &negUnc);
+  fitUncNoBins(f_hollow_fitPRmass, &corrMatrix, h_corrPRmassAll, nBkgSig, &posUnc, &negUnc);
 
   cout << "\n*************************************************************************" << endl;
   cout << "** Number of backgrounds in signal region: "
