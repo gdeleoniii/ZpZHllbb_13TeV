@@ -161,13 +161,6 @@ double divFunc(double* v, double* p){
 
 }
 
-double fitPRmass(double* v, double* p){
-
-  double x = v[0];
-  return p[0]*TMath::Exp(p[1]*x)*0.5*(1+TMath::Erf((x-p[2])/p[3]));
-
-}
-
 double ErfExp(double x, double c, double offset, double width){
   
   if( width < 1e-2 ) width = 1e-2;
@@ -221,6 +214,18 @@ double integral_ErfExp(const double c, const double offset, double width, const 
 
 }  
 
+double fitPRmass(double* v, double* p){
+
+  double x = v[0];
+  Double_t width_tmp = p[3];
+  Double_t binwidth  = p[4];
+
+  if( p[3] < 1e-2 ) width_tmp = 1e-2;
+
+  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/integral_ErfExp(p[1],p[2],width_tmp, 40, 240)*binwidth;
+
+}
+
 double hollow_fitPRmass(double* v, double* p){
 
   double x = v[0];
@@ -229,44 +234,46 @@ double hollow_fitPRmass(double* v, double* p){
 
   if( p[3] < 1e-2 ) width_tmp = 1e-2;
 
-  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/(integral_ErfExp(p[1],p[2],width_tmp,40,65)+integral_ErfExp(p[1],p[2],width_tmp,145,240))*binwidth ; 
+  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/(integral_ErfExp(p[1],p[2],width_tmp,40,65)+integral_ErfExp(p[1],p[2],width_tmp,145,240))*binwidth;
 
 }
 
+/// for error band of fit curve ///
+
 TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
-  double par[4] = {0};
+  double par[5] = {0};
 
-  for( int i = 0; i < 4; i++ )
+  for( int i = 0; i < 5; i++ )
     par[i] = f->GetParameter(i);
 
-  TF1* posFit[4];
-  TF1* negFit[4];
+  TF1* posFit[3];
+  TF1* negFit[3];
 
-  for( int i = 0; i < 4; i++ ){
+  for( int i = 1; i < 4; i++ ){
 
-    double partemp[4] = {par[0],par[1],par[2],par[3]};
+    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    posFit[i]  = new TF1(Form("posFit%d",i), fitPRmass, 40, 240, 4);
+    posFit[i]  = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
     partemp[i] = par[i] + f->GetParError(i);
-    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3]);
+    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
-  for( int i = 0; i < 4; i++ ){
+  for( int i = 1; i < 4; i++ ){
 
-    double partemp[4] = {par[0],par[1],par[2],par[3]};
+    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    negFit[i]  = new TF1(Form("negFit%d",i), fitPRmass, 40, 240, 4);
+    negFit[i]  = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
     partemp[i] = par[i] - f->GetParError(i);
-    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3]);
+    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
-  TMatrixD posColM(4,1);
-  TMatrixD negColM(4,1);
-  TMatrixD posRowM(1,4);
-  TMatrixD negRowM(1,4);
+  TMatrixD posColM(3,1);
+  TMatrixD negColM(3,1);
+  TMatrixD posRowM(1,3);
+  TMatrixD negRowM(1,3);
 
   int    NBINS = 40;
   double x     = 40.0;
@@ -279,7 +286,7 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
   for( int n = 0; n < NBINS; n++){
 
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 3; i++){
     
       posColM(i,0) = fabs(f->Eval(x) - posFit[i]->Eval(x));
       negColM(i,0) = fabs(f->Eval(x) - negFit[i]->Eval(x));
@@ -288,15 +295,11 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
     
     }
 
-    //*corrMatrix.Print();
-
     TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
     TMatrixD negTemp = negRowM*(*corrMatrix*negColM);
     
     posUnc[n] = TMath::Sqrt(posTemp(0,0));
     negUnc[n] = TMath::Sqrt(negTemp(0,0));
-
-    cout << posUnc[n] << "   " << negUnc[n] << endl;
 
     funcX[n] = x;
     funcY[n] = f->Eval(x);
@@ -311,43 +314,45 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
 }
 
+/// for uncertainties of event number ///
+
 void fitUncNoBins(const TF1* f, const TMatrixD* corrMatrix, TH1D* h,
 		  double nBkgSig, double* posUnc, double* negUnc){
 
-  double par[4] = {0};
+  double par[5] = {0};
 
-  for( int i = 0; i < 4; i++ )
+  for( int i = 0; i < 5; i++ )
     par[i] = f->GetParameter(i);
 
-  TF1* posFit[4];
-  TF1* negFit[4];
+  TF1* posFit[3];
+  TF1* negFit[3];
 
-  for( int i = 0; i < 4; i++ ){
+  for( int i = 1; i < 4; i++ ){
 
-    double partemp[4] = {par[0],par[1],par[2],par[3]};
+    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    posFit[i]  = new TF1(Form("posFit%d",i), fitPRmass, 40, 240, 4);
+    posFit[i]  = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
     partemp[i] = par[i] + f->GetParError(i);
-    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3]);
+    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
   for( int i = 0; i < 4; i++ ){
 
-    double partemp[4] = {par[0],par[1],par[2],par[3]};
+    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    negFit[i]  = new TF1(Form("negFit%d",i), fitPRmass, 40, 240, 4);
+    negFit[i]  = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
     partemp[i] = par[i] - f->GetParError(i);
-    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3]);
+    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
   }
 
-  TMatrixD posColM(4,1);
-  TMatrixD negColM(4,1);
-  TMatrixD posRowM(1,4);
-  TMatrixD negRowM(1,4);
+  TMatrixD posColM(3,1);
+  TMatrixD negColM(3,1);
+  TMatrixD posRowM(1,3);
+  TMatrixD negRowM(1,3);
 
-  for(int i = 0; i < 4; i++){
+  for(int i = 0; i < 3; i++){
     
     posColM(i,0) = fabs(nBkgSig - posFit[i]->Integral(105,135)/h->GetBinWidth(1));
     negColM(i,0) = fabs(nBkgSig - negFit[i]->Integral(105,135)/h->GetBinWidth(1));
@@ -363,6 +368,8 @@ void fitUncNoBins(const TF1* f, const TMatrixD* corrMatrix, TH1D* h,
   *negUnc = TMath::Sqrt(negTemp(0,0));
 
 }
+
+/// Main function start ///
 
 void alphaRplots(std::string outputFolder){
 
