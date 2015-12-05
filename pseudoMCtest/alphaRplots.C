@@ -436,6 +436,86 @@ void alphaRplots(std::string outputFolder){
 
   }
 
+
+  //// Fluctuate the pruned mass histogram to test the fitting results ////
+
+  TH1D* h_temp = (TH1D*)h_hollow_PRmass->Clone("h_temp");
+
+  for( int n = 0; n < 1000; n++ ){
+
+    h_temp->Reset();
+    h_temp->FillRandom(h_hollow_PRmass, h_hollow_PRmass->Integral());
+
+    TF1* f_temp = new TF1("f_temp", hollow_fitPRmass, 40, 240, 5);
+
+    f_temp->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_temp->GetBinWidth(1));
+    f_temp->FixParameter(4,h_temp->GetBinWidth(1));
+    f_temp->FixParameter(0,h_temp->Integral());
+
+    h_temp->Fit("f_temp", "", "", 40, 240);
+
+  }
+
+  //// End of test ////
+
+
+  // Fit pruned mass with signal region  
+
+  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 5);
+
+  f_fitPRmass->SetLineWidth(2);
+  f_fitPRmass->SetLineColor(kBlue);
+
+  double parFitPRm[4] = {1224,-0.107,139.6,107.4};
+
+  f_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_PRmass->GetBinWidth(1));
+  f_fitPRmass->FixParameter(4,h_PRmass->GetBinWidth(1));
+  f_fitPRmass->FixParameter(0,h_PRmass->Integral());
+
+  h_PRmass->Fit("f_fitPRmass", "", "", 40, 240);
+  h_PRmass->SetMinimum(1.e-2);
+  h_PRmass->SetMaximum(190);
+
+  double chisqr_cpma = f_fitPRmass->GetChisquare();
+  int ndf_cpma = f_fitPRmass->GetNDF();
+
+  TFitResultPtr fitptr = h_PRmass->Fit(f_fitPRmass, "S");
+  TFitResult fitresult = (*fitptr);
+  TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
+
+  double dummy = 0.0;
+
+  TGraphAsymmErrors* g_errorBands = fitUncertainty(true, f_fitPRmass, &corrMatrix, fitPRmass, NULL, 0, &dummy, &dummy);
+
+  g_errorBands->SetFillStyle(1001);
+  g_errorBands->SetFillColor(kYellow);
+
+  // Fit pruned mass without signal region 
+
+  TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
+
+  f_hollow_fitPRmass->SetLineWidth(2);
+  f_hollow_fitPRmass->SetLineColor(kBlue);
+  f_hollow_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_hollow_PRmass->GetBinWidth(1));
+  f_hollow_fitPRmass->FixParameter(4,h_hollow_PRmass->GetBinWidth(1));
+  f_hollow_fitPRmass->FixParameter(0,h_hollow_PRmass->Integral());
+
+  h_hollow_PRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
+  h_hollow_PRmass->SetMinimum(1.e-2);
+  h_hollow_PRmass->SetMaximum(190);
+
+  double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
+  int ndf_cpm = f_hollow_fitPRmass->GetNDF();
+
+  TFitResultPtr hollow_fitptr = h_hollow_PRmass->Fit(f_hollow_fitPRmass, "S");
+  TFitResult hollow_fitresult = (*hollow_fitptr);
+  TMatrixD hollow_corrMatrix  = hollow_fitresult.GetCorrelationMatrix();
+
+  TGraphAsymmErrors* g_hollow_errorBands = fitUncertainty(true, f_hollow_fitPRmass, &hollow_corrMatrix, hollow_fitPRmass, NULL, 0, &dummy, &dummy);
+
+  g_hollow_errorBands->SetFillStyle(1001);
+  g_hollow_errorBands->SetFillColor(kYellow);
+
   // Calculate alpha ratio
 
   TH1D* h_alphaRatio = new TH1D("h_alphaRatio", "", nBins, xmin, xmax); 
@@ -508,63 +588,6 @@ void alphaRplots(std::string outputFolder){
   f_fitAlphaR->SetLineWidth(2);
   f_fitAlphaR->SetLineColor(kBlue);
   f_fitAlphaR->SetParameters(parAR[0],parAR[1],parAR[2],parAR[3],parAR[4],parAR[5]);
-
-  // Fit pruned mass with signal region
-
-  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 5);
-
-  f_fitPRmass->SetLineWidth(2);
-  f_fitPRmass->SetLineColor(kBlue);
-
-  double parFitPRm[4] = {1224,-0.107,139.6,107.4};
-
-  f_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_PRmass->GetBinWidth(1));
-  f_fitPRmass->FixParameter(4,h_PRmass->GetBinWidth(1));
-  f_fitPRmass->FixParameter(0,h_PRmass->Integral());
-  
-  h_PRmass->Fit("f_fitPRmass", "", "", 40, 240);
-  h_PRmass->SetMinimum(1.e-2);
-  h_PRmass->SetMaximum(190);
-
-  double chisqr_cpma = f_fitPRmass->GetChisquare();
-  int ndf_cpma = f_fitPRmass->GetNDF();
-
-  TFitResultPtr fitptr = h_PRmass->Fit(f_fitPRmass, "S");
-  TFitResult fitresult = (*fitptr);
-  TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
-
-  double dummy = 0.0;
-
-  TGraphAsymmErrors* g_errorBands = fitUncertainty(true, f_fitPRmass, &corrMatrix, fitPRmass, NULL, 0, &dummy, &dummy);
-
-  g_errorBands->SetFillStyle(1001);
-  g_errorBands->SetFillColor(kYellow);
-
-  // Fit pruned mass without signal region
-
-  TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
-  
-  f_hollow_fitPRmass->SetLineWidth(2);
-  f_hollow_fitPRmass->SetLineColor(kBlue);
-  f_hollow_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_hollow_PRmass->GetBinWidth(1));
-  f_hollow_fitPRmass->FixParameter(4,h_hollow_PRmass->GetBinWidth(1));
-  f_hollow_fitPRmass->FixParameter(0,h_hollow_PRmass->Integral());
-
-  h_hollow_PRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
-  h_hollow_PRmass->SetMinimum(1.e-2);
-  h_hollow_PRmass->SetMaximum(190);
-
-  double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
-  int ndf_cpm = f_hollow_fitPRmass->GetNDF();
-  
-  TFitResultPtr hollow_fitptr = h_hollow_PRmass->Fit(f_hollow_fitPRmass, "S");
-  TFitResult hollow_fitresult = (*hollow_fitptr);
-  TMatrixD hollow_corrMatrix  = hollow_fitresult.GetCorrelationMatrix();
-  
-  TGraphAsymmErrors* g_hollow_errorBands = fitUncertainty(true, f_hollow_fitPRmass, &hollow_corrMatrix, hollow_fitPRmass, NULL, 0, &dummy, &dummy);
-  
-  g_hollow_errorBands->SetFillStyle(1001);
-  g_hollow_errorBands->SetFillColor(kYellow);
 
   // Get the uncertaities of event number
 
