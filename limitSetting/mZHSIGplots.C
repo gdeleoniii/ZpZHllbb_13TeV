@@ -63,10 +63,10 @@ void mZHSIGplots(std::string inputFolder, std::string rootfilename, std::string 
   TFile *f_data0 = NULL;
   TFile *f_data1 = NULL;
 
-  Double_t xSecDY100 = 139.4*1.23;
-  Double_t xSecDY200 = 42.75*1.23;
-  Double_t xSecDY400 = 5.497*1.23;
-  Double_t xSecDY600 = 2.21*1.23;
+  Double_t xSecDY100 = 147.4*1.23;
+  Double_t xSecDY200 = 40.99*1.23;
+  Double_t xSecDY400 = 5.678*1.23;
+  Double_t xSecDY600 = 2.198*1.23;
   Double_t xSecTTbar = 831.76;
   Double_t xSecWW    = 118.7;
   Double_t xSecWZ    = 47.13;

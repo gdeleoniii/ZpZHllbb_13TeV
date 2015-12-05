@@ -39,8 +39,8 @@ void eleVariable(std::string inputFile, std::string outputFile){
     h_eleEtaseedAtVtx[i]         = new TH1D(Form("h_eleEtaseedAtVtx%d",i),         "eleEtaseedAtVtx",         20,  -0.01,  0.01);
     h_eledPhiAtVtx[i]            = new TH1D(Form("h_eledPhiAtVtx%d",i),            "eledPhiAtVtx",            20,  -0.03,  0.03);
     h_eleHoverE[i]               = new TH1D(Form("h_eleHoverE%d",i),               "eleHoverE",               20,      0,  0.05);
-    h_eleSigmaIEtaIEtaFull5x5[i] = new TH1D(Form("h_eleSigmaIEtaIEtaFull5x5%d",i), "eleSigmaIEtaIEtaFull5x5", 20,      0,   0.1);
-    h_eleFull5x5E2x5dvE5x5[i]    = new TH1D(Form("h_eleFull5x5E2x5dvE5x5%d",i),    "eleFull5x5E2x5dvE5x5",    20,    0.8,   1.2);
+    h_eleSigmaIEtaIEtaFull5x5[i] = new TH1D(Form("h_eleSigmaIEtaIEtaFull5x5%d",i), "eleSigmaIEtaIEtaFull5x5", 40,      0,  0.06);
+    h_eleFull5x5E2x5dvE5x5[i]    = new TH1D(Form("h_eleFull5x5E2x5dvE5x5%d",i),    "eleFull5x5E2x5dvE5x5",    20,      0,     1);
     h_eleFull5x5E1x5dvE5x5[i]    = new TH1D(Form("h_eleFull5x5E1x5dvE5x5%d",i),    "eleFull5x5E1x5dvE5x5",    20,      0,     1);
     h_eleMissHits[i]             = new TH1D(Form("h_eleMissHits%d",i),             "eleMissHits",              6,   -0.5,   5.5);
     h_eleD0[i]                   = new TH1D(Form("h_eleD0%d",i),                   "eleD0",                   20, -0.015, 0.015);  

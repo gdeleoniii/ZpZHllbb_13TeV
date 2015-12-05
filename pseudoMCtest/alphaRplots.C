@@ -23,10 +23,10 @@ const double xmax  = 5000;
 const int    nBins = (xmax-xmin)/100;
 
 double dataLumi  = 3000; //pb-1
-double xSecDY100 = 139.4*1.23;
-double xSecDY200 = 42.75*1.23;
-double xSecDY400 = 5.497*1.23;
-double xSecDY600 = 2.21*1.23;
+double xSecDY100 = 147.4*1.23;
+double xSecDY200 = 40.99*1.23;
+double xSecDY400 = 5.678*1.23;
+double xSecDY600 = 2.198*1.23;
 
 TFile* getFile(std::string infiles, std::string hname, 
 	       double crossSection, double* scale){
@@ -240,7 +240,8 @@ double hollow_fitPRmass(double* v, double* p){
 
 /// for error band of fit curve ///
 
-TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
+TGraphAsymmErrors* fitUncertainty(bool considerBins, const TF1* f, TMatrixD* corrMatrix, double (*fitFunc)(double*, double*),
+				  TH1D* h, double nBkgSig, double* posUncEv, double* negUncEv){
 
   double par[5] = {0};
 
@@ -254,7 +255,7 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    posFit[i] = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    posFit[i] = new TF1(Form("posFit%d",i), fitFunc, 40, 240, 5);
     partemp[i]  = par[i] + f->GetParError(i);
     posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
@@ -264,7 +265,7 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
 
     double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
 
-    negFit[i] = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
+    negFit[i] = new TF1(Form("negFit%d",i), fitFunc, 40, 240, 5);
     partemp[i]  = par[i] - f->GetParError(i);
     negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
 
@@ -275,97 +276,69 @@ TGraphAsymmErrors* fitUncertainty(const TF1* f, TMatrixD* corrMatrix){
   TMatrixD posRowM(1,5);
   TMatrixD negRowM(1,5);
 
-  int    NBINS = 40;
-  double x     = 40.0;
-  double width = (240-x)/NBINS;
+  TGraphAsymmErrors* g = NULL;
 
-  double funcX[NBINS];
-  double funcY[NBINS];
-  double posUnc[NBINS];
-  double negUnc[NBINS];
+  if( considerBins == true ){
 
-  for( int n = 0; n < NBINS; n++){
+    int    NBINS = 40;
+    double x     = 40.0;
+    double width = (240-x)/NBINS;
+
+    double funcX[NBINS];
+    double funcY[NBINS];
+    double posUnc[NBINS];
+    double negUnc[NBINS];
+
+    for( int n = 0; n < NBINS; n++){
+
+      for(int i = 0; i < 5; i++){
+    
+	posColM(i,0) = fabs(f->Eval(x) - posFit[i]->Eval(x));
+	negColM(i,0) = fabs(f->Eval(x) - negFit[i]->Eval(x));
+	posRowM(0,i) = posColM(i,0);
+	negRowM(0,i) = negColM(i,0);
+    
+      }
+
+      TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
+      TMatrixD negTemp = negRowM*(*corrMatrix*negColM);
+    
+      posUnc[n] = TMath::Sqrt(posTemp(0,0));
+      negUnc[n] = TMath::Sqrt(negTemp(0,0));
+
+      funcX[n] = x;
+      funcY[n] = f->Eval(x);
+
+      x += width;
+
+    }
+
+    g = new TGraphAsymmErrors(NBINS, funcX, funcY, 0, 0, negUnc, posUnc);
+
+  }
+
+  /// for uncertainties of event number ///
+
+  else if( considerBins == false ){
 
     for(int i = 0; i < 5; i++){
-    
-      posColM(i,0) = fabs(f->Eval(x) - posFit[i]->Eval(x));
-      negColM(i,0) = fabs(f->Eval(x) - negFit[i]->Eval(x));
+
+      posColM(i,0) = fabs(nBkgSig - posFit[i]->Integral(105,135)/h->GetBinWidth(1));
+      negColM(i,0) = fabs(nBkgSig - negFit[i]->Integral(105,135)/h->GetBinWidth(1));
       posRowM(0,i) = posColM(i,0);
       negRowM(0,i) = negColM(i,0);
-    
+
     }
 
     TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
     TMatrixD negTemp = negRowM*(*corrMatrix*negColM);
-    
-    posUnc[n] = TMath::Sqrt(posTemp(0,0));
-    negUnc[n] = TMath::Sqrt(negTemp(0,0));
 
-    funcX[n] = x;
-    funcY[n] = f->Eval(x);
-
-    x += width;
+    *posUncEv = TMath::Sqrt(posTemp(0,0));
+    *negUncEv = TMath::Sqrt(negTemp(0,0));
 
   }
-
-  TGraphAsymmErrors* g = new TGraphAsymmErrors(NBINS, funcX, funcY, 0, 0, negUnc, posUnc);
 
   return g;
-
-}
-
-/// for uncertainties of event number ///
-
-void fitUncNoBins(const TF1* f, const TMatrixD* corrMatrix, TH1D* h,
-		  double nBkgSig, double* posUnc, double* negUnc){
-
-  double par[5] = {0};
-
-  for( int i = 0; i < 5; i++ )
-    par[i] = f->GetParameter(i);
-
-  TF1* posFit[5];
-  TF1* negFit[5];
-
-  for( int i = 0; i < 5; i++ ){
-
-    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
-
-    posFit[i] = new TF1(Form("posFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i]  = par[i] + f->GetParError(i);
-    posFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
-
-  }
-
-  for( int i = 0; i < 5; i++ ){
-
-    double partemp[5] = {par[0],par[1],par[2],par[3],par[4]};
-
-    negFit[i] = new TF1(Form("negFit%d",i), hollow_fitPRmass, 40, 240, 5);
-    partemp[i]  = par[i] - f->GetParError(i);
-    negFit[i]->SetParameters(partemp[0],partemp[1],partemp[2],partemp[3],partemp[4]);
-
-  }
-
-  TMatrixD posColM(5,1);
-  TMatrixD negColM(5,1);
-  TMatrixD posRowM(1,5);
-  TMatrixD negRowM(1,5);
-
-  for(int i = 0; i < 5; i++){
-    
-    posColM(i,0) = fabs(nBkgSig - posFit[i]->Integral(105,135)/h->GetBinWidth(1));
-    negColM(i,0) = fabs(nBkgSig - negFit[i]->Integral(105,135)/h->GetBinWidth(1));
-    posRowM(0,i) = posColM(i,0);
-    negRowM(0,i) = negColM(i,0);
-    
-  }
-
-  TMatrixD posTemp = posRowM*(*corrMatrix*posColM);
-  TMatrixD negTemp = negRowM*(*corrMatrix*negColM);
-    
-  *posUnc = TMath::Sqrt(posTemp(0,0));
-  *negUnc = TMath::Sqrt(negTemp(0,0));
 
 }
 
@@ -375,10 +348,8 @@ void alphaRplots(std::string outputFolder){
 
   setNCUStyle();
   gStyle->SetOptFit(0);
-  gStyle->SetMarkerSize(0);
   gStyle->SetTitleSize(0.04,"XYZ");
   gStyle->SetLabelSize(0.03,"XYZ");
-  gStyle->SetHistLineWidth(2);
 
   std::vector<string> infiles;
  
@@ -410,38 +381,44 @@ void alphaRplots(std::string outputFolder){
   TH1D* h_signTotalBKG  = addSamples(infiles,"ZprimeSign_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
   TH1D* h_sideDATA      = addSamples(infiles,"ZprimeSide_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
   TH1D* h_signDATA      = addSamples(infiles,"ZprimeSign_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_corrPRmass    = addSamples(infiles,"corrPRmass_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_corrPRmassAll = addSamples(infiles,"corrPRmassAll_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_hollow_PRmass = addSamples(infiles,"corrPRmass_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_PRmass        = addSamples(infiles,"corrPRmassAll_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
 
-  h_sideTotalBKG->SetLineWidth(2);
+  h_sideTotalBKG->SetMarkerStyle(8);
+  h_sideTotalBKG->SetMarkerSize(1.5);
   h_sideTotalBKG->SetLineColor(kBlack);
   h_sideTotalBKG->SetXTitle("ZH mass in side band of pseudo-MC");
   h_sideTotalBKG->SetYTitle("Event numbers");
   h_sideTotalBKG->SetTitleFont(62);
 
-  h_signTotalBKG->SetLineWidth(2);
+  h_signTotalBKG->SetMarkerStyle(8);
+  h_signTotalBKG->SetMarkerSize(1.5);
   h_signTotalBKG->SetLineColor(kBlack);
   h_signTotalBKG->SetXTitle("ZH mass in signal region of pseudo-MC");
   h_signTotalBKG->SetYTitle("Event numbers");
   h_signTotalBKG->SetTitleFont(62);
 
-  h_signDATA->SetLineWidth(2);
+  h_signDATA->SetMarkerStyle(8);
+  h_signDATA->SetMarkerSize(1.5);
+  h_signDATA->SetMarkerColor(kBlue);
   h_signDATA->SetLineColor(kBlue);
   h_signDATA->SetXTitle("ZH mass in signal region of pseudo-data");
   h_signDATA->SetYTitle("Event numbers");
   h_signDATA->SetTitleFont(62);
 
-  h_corrPRmass->SetLineWidth(2);
-  h_corrPRmass->SetLineColor(kBlack);
-  h_corrPRmass->SetXTitle("Side band corrected pruned mass in pseudo-data");
-  h_corrPRmass->SetYTitle("Event numbers");
-  h_corrPRmass->SetTitleFont(62);
+  h_hollow_PRmass->SetMarkerStyle(8);
+  h_hollow_PRmass->SetMarkerSize(1.5);
+  h_hollow_PRmass->SetLineColor(kBlack);
+  h_hollow_PRmass->SetXTitle("Side band corrected pruned mass in pseudo-data");
+  h_hollow_PRmass->SetYTitle("Event numbers");
+  h_hollow_PRmass->SetTitleFont(62);
 
-  h_corrPRmassAll->SetLineWidth(2);
-  h_corrPRmassAll->SetLineColor(kBlack);
-  h_corrPRmassAll->SetXTitle("Corrected pruned mass in pseudo-data");
-  h_corrPRmassAll->SetYTitle("Event numbers");
-  h_corrPRmassAll->SetTitleFont(62);
+  h_PRmass->SetMarkerStyle(8);
+  h_PRmass->SetMarkerSize(1.5);
+  h_PRmass->SetLineColor(kBlack);
+  h_PRmass->SetXTitle("Corrected pruned mass in pseudo-data");
+  h_PRmass->SetYTitle("Event numbers");
+  h_PRmass->SetTitleFont(62);
 
   // Make the statistics error more like data
 
@@ -452,10 +429,10 @@ void alphaRplots(std::string outputFolder){
 
   }
 
-  for( int i = 1; i <= h_corrPRmass->GetNbinsX(); i++ ){
+  for( int i = 1; i <= h_PRmass->GetNbinsX(); i++ ){
 
-    h_corrPRmass   ->SetBinError(i,TMath::Sqrt(h_corrPRmass   ->GetBinContent(i)));
-    h_corrPRmassAll->SetBinError(i,TMath::Sqrt(h_corrPRmassAll->GetBinContent(i)));
+    h_hollow_PRmass->SetBinError(i,TMath::Sqrt(h_hollow_PRmass   ->GetBinContent(i)));
+    h_PRmass       ->SetBinError(i,TMath::Sqrt(h_PRmass->GetBinContent(i)));
 
   }
 
@@ -468,6 +445,9 @@ void alphaRplots(std::string outputFolder){
   h_alphaRatio->SetYTitle("Alpha ratio");
   h_alphaRatio->Divide(h_signTotalBKG,h_sideTotalBKG);
   h_alphaRatio->SetMinimum(0);
+  h_alphaRatio->SetLineWidth(1);
+  h_alphaRatio->SetMarkerStyle(8);
+  h_alphaRatio->SetMarkerSize(1.5);
 
   // Calculate number of backgrounds in signal region
 
@@ -492,22 +472,12 @@ void alphaRplots(std::string outputFolder){
 
   }
 
-  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 5);
-  TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
-  TF1* f_fitZpmass = new TF1("f_fitZpmass", fitZpmass, xmin, xmax, 3);
-  TF1* f_fitAlphaR = new TF1("f_fitAlphaR", divFunc, xmin, xmax, 6);
-
-  f_fitPRmass->SetLineWidth(2);
-  f_hollow_fitPRmass->SetLineWidth(2);
-  f_fitZpmass->SetLineWidth(2);
-  f_fitAlphaR->SetLineWidth(2);
-
-  f_fitPRmass->SetLineColor(kBlue);
-  f_hollow_fitPRmass->SetLineColor(kBlue);
-  f_fitZpmass->SetLineColor(kBlue);
-  f_fitAlphaR->SetLineColor(kBlue);
-
   // Fit ZH mass and draw function of alpha ratio    
+
+  TF1* f_fitZpmass = new TF1("f_fitZpmass", fitZpmass, xmin, xmax, 3);
+
+  f_fitZpmass->SetLineWidth(2);
+  f_fitZpmass->SetLineColor(kBlue);
 
   double parAR[6] = {0};
 
@@ -531,65 +501,89 @@ void alphaRplots(std::string outputFolder){
   parAR[4] = f_fitZpmass->GetParameter(1);
   parAR[5] = f_fitZpmass->GetParameter(2);
 
+  // "Draw" alpha ratio function
+
+  TF1* f_fitAlphaR = new TF1("f_fitAlphaR", divFunc, xmin, xmax, 6);
+
+  f_fitAlphaR->SetLineWidth(2);
+  f_fitAlphaR->SetLineColor(kBlue);
   f_fitAlphaR->SetParameters(parAR[0],parAR[1],parAR[2],parAR[3],parAR[4],parAR[5]);
 
-  // Fit pruned mass
+  // Fit pruned mass with signal region
+
+  TF1* f_fitPRmass = new TF1("f_fitPRmass", fitPRmass, 40, 240, 5);
+
+  f_fitPRmass->SetLineWidth(2);
+  f_fitPRmass->SetLineColor(kBlue);
 
   double parFitPRm[4] = {1224,-0.107,139.6,107.4};
 
-  f_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_corrPRmassAll->GetBinWidth(1));
-  f_fitPRmass->FixParameter(4,h_corrPRmassAll->GetBinWidth(1));
-  f_fitPRmass->FixParameter(0,h_corrPRmassAll->Integral());
+  f_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_PRmass->GetBinWidth(1));
+  f_fitPRmass->FixParameter(4,h_PRmass->GetBinWidth(1));
+  f_fitPRmass->FixParameter(0,h_PRmass->Integral());
   
-
-  h_corrPRmassAll->Fit("f_fitPRmass", "", "", 40, 240);
+  h_PRmass->Fit("f_fitPRmass", "", "", 40, 240);
+  h_PRmass->SetMinimum(1.e-2);
+  h_PRmass->SetMaximum(190);
 
   double chisqr_cpma = f_fitPRmass->GetChisquare();
   int ndf_cpma = f_fitPRmass->GetNDF();
 
-  TFitResultPtr fitptr = h_corrPRmassAll->Fit(f_fitPRmass, "S");
+  TFitResultPtr fitptr = h_PRmass->Fit(f_fitPRmass, "S");
   TFitResult fitresult = (*fitptr);
   TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
 
-  TGraphAsymmErrors* g_errorBands = fitUncertainty(f_fitPRmass, &corrMatrix);
+  double dummy = 0.0;
+
+  TGraphAsymmErrors* g_errorBands = fitUncertainty(true, f_fitPRmass, &corrMatrix, fitPRmass, NULL, 0, &dummy, &dummy);
 
   g_errorBands->SetFillStyle(1001);
   g_errorBands->SetFillColor(kYellow);
 
   // Fit pruned mass without signal region
 
-  f_hollow_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_corrPRmass->GetBinWidth(1));
-  f_hollow_fitPRmass->FixParameter(4,h_corrPRmass->GetBinWidth(1));
-  f_hollow_fitPRmass->FixParameter(0,h_corrPRmass->Integral());
-  h_corrPRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
+  TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
+  
+  f_hollow_fitPRmass->SetLineWidth(2);
+  f_hollow_fitPRmass->SetLineColor(kBlue);
+  f_hollow_fitPRmass->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_hollow_PRmass->GetBinWidth(1));
+  f_hollow_fitPRmass->FixParameter(4,h_hollow_PRmass->GetBinWidth(1));
+  f_hollow_fitPRmass->FixParameter(0,h_hollow_PRmass->Integral());
+
+  h_hollow_PRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
+  h_hollow_PRmass->SetMinimum(1.e-2);
+  h_hollow_PRmass->SetMaximum(190);
 
   double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
   int ndf_cpm = f_hollow_fitPRmass->GetNDF();
-  /*  
-  TFitResultPtr fitptr = h_corrPRmass->Fit(f_hollow_fitPRmass, "S");
-  TFitResult fitresult = (*fitptr);
-  TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
+  
+  TFitResultPtr hollow_fitptr = h_hollow_PRmass->Fit(f_hollow_fitPRmass, "S");
+  TFitResult hollow_fitresult = (*hollow_fitptr);
+  TMatrixD hollow_corrMatrix  = hollow_fitresult.GetCorrelationMatrix();
+  
+  TGraphAsymmErrors* g_hollow_errorBands = fitUncertainty(true, f_hollow_fitPRmass, &hollow_corrMatrix, hollow_fitPRmass, NULL, 0, &dummy, &dummy);
+  
+  g_hollow_errorBands->SetFillStyle(1001);
+  g_hollow_errorBands->SetFillColor(kYellow);
 
-  TGraphAsymmErrors* g_errorBands = fitUncertainty(f_hollow_fitPRmass, &corrMatrix);
+  // Get the uncertaities of event number
 
-  g_errorBands->SetFillStyle(3004);
-  */
-  double nBkgSig = f_hollow_fitPRmass->Integral(105,135)/h_corrPRmass->GetBinWidth(1);
   double posUnc  = 0;
   double negUnc  = 0;
+  double nBkgSig = f_hollow_fitPRmass->Integral(105,135)/h_hollow_PRmass->GetBinWidth(1);
 
-  fitUncNoBins(f_hollow_fitPRmass, &corrMatrix, h_corrPRmassAll, nBkgSig, &posUnc, &negUnc);
+  TGraphAsymmErrors* g_null = fitUncertainty(false, f_hollow_fitPRmass, &corrMatrix, hollow_fitPRmass, h_PRmass, nBkgSig, &posUnc, &negUnc);
 
-  cout << "\n***********************************************************************" << endl;
-  cout << "** Number of backgrounds in signal region: "
-       << nBkgSig << " + " << posUnc << " - " << negUnc << " **" << endl;
-  cout << "***********************************************************************\n" << endl;
+  cout << "\n\033[1;31m** Number of backgrounds in signal region: "
+       << nBkgSig << " + " << posUnc << " - " << negUnc << " **\033[0m\n" << endl;
+
+  // Scale the number of backgrounds in signal region
 
   h_numbkgDATA->Scale(nBkgSig/h_numbkgDATA->Integral(0,h_numbkgDATA->GetNbinsX()+1));
 
   // Output results
 
-  TLegend* leg = new TLegend(0.21, 0.77, 0.87, 0.87);
+  TLegend* leg = new TLegend(0.35, 0.77, 0.87, 0.87);
 
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
@@ -604,43 +598,42 @@ void alphaRplots(std::string outputFolder){
   TCanvas* c = new TCanvas("c","",0,0,1000,800);
 
   c->cd()->SetLogy(0);
-  h_corrPRmassAll->Draw();
+  h_PRmass->Draw();
   g_errorBands->Draw("3same");
-  h_corrPRmassAll->Draw("same");
+  h_PRmass->Draw("same");
   lar->DrawLatexNDC(0.50, 0.70, Form("#chi^{2} / ndf: %f / %d",chisqr_cpma,ndf_cpma));
   lar->DrawLatexNDC(0.50, 0.60, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
-  c->Print("alphaRatio.pdf");
-  /*
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  c->Print("alphaRatio.pdf(");
+  
   c->cd()->SetLogy(0);
-  h_corrPRmass->SetMaximum(300);
-  h_corrPRmass->Draw();
-  g_errorBands->Draw("3same");
-  h_corrPRmass->Draw("same");
+  h_hollow_PRmass->Draw();
+  g_hollow_errorBands->Draw("3same");
+  h_hollow_PRmass->Draw("same");
   leg->Clear();
-  leg->AddEntry(h_corrPRmass, "Error = #sqrt{N_{per bin}}", "le");
+  leg->AddEntry(h_hollow_PRmass, "Error = #sqrt{N_{per bin}}", "lp");
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
   lar->DrawLatexNDC(0.50, 0.55, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
-
+  
   c->cd()->SetLogy();
-  h_corrPRmass->SetMaximum(3e3);
-  h_corrPRmass->Draw();
-  g_errorBands->Draw("3same");
-  h_corrPRmass->Draw("same");
+  h_hollow_PRmass->SetMaximum(3e3);
+  h_hollow_PRmass->Draw();
+  g_hollow_errorBands->Draw("3same");
+  h_hollow_PRmass->Draw("same");
   leg->Clear();
-  leg->AddEntry(h_corrPRmass, "Error = #sqrt{N_{per bin}}", "le");
-  leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
+  leg->AddEntry(h_hollow_PRmass, "Error = #sqrt{N_{per bin}}", "lp");
+  leg->AddEntry(g_hollow_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.25, 0.40, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
   lar->DrawLatexNDC(0.25, 0.30, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
   
   c->cd()->SetLogy(0);
@@ -648,7 +641,7 @@ void alphaRplots(std::string outputFolder){
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sgb,ndf_sgb));
   lar->DrawLatexNDC(0.50, 0.70, "#font[22]{#color[4]{f_{signal}(x) = p_{0} e^{p_{1}x + #frac{p_{2}}{x}}}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
 
   c->cd()->SetLogy(0);
@@ -656,7 +649,7 @@ void alphaRplots(std::string outputFolder){
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sdb,ndf_sdb));
   lar->DrawLatexNDC(0.50, 0.70, "#font[22]{#color[4]{f_{side}(x) = p_{0} e^{p_{1}x + #frac{p_{2}}{x}}}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
 
   c->cd()->SetLogy(0);
@@ -666,7 +659,7 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(f_fitAlphaR, "#frac{f_{signal}(x)}{f_{side}(x)}", "l");
   leg->Draw();
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
-  lar->DrawLatexNDC(0.62, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");  
 
   c->Divide(1,2);
@@ -687,13 +680,13 @@ void alphaRplots(std::string outputFolder){
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.70, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   leg->Clear();
-  leg->AddEntry(h_signDATA, "Truth backgrounds", "le");
-  leg->AddEntry(h_numbkgDATA, "Predicted backgrounds", "le");
+  leg->AddEntry(h_signDATA, "Truth backgrounds", "lp");
+  leg->AddEntry(h_numbkgDATA, "Predicted backgrounds", "lp");
   leg->Draw();
   c_up->RedrawAxis();
   c_dw->cd();
   myRatio(h_numbkgDATA,h_signDATA);
   c->Draw();
   c->Print("alphaRatio.pdf)");
-*/
+  
 }

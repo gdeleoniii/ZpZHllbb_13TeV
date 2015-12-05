@@ -230,7 +230,7 @@ void plot_Asymptotic(string outputname){
 
   // draw a frame to define the range
 
-  double fr_left = 0.0, fr_down = 1E-4, fr_right = 4500.0, fr_up = 100;
+  double fr_left = 0.0, fr_down = 1E-4, fr_right = 4500.0, fr_up = 10;
 
   TH1F *hr = cMCMC->DrawFrame(fr_left, fr_down, fr_right, fr_up, "");
 
