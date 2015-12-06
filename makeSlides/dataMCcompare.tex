@@ -1,5 +1,4 @@
-
-\documentclass[aspectratio=169]{beamer}
+\documentclass[7pt,aspectratio=1610]{beamer}
 \mode<presentation>{
   \usetheme{Madrid}
   \usecolortheme{crane}
@@ -18,21 +17,23 @@
 \usepackage{graphicx} % Allows including images
 \usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
 \usepackage{enumerate}
+\usepackage{lmodern}
 \usepackage[final]{pdfpages}
-%\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{hyperref}
 \usepackage{pgffor}
 \usepackage[makeroom]{cancel}
 \usepackage{xcolor,colortbl}
 \graphicspath{{/afs/cern.ch/user/h/htong/www/}} % Specifies the directory where pictures are stored
 \newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
-\renewcommand{\arraystretch}{1.3}
+\renewcommand{\arraystretch}{1.2}
 \hypersetup{colorlinks=true}
 \setbeamertemplate{title page}{
   \vbox{}
   \begingroup
   \centering{
-    \usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}\vskip0.55em
-  \begin{beamercolorbox}[sep=8pt,center]{title}
+    \usebeamercolor[fg]{titlegraphic}\inserttitlegraphic\par}\vskip0.15em
+  \begin{beamercolorbox}[sep=7pt,center]{title}
     \usebeamerfont{title}\inserttitle\par%
     \ifx\insertsubtitle\@empty%
     \else%
@@ -57,11 +58,11 @@
 % TITLE PAGE
 
 \titlegraphic{\includegraphics[width=1cm]{cms.jpg}\hspace*{9cm}~%
-  \includegraphics[width=1cm]{ncu.png}
+  \includegraphics[width=1cm]{ncu.jpg}
 }
 
-\title[]{\LARGE{Study of $Z' \rightarrow ZH \rightarrow llbb$ \\ Data/MC Comparison Study}} % The short title appears at the bottom of every slide, the full title is only on the title page
-\author[Henry Tong]{\Large{Yee-Shian Henry Tong}\\[3mm] \scriptsize{Shin-Shan Eiko Yu, Raman Khurana, Yun-Ju Lu, Yu-Hsiang Chang, Jun-Yi Wu, Ji-Kong Huang, Ching-Wei Chen}} % Your name
+\title[]{\Large{Study of $Z' \rightarrow ZH \rightarrow llbb$ \\ Data/MC Comparison Study}} % The short title appears at the bottom of every slide, the full title is only on the title page
+\author[Henry Tong]{\Large{Yee-Shian Henry Tong}\\[3mm] \small{Shin-Shan Eiko Yu, Raman Khurana, Yun-Ju Lu, Yu-Hsiang Chang, Jun-Yi Wu, Ji-Kong Huang, Ching-Wei Chen}} % Your name
 \institute[NCU]{ % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
   National Central University \\ % Your institution for the title page
   \medskip
@@ -80,83 +81,95 @@
 
 % PRESENTATION SLIDES
 
+\everymath{\displaystyle}
+\renewcommand{\arraystretch}{1.25}
+
 \begin{frame}
-  \frametitle{Data and MC Samples}
+  \frametitle{Data sets and Monte-Carlo Samples}
   \justifying 
   \begin{tiny}
     \begin{center}
       \begin{tabular}{ | l | l | }
         \hline
-        \bf SPRING15 25-ns samples & \bf Remarks \\
+        \bf SPRING15 25-ns samples & \bf Cross sections (pb) \\
         \hline
-        SingleElectron-Run2015D-PromptReco-V3/V4 & Luminosity = 831.7/pb \\
+        SingleMuon-Run2015D     & \\
+        \hline 
+        SingleElectron-Run2015D & \\
         \hline
-        SingleMuon-Run2015D-PromptReco-V3/V4 & Luminosity = 831.7/pb \\
+        DYJetsToLL\_M-50\_HT-100to200\_13TeV-madgraphMLM-pythia8
+        & 139.4 $\times$ 1.23  \\
         \hline
-        \multirow{2}{*}{DYJetsToLL\_M-50\_HT-100to200\_13TeV-madgraphMLM-pythia8} & nEvents =  \\
-        & cross section = 139.4*1.23 pb \\
+        DYJetsToLL\_M-50\_HT-200to400\_13TeV-madgraphMLM-pythia8
+        & 42.75 $\times$ 1.23  \\
         \hline
-        \multirow{2}{*}{DYJetsToLL\_M-50\_HT-200to400\_13TeV-madgraphMLM-pythia8} & nEvents =  \\
-        & cross section = 42.75*1.23 pb \\
+        DYJetsToLL\_M-50\_HT-400to600\_13TeV-madgraphMLM-pythia8
+        & 5.497 $\times$ 1.23  \\
         \hline
-        \multirow{2}{*}{DYJetsToLL\_M-50\_HT-400to600\_13TeV-madgraphMLM-pythia8} & nEvents =  \\
-        & cross section = 5.497*1.23 pb \\
-        \hline
-        \multirow{2}{*}{DYJetsToLL\_M-50\_HT-600toInf\_13TeV-madgraphMLM-pythia8} & nEvents =  \\
-        & cross section = 2.21*1.23 pb \\
+        DYJetsToLL\_M-50\_HT-600toInf\_13TeV-madgraphMLM-pythia8
+        & 2.21 $\times$ 1.23   \\
         \hline  
-        \multirow{2}{*}{TT\_TuneCUETP8M1\_13TeV-powheg-pythia8MC25ns\_eleIDjet\_CMSSW7412} & nEvents =  \\
-        & cross section = 831.76 pb \\
+        TT\_TuneCUETP8M1\_13TeV-powheg-pythia8MC25ns
+        & 831.76      \\
         \hline
-        \multirow{2}{*}{WW\_TuneCUETP8M1\_13TeV-pythia8MC25ns\_eleIDjet\_CMSSW7412} & nEvents =  \\
-        & cross section = 118.7 pb \\
+        WW\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 118.7       \\
         \hline
-        \multirow{2}{*}{WZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns\_eleIDjet\_CMSSW7412} & nEvents =  \\
-        & cross section = 47.13 pb \\
+        WZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 47.13       \\
         \hline
-        \multirow{2}{*}{ZZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns\_eleIDjet\_CMSSW7412} & nEvents =  \\
-        & cross section = 16.523 pb \\
+        ZZ\_TuneCUETP8M1\_13TeV-pythia8MC25ns 
+        & 16.523      \\
         \hline
       \end{tabular}
-      \newline \newline
-      \begin{itemize}
-      \item[\checkmark] MC weights are applied for amcAtNLO samples.
-      \item[\checkmark] Trigger used for electron dataset: HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_*
-      \item[\checkmark] Trigger used for muon dataset: HLT\_Mu45\_eta2p1*
-      \end{itemize}
+      \captionof{table}{\tiny{List of data sets and MC samples used and corresponding cross section values (K-factors for DY samples are included for normalization). The MC samples are miniAOD V2. Pile-up weights for MC samples are applied. The luminosity of data is 2.08 $fb^{-1}$.}}
     \end{center}
   \end{tiny}
 \end{frame}
 
 \begin{frame}
-  \LARGE{\centerline{N-1 cut distributions of electron variables}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preselections for electron: HEEP V6.0 (Recommended for RunII)}
   \justifying
-  \begin{footnotesize}
+  \LARGE{N-1 cut distributions of electron variables}
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        HLT
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
+        \hline
+        \multirow{4}{*}{Data Filter}
+        & Flag\_CSCTightHaloFilter                  \\
+        & Flag\_eeBadScFilter                       \\
+        & Flag\_HBHENoiseFilter                     \\
+        & Flag\_HBHENoiseIsoFilter                  \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{tiny}
+
+  \begin{tiny}
     \begin{center}
       \begin{tabular}{ | c | c | c | }
         \hline
         \bf Variable & \bf Barrel & \bf Endcap \\
         \hline
-        $E_T$                   & $>$ 35 GeV               & $>$ 35 GeV \\
-        $\eta$ range            & $|\eta_{SC}|$ $<$ 1.4442 & 1.566 $<$ $|\eta_{SC}|$ $<$ 2.5 \\
-        isEcalDriven            & = 1                      & = 1 \\
-        $|\Delta\eta_{in} seed|$ & $<$ 0.004                & $<$ 0.006 \\
-        $|\Delta\phi_{in}|$      & $<$ 0.06                 & $<$ 0.06 \\
-        $H/E$                   & $<$ 1/E+0.05             & $<$ 5/E+0.05 \\
-        full 5x5 $\sigma_{i\eta i\eta}$ & n/a                & $<$ 0.03 \\
+        $E_T$                      & $>$ 35 GeV               & $>$ 35 GeV        \\
+        $\eta$ range               & $|\eta_{SC}|$ $<$ 1.4442 & 1.566 $<$ $|\eta_{SC}|$ $<$ 2.5 \\
+        isEcalDriven               & = 1                      & = 1               \\
+        $|\Delta\eta_{in} seed|$   & $<$ 0.004                & $<$ 0.006         \\
+        $|\Delta\phi_{in}|$        & $<$ 0.06                 & $<$ 0.06          \\
+        $H/E$                      & $<$ 1/E+0.05             & $<$ 5/E+0.05      \\
+        full 5x5 $\sigma_{i\eta i\eta}$ & n/a                 & $<$ 0.03          \\
         full 5x5 $E_{2x5}/E_{5x5}$ & $>$ 0.94 OR $E_{1x5}/E_{5x5}$ $>$ 0.83 & n/a \\
-        Inner Layer Lost Hits    & $<$= 1                   & $<$= 1 \\
-        $|dxy|$                  & $<$ 0.02                 & $<$ 0.05 \\
-        eleMiniIso               & $<$ 0.1                  & $<$ 0.1 \\
-        $m_{ll}$                  & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV \\
+        Inner Layer Lost Hits      & $<$= 1                   & $<$= 1            \\
+        $|dxy|$                    & $<$ 0.02                 & $<$ 0.05          \\
+        rho-corrected eleMiniIso   & $<$ 0.1                  & $<$ 0.1           \\
+        $m_{ll}$                   & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV \\
         \hline
       \end{tabular}
+      \captionof{table}{\tiny{Preselections for electron variables data/MC comparison study.}}
     \end{center}
-  \end{footnotesize}
+  \end{tiny}
 \end{frame}
 
 \foreach \n/\m in {1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8,9/9}{
@@ -166,35 +179,67 @@
       \includegraphics[page=\n,width=0.45\textwidth]{barrelEleVariables.pdf} &
       \includegraphics[page=\m,width=0.45\textwidth]{endcapEleVariables.pdf} \\
     \end{tabular}
+    \begin{tiny}
+      \begin{center}
+        \begin{tabular}{ | c | c | c | }
+          \hline
+          \bf Variable & \bf Barrel & \bf Endcap \\                 
+          \hline        
+          $|\Delta\eta_{in} seed|$   & $<$ 0.004                & $<$ 0.006         \\
+          $|\Delta\phi_{in}|$        & $<$ 0.06                 & $<$ 0.06          \\
+          $H/E$                      & $<$ 1/E+0.05             & $<$ 5/E+0.05      \\
+          full 5x5 $\sigma_{i\eta i\eta}$ & n/a                 & $<$ 0.03          \\
+          full 5x5 $E_{2x5}/E_{5x5}$ & $>$ 0.94 OR $E_{1x5}/E_{5x5}$ $>$ 0.83 & n/a \\
+          Inner Layer Lost Hits      & $<$= 1                   & $<$= 1            \\
+          $|dxy|$                    & $<$ 0.02                 & $<$ 0.05          \\
+          rho-corrected eleMiniIso   & $<$ 0.1                  & $<$ 0.1           \\
+          \hline
+        \end{tabular}
+      \end{center}
+    \end{tiny}
   \end{frame}
 }
 
 \begin{frame}
-  \LARGE{\centerline{N-1 cut distributions of muon variables}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preselections for muon}
   \justifying
-  \begin{footnotesize}
+  \LARGE{N-1 cut distributions of muon variables}
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        HLT
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
+        \hline
+        \multirow{4}{*}{Data Filter}
+        & Flag\_CSCTightHaloFilter                  \\
+        & Flag\_eeBadScFilter                       \\
+        & Flag\_HBHENoiseFilter                     \\
+        & Flag\_HBHENoiseIsoFilter                  \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{tiny}
+
+  \begin{tiny}
     \begin{center}
       \begin{tabular}{ | c | c | c | }
         \hline
         \bf Variable & \bf High $p_T$ Muon & \bf Tracker Muon \\
         \hline
-        pass MuonID & isGlobalMuon & isTrackerMuon \\
-        muHits      & $>$ 1   & n/a   \\
-        muMatches   & $>$ 2   & $>$ 2 \\
-        muTrkLayers & $>$ 6   & $>$ 6 \\
-        muPixelHits & $>$ 1   & $>$ 1 \\
-        muTrkPtErr/muTrkPt & $<$ 0.3 & $<$ 0.3 \\
-        $|dxy|$     & $<$ 0.2 & $<$ 0.2 \\
-        $|dz|$      & $<$ 0.5 & $<$ 0.5 \\
-        muMiniIso   & $<$ 0.1 & $<$ 0.1 \\
+        pass MuonID             & isGlobalMuon & isTrackerMuon \\
+        muHits                  & $>$ 1   & n/a   \\
+        muMatches               & $>$ 2   & $>$ 2 \\
+        muTrkLayers             & $>$ 6   & $>$ 6 \\
+        muPixelHits             & $>$ 1   & $>$ 1 \\
+        muTrkPtErr/muTrkPt      & $<$ 0.3 & $<$ 0.3 \\
+        $|dxy|$                 & $<$ 0.2 & $<$ 0.2 \\
+        $|dz|$                  & $<$ 0.5 & $<$ 0.5 \\
+        rho-corrected muMiniIso & $<$ 0.2 & $<$ 0.2 \\
         \hline
       \end{tabular}
+      \captionof{table}{\tiny{Preselections for muon variables data/MC comparison study.}}
     \end{center}
-  \end{footnotesize}
+  \end{tiny}
 \end{frame}
 
 \foreach \n/\m in {1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8}{
@@ -204,60 +249,78 @@
       \includegraphics[page=\n,width=0.45\textwidth]{trackerMuVariables.pdf} &
       \includegraphics[page=\m,width=0.45\textwidth]{highPtMuVariables.pdf} \\
     \end{tabular}
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}{ | c | c | c | }
+        \hline
+        \bf Variable & \bf High $p_T$ Muon & \bf Tracker Muon \\ 
+        \hline 
+        muHits                  & $>$ 1   & n/a   \\
+        muMatches               & $>$ 2   & $>$ 2 \\
+        muTrkLayers             & $>$ 6   & $>$ 6 \\
+        muPixelHits             & $>$ 1   & $>$ 1 \\
+        muTrkPtErr/muTrkPt      & $<$ 0.3 & $<$ 0.3 \\
+        $|dxy|$                 & $<$ 0.2 & $<$ 0.2 \\
+        $|dz|$                  & $<$ 0.5 & $<$ 0.5 \\
+        rho-corrected muMiniIso & $<$ 0.2 & $<$ 0.2 \\
+        \hline
+      \end{tabular}
+      \captionof{table}{\tiny{Preselections for muon variables data/MC comparison study.}}
+    \end{center}
+  \end{tiny}
   \end{frame}
 }
-
 \begin{frame}
-  \LARGE{\centerline{Z variables in electron channel and muon channel}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preselections in electron channel}
   \justifying
-  \begin{footnotesize}
+  \LARGE{Z variables in electron channel and muon channel}
+  \begin{tiny}
     \begin{center}
-      \begin{tabular}{ | c | c | c | }
+      \begin{tabular}[t]{ | l | l | }
         \hline
-        \bf Variable & \bf Leading Electron & \bf Subleading Electron \\
+        HLT       
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
         \hline
-        $E_T$              & $>$ 35 GeV & $>$ 35 GeV \\
-        \multirow{2}{*}{$\eta$ range} & $|\eta_{SC}|$ $<$ 1.4442 & $|\eta_{SC}|$ $<$ 1.4442 \\
-        & 1.566 $<$ $|\eta_{SC}|$ $<$ 2.5 & 1.566 $<$ $|\eta_{SC}|$ $<$ 2.5 \\
-        eleIsPassHEEPNoIso & = 1        & = 1 \\
-        eleMiniIso         & $<$ 0.1    & $<$ 0.1 \\
-        charge             & +/-        & -/+ \\
-        $m_{ll}$           & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV \\
+        \multirow{4}{*}{Data Filter}
+        & Flag\_CSCTightHaloFilter                  \\ 
+        & Flag\_eeBadScFilter                       \\
+        & Flag\_HBHENoiseFilter                     \\
+        & Flag\_HBHENoiseIsoFilter                  \\
+        \hline
+        nVtx 
+        & $>$ 0                                    \\
+        \hline
+        \multirow{7}{*}{Electrons} 
+        & $|\eta|$ $<$ 2.5                          \\
+        & remove 1.4442 $<$ $|\eta|$ $<$ 1.566      \\
+        & HEEP NoIso ID                             \\
+        & rho-corrected mini Iso $<$ 0.1            \\
+        & Leading electron $p_T$ $>$ 115 GeV        \\
+        & Sub-leading electron $p_T$ $>$ 35 GeV     \\
+        & Two electrons have opposite charge        \\
+        \hline
+        \multirow{8}{*}{Muons}
+        & Custom Tracker Muon ID                    \\ 
+        & One of both pass High $p_T$ Muon ID       \\
+        & rho-corrected mini Iso $<$ 0.2            \\
+        & Muon $p_T$ $>$ 20 GeV                     \\
+        & Muon $|\eta|$ $<$ 2.4                     \\
+        & At least one muon $p_T$ $>$ 50 GeV        \\
+        & At least one muon $|\eta|$ $<$ 2.1        \\ 
+        & Two muons have opposite charge            \\
+        \hline
+        \multirow{2}{*}{Z bosons}
+        & 70GeV $<$ $M_{ll}$ $<$ 110 GeV            \\
+        & $p_{Tll}$ $>$ 200 GeV                     \\
         \hline
       \end{tabular}
-    \end{center}
-  \end{footnotesize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preselections in muon channel}
-  \justifying
-  \begin{footnotesize}
-    \begin{center}
-      \begin{tabular}{ | c | c | c | }
-        \hline
-        \bf Variable & \bf Leading Muon & \bf Subleading Muon \\
-        \hline
-        $\eta$ range & $|\eta|$ $<$ 2.1 & $|\eta|$ $<$ 2.1 \\
-        $p_T$        & $>$ 50 GeV       & $>$ 20 GeV \\
-        muMiniIso    & $<$ 0.1          & $<$ 0.1 \\
-        \multirow{2}{*}{pass muon ID}   & isHighPtMuon/ & isCustomTrackerMuon/ \\
-        & isCustomTrackerMuon & isHighPtMuon \\
-        charge       & +/-              & -/+ \\
-        $m_{ll}$      & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV & 60 GeV $<$ $m_{ll}$ $<$ 120 GeV \\
-        \hline
-      \end{tabular}
+      \captionof{table}{\tiny{Preselections for Z variables data/MC comparison study.}}
     \end{center}   
-  \end{footnotesize}
+  \end{tiny}
 \end{frame}
 
 \foreach \n/\m in {1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8}{
   \begin{frame}
-    \frametitle{Z variables in electron channel (left) and muon channel (right)}
+    \frametitle{Z variables in electron (left) and muon (right) channel}
     \begin{tabular}{ll}
       \includegraphics[page=\n,width=0.45\textwidth]{ZeeVariables.pdf} &
       \includegraphics[page=\m,width=0.45\textwidth]{ZmumuVariables.pdf} \\
@@ -266,31 +329,74 @@
 }
 
 \begin{frame}
-  \LARGE{\centerline{Jet variables in electron channel and muon channel}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Preselections of FATjet in electron channel and muon channel}
   \justifying
-  \begin{footnotesize}
+  \LARGE{Jet variables in electron channel and muon channel}
+  \begin{tiny}
     \begin{center}
-      \begin{tabular}{ | c | c | c | }
+      \begin{tabular}[t]{ | l | l | }
         \hline
-        \bf Variable & \bf Leading Muon  \\
+        HLT
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
         \hline
-        $\eta$ range & $|\eta|$ $<$ 2.5 \\
-        $p_T$        & $>$ 200 GeV       \\
-        FATjetPassIDLoose & = 1 \\
-        FATnSubSDJet & $>$ 2 \\
+        \multirow{4}{*}{Data Filter}
+        & Flag\_CSCTightHaloFilter                  \\
+        & Flag\_eeBadScFilter                       \\
+        & Flag\_HBHENoiseFilter                     \\
+        & Flag\_HBHENoiseIsoFilter                  \\
+        \hline
+        nVtx
+        & $>$ 0                                    \\
+        \hline
+        \multirow{7}{*}{Electrons}
+        & $|\eta|$ $<$ 2.5                          \\
+        & remove 1.4442 $<$ $|\eta|$ $<$ 1.566      \\
+        & HEEP NoIso ID                             \\
+        & rho-corrected mini Iso $<$ 0.1            \\
+        & Leading electron $p_T$ $>$ 115 GeV        \\
+        & Sub-leading electron $p_T$ $>$ 35 GeV     \\
+        & Two electrons have opposite charge        \\
+        \hline
+        \multirow{8}{*}{Muons}
+        & Custom Tracker Muon ID                    \\
+        & One of both pass High $p_T$ Muon ID       \\
+        & rho-corrected mini Iso $<$ 0.2            \\
+        & Muon $p_T$ $>$ 20 GeV                     \\
+        & Muon $|\eta|$ $<$ 2.4                     \\
+        & At least one muon $p_T$ $>$ 50 GeV        \\
+        & At least one muon $|\eta|$ $<$ 2.1        \\
+        & Two muons have opposite charge            \\
+        \hline
+        \multirow{2}{*}{Z bosons}
+        & 70GeV $<$ $M_{ll}$ $<$ 110 GeV            \\
+        & $p_{Tll}$ $>$ 200 GeV                     \\
         \hline
       \end{tabular}
     \end{center}
-  \end{footnotesize}
+  \end{tiny}
 \end{frame}
 
-\foreach \n/\m in {1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8,9/9,10/10,11/11}{
+\begin{frame}
+  \justifying
+  \begin{tiny}
+    \begin{center}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        \multirow{5}{*}{AK8 jets}
+        & $|\eta|$ $<$ 2.4                          \\
+        & $p_T$ $>$ 200 GeV                         \\
+        & FATjetPassIDLoose                         \\
+        & $\Delta R$ between jet and lepton $>$ 0.8 \\
+        & remove signal region: 65 GeV $<$ corrPRmass $<$ 145 GeV \\
+        \hline
+      \end{tabular}
+      \captionof{table}{\tiny{Preselections for jet variables data/MC comparison study.}}
+    \end{center}
+  \end{tiny}
+\end{frame}
+
+\foreach \n/\m in {1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8,9/9,10/10,11/11,12/12,13/13}{
   \begin{frame}
-    \frametitle{Jet variables in electron channel (left) and muon channel (right)}
+    \frametitle{Jet variables in electron (left) and muon (right) channel}
     \begin{tabular}{ll}
       \includegraphics[page=\n,width=0.45\textwidth]{JeteeVariables.pdf} &
       \includegraphics[page=\m,width=0.45\textwidth]{JetmumuVariables.pdf} \\
@@ -299,20 +405,7 @@
 }
 
 \begin{frame}
-  \frametitle{Conclusions}
-  \justifying 
-  \begin{footnotesize}
-    \begin{enumerate}[1.]
-      \setcounter{enumi}{0} %{-1}
-    \item The agreement between data and MC is poor for the distributions of electron and muon impact parameters.
-    \item The agreement between data and MC is ? for all the basic Z kinematic variables.
-    \item The agreement between data and MC is ? for all the basic fat jet kinematic variables.
-    \end{enumerate}
-  \end{footnotesize}
-\end{frame}
-
-\begin{frame}
-  \Huge{\centerline{Thank You!}}
+  \Huge{\centerline{Thanks for your attention!}}
 \end{frame}
 
 \end{document}
