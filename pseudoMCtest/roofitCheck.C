@@ -193,6 +193,6 @@ void roofitCheck(std::string outputFolder){
   corrPRmassAllframe->Draw();
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
-  c->Print("alphaRatioRooFit.pdf");
+  c->Print("roofitCheck.pdf");
 
 }
