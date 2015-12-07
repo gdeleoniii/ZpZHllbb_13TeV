@@ -238,8 +238,6 @@ double hollow_fitPRmass(double* v, double* p){
 
 }
 
-/// for error band of fit curve ///
-
 TGraphAsymmErrors* fitUncertainty(bool considerBins, const TF1* f, TMatrixD* corrMatrix, double (*fitFunc)(double*, double*),
 				  TH1D* h, double nBkgSig, double* posUncEv, double* negUncEv){
 
@@ -277,6 +275,8 @@ TGraphAsymmErrors* fitUncertainty(bool considerBins, const TF1* f, TMatrixD* cor
   TMatrixD negRowM(1,5);
 
   TGraphAsymmErrors* g = NULL;
+
+  /// for error band of fit curve ///
 
   if( considerBins == true ){
 
@@ -431,33 +431,10 @@ void alphaRplots(std::string outputFolder){
 
   for( int i = 1; i <= h_PRmass->GetNbinsX(); i++ ){
 
-    h_hollow_PRmass->SetBinError(i,TMath::Sqrt(h_hollow_PRmass   ->GetBinContent(i)));
-    h_PRmass       ->SetBinError(i,TMath::Sqrt(h_PRmass->GetBinContent(i)));
+    h_hollow_PRmass->SetBinError(i,TMath::Sqrt(h_hollow_PRmass->GetBinContent(i)));
+    h_PRmass->SetBinError(i,TMath::Sqrt(h_PRmass->GetBinContent(i)));
 
   }
-
-
-  //// Fluctuate the pruned mass histogram to test the fitting results ////
-
-  TH1D* h_temp = (TH1D*)h_hollow_PRmass->Clone("h_temp");
-
-  for( int n = 0; n < 1000; n++ ){
-
-    h_temp->Reset();
-    h_temp->FillRandom(h_hollow_PRmass, h_hollow_PRmass->Integral());
-
-    TF1* f_temp = new TF1("f_temp", hollow_fitPRmass, 40, 240, 5);
-
-    f_temp->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_temp->GetBinWidth(1));
-    f_temp->FixParameter(4,h_temp->GetBinWidth(1));
-    f_temp->FixParameter(0,h_temp->Integral());
-
-    h_temp->Fit("f_temp", "", "", 40, 240);
-
-  }
-
-  //// End of test ////
-
 
   // Fit pruned mass with signal region  
 
@@ -472,14 +449,13 @@ void alphaRplots(std::string outputFolder){
   f_fitPRmass->FixParameter(4,h_PRmass->GetBinWidth(1));
   f_fitPRmass->FixParameter(0,h_PRmass->Integral());
 
-  h_PRmass->Fit("f_fitPRmass", "", "", 40, 240);
-  h_PRmass->SetMinimum(1.e-2);
+  h_PRmass->Fit("f_fitPRmass", "Q", "", 40, 240);
   h_PRmass->SetMaximum(190);
 
   double chisqr_cpma = f_fitPRmass->GetChisquare();
   int ndf_cpma = f_fitPRmass->GetNDF();
 
-  TFitResultPtr fitptr = h_PRmass->Fit(f_fitPRmass, "S");
+  TFitResultPtr fitptr = h_PRmass->Fit(f_fitPRmass, "QS");
   TFitResult fitresult = (*fitptr);
   TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();
 
@@ -500,14 +476,13 @@ void alphaRplots(std::string outputFolder){
   f_hollow_fitPRmass->FixParameter(4,h_hollow_PRmass->GetBinWidth(1));
   f_hollow_fitPRmass->FixParameter(0,h_hollow_PRmass->Integral());
 
-  h_hollow_PRmass->Fit("f_hollow_fitPRmass", "", "", 40, 240);
-  h_hollow_PRmass->SetMinimum(1.e-2);
+  h_hollow_PRmass->Fit("f_hollow_fitPRmass", "Q", "", 40, 240);
   h_hollow_PRmass->SetMaximum(190);
 
   double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
   int ndf_cpm = f_hollow_fitPRmass->GetNDF();
 
-  TFitResultPtr hollow_fitptr = h_hollow_PRmass->Fit(f_hollow_fitPRmass, "S");
+  TFitResultPtr hollow_fitptr = h_hollow_PRmass->Fit(f_hollow_fitPRmass, "QS");
   TFitResult hollow_fitresult = (*hollow_fitptr);
   TMatrixD hollow_corrMatrix  = hollow_fitresult.GetCorrelationMatrix();
 
@@ -562,7 +537,7 @@ void alphaRplots(std::string outputFolder){
   double parAR[6] = {0};
 
   f_fitZpmass->SetParameters(0,0,0);
-  h_signTotalBKG->Fit("f_fitZpmass", "", "", xmin, xmax);
+  h_signTotalBKG->Fit("f_fitZpmass", "Q", "", xmin, xmax);
 
   double chisqr_sgb = f_fitZpmass->GetChisquare();
   int ndf_sgb = f_fitZpmass->GetNDF();
@@ -572,7 +547,7 @@ void alphaRplots(std::string outputFolder){
   parAR[2] = f_fitZpmass->GetParameter(2);
 
   f_fitZpmass->SetParameters(0,0,0);
-  h_sideTotalBKG->Fit("f_fitZpmass", "", "", xmin, xmax);
+  h_sideTotalBKG->Fit("f_fitZpmass", "Q", "", xmin, xmax);
 
   double chisqr_sdb = f_fitZpmass->GetChisquare();
   int ndf_sdb = f_fitZpmass->GetNDF();
@@ -595,7 +570,7 @@ void alphaRplots(std::string outputFolder){
   double negUnc  = 0;
   double nBkgSig = f_hollow_fitPRmass->Integral(105,135)/h_hollow_PRmass->GetBinWidth(1);
 
-  TGraphAsymmErrors* g_null = fitUncertainty(false, f_hollow_fitPRmass, &corrMatrix, hollow_fitPRmass, h_PRmass, nBkgSig, &posUnc, &negUnc);
+  fitUncertainty(false, f_hollow_fitPRmass, &corrMatrix, hollow_fitPRmass, h_PRmass, nBkgSig, &posUnc, &negUnc);
 
   cout << "\n\033[1;31m** Number of backgrounds in signal region: "
        << nBkgSig << " + " << posUnc << " - " << negUnc << " **\033[0m\n" << endl;
@@ -603,6 +578,58 @@ void alphaRplots(std::string outputFolder){
   // Scale the number of backgrounds in signal region
 
   h_numbkgDATA->Scale(nBkgSig/h_numbkgDATA->Integral(0,h_numbkgDATA->GetNbinsX()+1));
+
+  //// Fluctuate the pruned mass histogram to test the fitting results ////       
+
+  TH1D* h_fluc = (TH1D*)h_PRmass->Clone("h_fluc");
+  TH1D* h_hollow_fluc = (TH1D*)h_PRmass->Clone("h_hollow_fluc");
+  TH1D* h_diff = new TH1D("h_diff", "", 20, 0, 200);
+
+  h_diff->SetLineWidth(1);
+  h_diff->SetFillColor(kYellow);
+  h_diff->GetXaxis()->SetTitle("Events in signal region (|theory - predict|)");
+  h_diff->GetYaxis()->SetTitle("Counts");
+
+  for( int n = 0; n < 800; n++ ){
+
+    h_fluc->Reset();
+    h_hollow_fluc->Reset();
+
+    h_fluc->FillRandom(h_PRmass, h_PRmass->Integral());
+
+    int nd1 = (105 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
+    int nd2 = (135 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
+
+    double nSigHist = h_fluc->Integral(nd1,nd2);
+
+    for( int nbin = 1; nbin <= h_fluc->GetNbinsX(); nbin++ ){
+
+      if( h_hollow_fluc->GetBinLowEdge(nbin) < 65 || h_hollow_fluc->GetBinLowEdge(nbin) > 140 ){
+
+	h_hollow_fluc->SetBinContent(nbin,h_fluc->GetBinContent(nbin));
+	h_hollow_fluc->SetBinError(nbin,h_fluc->GetBinError(nbin));
+
+      }
+
+    }
+
+    TF1* f_fluc = new TF1("f_fluc", hollow_fitPRmass, 40, 240, 5);
+
+    double tempparFitPRm[4] = {1224,-0.107,139.6,107.4};
+
+    f_fluc->SetParameters(tempparFitPRm[0],tempparFitPRm[1],tempparFitPRm[2],tempparFitPRm[3],h_fluc->GetBinWidth(1));
+    f_fluc->FixParameter(4,h_hollow_fluc->GetBinWidth(1));
+    f_fluc->FixParameter(0,h_hollow_fluc->Integral());
+
+    h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
+
+    double nSigFit = f_fluc->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
+
+    h_diff->Fill(fabs(nSigFit - nSigHist));
+
+  }
+
+  //// End of the test ////  
 
   // Output results
 
@@ -624,8 +651,11 @@ void alphaRplots(std::string outputFolder){
   h_PRmass->Draw();
   g_errorBands->Draw("3same");
   h_PRmass->Draw("same");
-  lar->DrawLatexNDC(0.50, 0.70, Form("#chi^{2} / ndf: %f / %d",chisqr_cpma,ndf_cpma));
-  lar->DrawLatexNDC(0.50, 0.60, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
+  leg->Clear();
+  leg->AddEntry(h_PRmass, "Error = #sqrt{N_{per bin}}", "lp");
+  leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
+  leg->Draw();
+  lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpma,ndf_cpma));
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf(");
@@ -639,7 +669,6 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.50, 0.55, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
@@ -654,7 +683,12 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(g_hollow_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.25, 0.40, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.25, 0.30, "#font[22]{#color[4]{f(x) = #frac{1}{2} p_{0} e^{p_{1}x} ( 1 + erf ( #frac{x - p_{2}}{p_{3}} ) )}}");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  c->Print("alphaRatio.pdf");
+
+  c->cd()->SetLogy(0);
+  h_diff->Draw();
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
