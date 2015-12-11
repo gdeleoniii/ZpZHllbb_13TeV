@@ -129,9 +129,8 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
       }      
 
-      //if( subjetDeltaR < 0.3 && nsubBjet < 1 ) continue;
-      //if( subjetDeltaR > 0.3 && nsubBjet < 2 ) continue;
-      if( nsubBjet < 2 ) continue; // tight selection
+      if( subjetDeltaR < 0.3 && nsubBjet < 1 ) continue;
+      if( subjetDeltaR > 0.3 && nsubBjet < 2 ) continue;
 
       goodJetID = ij;
       break;
@@ -150,7 +149,7 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_mZHmuSignal_tight.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_mZHmuSignal_loose.root",outputFile.c_str()), "recreate");
 
   h_mZprime    ->Write("mZprime");
   h_eventWeight->Write("eventWeight");

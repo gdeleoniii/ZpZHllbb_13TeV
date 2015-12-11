@@ -11,7 +11,7 @@
 #include "../isPassZmumu.h"
 #include "../correctMCweight.h"
 
-void mZHmuLimitV2(std::string inputFile, std::string outputFile){
+void mZHmuLimitV3(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
@@ -108,7 +108,7 @@ void mZHmuLimitV2(std::string inputFile, std::string outputFile){
 
       }
 
-      if( nsubBjet < 2 ) continue;
+      if( nsubBjet < 1 ) continue;
 
       goodJetID = ij;
       break;
@@ -127,7 +127,7 @@ void mZHmuLimitV2(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_mZHmuSignal_tight.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_mZHmuSignal_loose.root",outputFile.c_str()), "recreate");
 
   h_mZprime    ->Write("mZprime");
   h_eventWeight->Write("eventWeight");
