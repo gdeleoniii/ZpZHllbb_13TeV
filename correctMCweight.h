@@ -1,6 +1,6 @@
 #include <iostream>
 
-Double_t correctMCWeight(Bool_t isData, Int_t nVtx){
+Double_t correctMCWeight(Bool_t isData, Int_t pu_nTrueInt){
 
   Double_t weight[] = {126.337, 
 		       153.753, 
@@ -57,9 +57,9 @@ Double_t correctMCWeight(Bool_t isData, Int_t nVtx){
 
   if( !isData ){
 
-    if( nVtx > 0 && nVtx < 51 )
-      eventWeight = weight[nVtx-1];
-    else if( nVtx < 1 || nVtx > 50 )
+    if( pu_nTrueInt > 0 && pu_nTrueInt < 51 )
+      eventWeight = weight[pu_nTrueInt-1];
+    else if( pu_nTrueInt > 50 )
       eventWeight = 1;
 
   }

@@ -83,7 +83,6 @@ TH1D* addSamples(std::vector<string>& infiles, std::string hname,
 void roofitCheck(std::string outputFolder){
 
   setNCUStyle();
-  gStyle->SetMarkerSize(0);
   gStyle->SetTitleSize(0.04,"XYZ");
   gStyle->SetLabelSize(0.03,"XYZ");
 
@@ -176,8 +175,8 @@ void roofitCheck(std::string outputFolder){
   RooErfExpPdf mj_pdf_sb("mj_pdf_sb", "fiting mj spectrum", mass, slope_sb, offset_sb, width_sb);
   RooExtendPdf mj_pdf_ext_sb("mj_pdf_ext_sb", "extended pdf", mj_pdf_sb, yieldSideband_sb);
 
-  mj_pdf_ext_sb.fitTo(corrPRmassAll, SumW2Error(kFALSE), Extended(kTRUE), Minimizer("Minuit"), Range("lowerSB,upperSB"));
-  mj_pdf_ext_sb.plotOn(corrPRmassAllframe, LineStyle(kDashed), LineColor(kRed));
+  //mj_pdf_ext_sb.fitTo(corrPRmassAll, SumW2Error(kFALSE), Extended(kTRUE), Minimizer("Minuit"), Range("lowerSB,upperSB"));
+  //mj_pdf_ext_sb.plotOn(corrPRmassAllframe, LineStyle(kDashed), LineColor(kRed));
   corrPRmassAll.plotOn(corrPRmassAllframe);
 
   // Output results
