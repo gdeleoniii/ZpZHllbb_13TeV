@@ -129,8 +129,18 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
       }      
 
-      if( subjetDeltaR < 0.3 && nsubBjet < 1 ) continue;
-      if( subjetDeltaR > 0.3 && nsubBjet < 2 ) continue;
+      // deltaR depends loose cut
+      // if( subjetDeltaR < 0.3 && nsubBjet < 1 ) continue;
+      // if( subjetDeltaR > 0.3 && nsubBjet < 2 ) continue;
+
+      // loose category
+
+      if( nsubBjet != 1 ) continue;
+
+      // tight category
+
+      if( nsubBjet != 2 ) continue;
+      if( subjetDeltaR < 0.3 ) continue;
 
       goodJetID = ij;
       break;

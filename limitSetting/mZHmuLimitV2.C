@@ -47,10 +47,6 @@ void mZHmuLimitV2(std::string inputFile, std::string outputFile){
     Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
-    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
-    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
-    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
-    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
 
     // remove event which is no hard interaction (noise)
@@ -108,7 +104,13 @@ void mZHmuLimitV2(std::string inputFile, std::string outputFile){
 
       }
 
-      if( nsubBjet < 2 ) continue;
+      // loose category
+
+      if( nsubBjet != 1 ) continue;
+
+      // tight category
+
+      if( nsubBjet != 2 ) continue;
 
       goodJetID = ij;
       break;
