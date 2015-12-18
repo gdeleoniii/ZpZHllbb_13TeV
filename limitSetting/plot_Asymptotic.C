@@ -3,75 +3,15 @@
 #include <vector>
 #include <cmath>
 #include <fstream>
-#include <cstdlib>
 #include <TTree.h>
 #include <TH1.h>
 #include <TFile.h>
-#include <TLine.h>
 #include <TStyle.h>
 #include <TLatex.h>
 #include <TCanvas.h>
 #include <TLegend.h>
-#include <TPaveText.h>
 #include <TGraphAsymmErrors.h>
 #include "../setNCUStyle.h"
-
-void scaleGraph(TGraphAsymmErrors* g, double factor){
-
-  int npoints = g->GetN();
-
-  for(int i = 0; i != npoints; ++i) {
-
-    double x = g->GetX()[i];
-    double y = g->GetY()[i];
-    double eyh = g->GetEYhigh()[i];
-    double eyl = g->GetEYlow()[i];
-    y = (y*factor);
-    eyh = (eyh*factor);
-    eyl = (eyl*factor);
-    g->SetPoint(i,x,y);
-    g->SetPointEYhigh(i, eyh);
-    g->SetPointEYlow(i, eyl);
-
-  }
-
-}
-
-double expo_interp(double s2, double s1,  double newM, double m2, double m1){
-  
-  if( m1 > m2 ){
-
-    double tmps = s1;
-    double tmpm = m1;
-    s1 = s2;
-    m1 = m2;
-    s2 = tmps;
-    m2 = tmpm;
-
-  }
-
-  double alpha = (log(s2)-log(s1))/(m2-m1);
-
-  return s1*pow(exp(newM-m1),alpha);
-
-}
-
-double linear_interp(double s2, double s1, double mass, double m2, double m1){
-
-  if (m1 > m2){
-  
-    double tmps = s1;
-    double tmpm = m1;
-    s1 = s2;
-    m1 = m2;
-    s2 = tmps;
-    m2 = tmpm;
-  
-  }
-
-  return s1+(s2-s1)*(mass-m1)/(m2-m1);
-
-}
 
 void plot_Asymptotic(string outputname){
 
@@ -92,14 +32,6 @@ void plot_Asymptotic(string outputname){
       xsect_file >> mH >> CS;
       v_mhxs.push_back(mH);
       v_xs.push_back(CS);
-
-      // unavailable theory errors for graviton
-
-      float tot_err_p = 0.0;
-      float tot_err_m = 0.0;
-
-      v_toterrh.push_back(1.0+(tot_err_p));
-      v_toterrl.push_back(1.0-(tot_err_m));
 
     }
   
@@ -210,7 +142,6 @@ void plot_Asymptotic(string outputname){
     
   } //end loop over im (mass points)
 
-
   TGraphAsymmErrors *grobslim_cls = new TGraphAsymmErrors(nMassEff, mass, obs_lim_cls);
   grobslim_cls->SetName("LimitObservedCLs");
   TGraphAsymmErrors *grmedian_cls = new TGraphAsymmErrors(nMassEff, mass, medianD);
@@ -306,4 +237,4 @@ void plot_Asymptotic(string outputname){
   gPad->SetLogy();
   cMCMC->Print(Form("zhllbb%sAsymptotic.pdf", outputname.data()));
 
-} //end of main function
+}
