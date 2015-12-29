@@ -15,10 +15,10 @@ const Double_t xmax  = 5000;
 const Int_t    nBins = (xmax-xmin)/100;
 
 Double_t dataLumi  = 3000; //pb-1
-Double_t xSecDY100 = 147.4*1.23;
-Double_t xSecDY200 = 40.99*1.23;
-Double_t xSecDY400 = 5.678*1.23;
-Double_t xSecDY600 = 2.198*1.23;
+Double_t xSecDY100 = 147.4;
+Double_t xSecDY200 = 40.99;
+Double_t xSecDY400 = 5.678;
+Double_t xSecDY600 = 2.198;
 
 TFile* getFile(std::string infiles, std::string hname, 
 	       Double_t crossSection, Double_t* scale){

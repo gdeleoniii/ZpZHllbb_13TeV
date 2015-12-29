@@ -9,7 +9,7 @@
 #include "../../untuplizer.h"
 #include "../../readSample.h"
 #include "../../dataFilter.h"
-#include "../../correctMCweight.h"
+#include "../../pileupMCweight.h"
 
 void eleVariable(std::string inputFile, std::string outputFile){
 
@@ -104,7 +104,7 @@ void eleVariable(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
+    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight[0]->Fill(0.,eventWeight);
     h_eventWeight[1]->Fill(0.,eventWeight);

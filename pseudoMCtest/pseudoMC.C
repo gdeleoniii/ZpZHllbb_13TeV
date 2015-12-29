@@ -10,7 +10,7 @@
 #include "../dataFilter.h"
 #include "../isPassZmumu.h"
 #include "../isPassZee.h"
-#include "../correctMCweight.h"
+#include "../pileupMCweight.h"
 
 void pseudoMC(std::string inputFile, std::string outputFile){
 
@@ -72,6 +72,11 @@ void pseudoMC(std::string inputFile, std::string outputFile){
     Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
+    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
+    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
+    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
+    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
+    vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
 
     // remove event which is no hard interaction (noise)
 
@@ -79,7 +84,7 @@ void pseudoMC(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
+    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
 
     if( ev % 2 == 0 )
       h_eventWeight_pMC->Fill(0.,eventWeight);
@@ -133,7 +138,41 @@ void pseudoMC(std::string inputFile, std::string outputFile){
       if( fabs(thisJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
       if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
+      /*
+      Int_t nsubBjet = 0;
 
+      for(Int_t is = 0; is < FATnSubSDJet[ij]; is++){
+
+	if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
+
+      }
+
+      Double_t subjetDeltaR = -1;
+
+      if( nsubBjet == 2 ){
+
+	TLorentzVector l4_subjet0(0,0,0,0);
+	TLorentzVector l4_subjet1(0,0,0,0);
+
+	l4_subjet0.SetPxPyPzE(FATsubjetSDPx[ij][0],
+			      FATsubjetSDPy[ij][0],
+			      FATsubjetSDPz[ij][0],
+			      FATsubjetSDE [ij][0]);
+
+	l4_subjet1.SetPxPyPzE(FATsubjetSDPx[ij][1],
+			      FATsubjetSDPy[ij][1],
+			      FATsubjetSDPz[ij][1],
+			      FATsubjetSDE [ij][1]);
+
+	subjetDeltaR = l4_subjet0.DeltaR(l4_subjet1);
+
+      }
+
+      // deltaR depends loose cut
+
+      if( subjetDeltaR < 0.3 && nsubBjet < 1 ) continue;
+      if( subjetDeltaR > 0.3 && nsubBjet < 2 ) continue;
+      */
       goodFATJetID = ij;
       break;
 

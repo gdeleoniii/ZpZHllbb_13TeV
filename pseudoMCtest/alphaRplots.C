@@ -23,10 +23,10 @@ const double xmax  = 5000;
 const int    nBins = (xmax-xmin)/100;
 
 double dataLumi  = 3000; //pb-1
-double xSecDY100 = 147.4*1.23;
-double xSecDY200 = 40.99*1.23;
-double xSecDY400 = 5.678*1.23;
-double xSecDY600 = 2.198*1.23;
+double xSecDY100 = 147.4;
+double xSecDY200 = 40.99;
+double xSecDY400 = 5.678;
+double xSecDY600 = 2.198;
 
 TFile* getFile(std::string infiles, std::string hname, 
 	       double crossSection, double* scale){
@@ -589,8 +589,9 @@ void alphaRplots(std::string outputFolder){
   h_diff->SetFillColor(kYellow);
   h_diff->GetXaxis()->SetTitle("Events in signal region (|theory - predict|)");
   h_diff->GetYaxis()->SetTitle("Counts");
-
-  for( int n = 0; n < 800; n++ ){
+  TFile* testout = new TFile("1000MCfit.root","recreate");
+  TCanvas* d = new TCanvas("d","",0,0,1000,800);
+  for( int n = 0; n < 1000; n++ ){
 
     h_fluc->Reset();
     h_hollow_fluc->Reset();
@@ -622,13 +623,18 @@ void alphaRplots(std::string outputFolder){
     f_fluc->FixParameter(0,h_hollow_fluc->Integral());
 
     h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
+    d->cd();
+    h_fluc->SetMarkerColor(kRed);
+    h_fluc->Draw();
+    h_hollow_fluc->Draw("same");
+    d->Write();
 
     double nSigFit = f_fluc->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
 
     h_diff->Fill(fabs(nSigFit - nSigHist));
 
   }
-
+  testout->Write();
   //// End of the test ////  
 
   // Output results

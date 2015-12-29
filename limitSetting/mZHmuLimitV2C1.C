@@ -9,7 +9,7 @@
 #include "../readSample.h"
 #include "../dataFilter.h"
 #include "../isPassZmumu.h"
-#include "../correctMCweight.h"
+#include "../pileupMCweight.h"
 
 void mZHmuLimitV2C1(std::string inputFile, std::string outputFile){
 
@@ -55,7 +55,7 @@ void mZHmuLimitV2C1(std::string inputFile, std::string outputFile){
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = correctMCWeight(isData, (Int_t)pu_nTrueInt);
+    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
     
     h_eventWeight->Fill(0.,eventWeight);
 

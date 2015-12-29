@@ -12,76 +12,76 @@ cd $pwd
 
 ## generate the necessary text file (contain event numbers) and root file (contain hist of ZH mass) ##
 
-mkdir outputmZHSig/loose; cp outputmZHSig/*loose.root outputmZHSig/loose
-mkdir outputmZHSig/tight; cp outputmZHSig/*tight.root outputmZHSig/tight
+mkdir outputmZHSig/catOne; cp outputmZHSig/*catOne.root outputmZHSig/catOne
+mkdir outputmZHSig/catTwo; cp outputmZHSig/*catTwo.root outputmZHSig/catTwo
 
-# loose #
+# catOne #
 
-loosetextfile=nEventZHloose.txt
-looserootfile=mZHmuSetLimitloose.root
-
-echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/loose\"\,\"$looserootfile\"\,\"$loosetextfile\"\)
-
-# tight #
-
-tighttextfile=nEventZHtight.txt
-tightrootfile=mZHmuSetLimittight.root
+catOnetextfile=nEventZHcatOne.txt
+catOnerootfile=mZHmuSetLimitcatOne.root
 
 echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/tight\"\,\"$tightrootfile\"\,\"$tighttextfile\"\)
+root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/catOne\"\,\"$catOnerootfile\"\,\"$catOnetextfile\"\)
+
+# catTwo #
+
+catTwotextfile=nEventZHcatTwo.txt
+catTworootfile=mZHmuSetLimitcatTwo.root
+
+echo -e "*** Generate the necessary text file and root file ***"
+root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/catTwo\"\,\"$catTworootfile\"\,\"$catTwotextfile\"\)
 
 ## check are the necessary files exist ##
 
-if [ -e $loosetextfile ] && [ -e $tighttextfile ] && [ -e $looserootfile ] && [ -e $tightrootfile ]
+if [ -e $catOnetextfile ] && [ -e $catTwotextfile ] && [ -e $catOnerootfile ] && [ -e $catTworootfile ]
 then
-    echo -e "*** The necessary text file " $loosetextfile " and " $tighttextfile " are exist! ***"
-    echo -e "*** The necessary root file " $looserootfile " and " $tightrootfile " are exist! ***"
+    echo -e "*** The necessary text file " $catOnetextfile " and " $catTwotextfile " are exist! ***"
+    echo -e "*** The necessary root file " $catOnerootfile " and " $catTworootfile " are exist! ***"
 else
-    echo -e "*** The necessary text file " $loosetextfile " and " $tighttextfile " doesn't exist! ***"
-    echo -e "*** The necessary root file " $looserootfile " and " $tightrootfile " doesn't exist! ***"
+    echo -e "*** The necessary text file " $catOnetextfile " and " $catTwotextfile " doesn't exist! ***"
+    echo -e "*** The necessary root file " $catOnerootfile " and " $catTworootfile " doesn't exist! ***"
     exit 0
 fi
 
 ## make data cards for the combine tool ##
 
-# loose cards #
+# catOne cards #
 
-loosecarddr=loosedataCards
+catOnecarddr=catOnedataCards
 
-if [ -d $loosecarddr ]
+if [ -d $catOnecarddr ]
 then
-    echo -e "*** Data card directory is " $loosecarddr " ***"
+    echo -e "*** Data card directory is " $catOnecarddr " ***"
 else
-    echo -e "*** Generate data card directory: " $loosecarddr " ***"
-    mkdir $loosecarddr
+    echo -e "*** Generate data card directory: " $catOnecarddr " ***"
+    mkdir $catOnecarddr
 fi
 
-echo -e "*** Make data cards for the combine tool by using: " $loosetextfile " ***"
-echo -e "*** Data cards move to: " $loosecarddr " ***"
+echo -e "*** Make data cards for the combine tool by using: " $catOnetextfile " ***"
+echo -e "*** Data cards move to: " $catOnecarddr " ***"
 
-python MakeDataCards.py $loosetextfile $looserootfile ./$loosecarddr
+python MakeDataCards.py $catOnetextfile $catOnerootfile ./$catOnecarddr
 rm -f DataCard_MXXXGeV.txt
-mv $looserootfile $loosecarddr
+mv $catOnerootfile $catOnecarddr
 
-# tight cards #
+# catTwo cards #
 
-tightcarddr=tightdataCards
+catTwocarddr=catTwodataCards
 
-if [ -d $tightcarddr ]
+if [ -d $catTwocarddr ]
 then
-    echo -e "Data card directory is " $tightcarddr
+    echo -e "Data card directory is " $catTwocarddr
 else
-    echo -e "Generate data card directory: " $tightcarddr
-    mkdir $tightcarddr
+    echo -e "Generate data card directory: " $catTwocarddr
+    mkdir $catTwocarddr
 fi
 
-echo -e "*** Make data cards for the combine tool by using: " $tighttextfile " ***"
-echo -e "*** Data cards move to: " $tightcarddr " ***"
+echo -e "*** Make data cards for the combine tool by using: " $catTwotextfile " ***"
+echo -e "*** Data cards move to: " $catTwocarddr " ***"
 
-python MakeDataCards.py $tighttextfile $tightrootfile ./$tightcarddr
+python MakeDataCards.py $catTwotextfile $catTworootfile ./$catTwocarddr
 rm -f DataCard_MXXXGeV.txt
-mv $tightrootfile $tightcarddr
+mv $catTworootfile $catTwocarddr
 
 ## combine data cards ##
 
@@ -102,9 +102,9 @@ for ((i=0; i<${#massPoints[@]}; i++)); do
     dataCard=DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
     combineCard=combine_DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
 
-    echo -e "*** Combine cards: " $tightcarddr"/"$dataCard " and " $loosecarddr"/"$dataCard " ***"
+    echo -e "*** Combine cards: " $catTwocarddr"/"$dataCard " and " $catOnecarddr"/"$dataCard " ***"
 
-    combineCards.py Name1=$pwd/$tightcarddr/$dataCard Name2=$pwd/$loosecarddr/$dataCard > $combineCard
+    combineCards.py Name1=$pwd/$catTwocarddr/$dataCard Name2=$pwd/$catOnecarddr/$dataCard > $combineCard
 
     echo -e "*** Output card: " $combineCard " move to " $datacarddr " ***"
 
@@ -139,7 +139,7 @@ root -q -b -l plot_Asymptotic.C++\(\"Counting\"\)
 
 mv *pdf /afs/cern.ch/user/h/htong/www
 rm -f *.d *.so *.pcm
-rm -rf outputmZHSig/loose outputmZHSig/tight
+rm -rf outputmZHSig/catOne outputmZHSig/catTwo
 rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"
