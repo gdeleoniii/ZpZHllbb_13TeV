@@ -1,9 +1,21 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include <TH1.h>
-#include <TFile.h>
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include "../untuplizer.h"
 
-Double_t kfactorWeight(Float_t HT){
+Double_t kfactorWeight(TreeReader &data, TF1* fewk_z){
+
+  Int_t         nGenPar     = data.GetInt("nGenPar"); 
+  Int_t*        genParId    = data.GetPtrInt("genParId");
+  Int_t*        genMomParId = data.GetPtrInt("genMomParId");
+  Int_t*        genParSt    = data.GetPtrInt("genParSt");
+  Float_t       HT          = data.GetFloat("HT");
+  TClonesArray* genParP4    = (TClonesArray*)data.GetPtrTObject("genParP4");
+
+  // LO->NLO correction
 
   const Double_t varBins[] = {100,200,400,600,10000000};
 
@@ -20,13 +32,45 @@ Double_t kfactorWeight(Float_t HT){
 
   Double_t k1 = kfactor[h->FindBin(HT)-1];
 
-  /*
-    TFile* inf = new TFile("scalefactors_v4.root");
-    TF1 fewk_z = (TF1*)inf->Get("z_ewkcorr/z_ewkcorr_func");
-    TF1 fewk_w = (TF1*)inf->Get("w_ewkcorr/w_ewkcorr_func");
+  h->Clear();  
+
+  // NLO->NLO+EW correction
+
+  /* 
+
+     Remember put this two lines in your main function:
+
+     TFile* f = TFile::Open("scalefactors_v4.root");
+     TF1* fewk_z = (TF1*)(f->Get("z_ewkcorr/z_ewkcorr_func"));
+
   */
 
+  vector<Int_t> goodLepID;
 
+  for(Int_t ig = 0; ig < nGenPar; ig++){
+
+    Int_t PID    = genParId[ig];
+    Int_t momPID = genMomParId[ig];
+    Int_t status = genParSt[ig];
+
+    if( abs(PID) != 12 && 
+	abs(PID) != 14 && 
+	abs(PID) != 16 ) continue;
+
+    if( status != 1 ) continue;
+
+    if( momPID != 23 && momPID != PID ) continue;
+
+    goodLepID.push_back(ig);
+
+  }
+
+  TLorentzVector* l4_thisLep = (TLorentzVector*)genParP4->At(goodLepID[0]);
+  TLorentzVector* l4_thatLep = (TLorentzVector*)genParP4->At(goodLepID[1]);
+
+  TLorentzVector l4_z = (*l4_thisLep+*l4_thatLep);
+
+  Double_t k2 = fewk_z->Eval(l4_z.Pt());
 
   return k1*k2;
 

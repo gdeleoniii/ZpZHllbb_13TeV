@@ -57,11 +57,10 @@ Double_t kfactorWeight(TreeReader &data, TF1* fewk_z){
 	abs(PID) != 13 && 
 	abs(PID) != 15 ) continue;
 
-    if( (status != 1 && abs(PID) == 11) || 
-	(status != 1 && abs(PID) == 13) || 
+    if( (status != 1 && abs(PID) != 15) || 
 	(status != 2 && abs(PID) == 15) ) continue;
 
-    if( momPID!=23 && momPID != PID ) continue;
+    if( momPID != 23 && momPID != PID ) continue;
 
     goodLepID.push_back(ig);
 
