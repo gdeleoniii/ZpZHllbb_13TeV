@@ -583,20 +583,23 @@ void alphaRplots(std::string outputFolder){
 
   TH1D* h_fluc = (TH1D*)h_PRmass->Clone("h_fluc");
   TH1D* h_hollow_fluc = (TH1D*)h_PRmass->Clone("h_hollow_fluc");
-  TH1D* h_diff = new TH1D("h_diff", "", 20, 0, 200);
+  TH1D* h_bias = new TH1D("h_bias", "", 20, -5,5);
 
-  h_diff->SetLineWidth(1);
-  h_diff->SetFillColor(kYellow);
-  h_diff->GetXaxis()->SetTitle("Events in signal region (|theory - predict|)");
-  h_diff->GetYaxis()->SetTitle("Counts");
-  TFile* testout = new TFile("1000MCfit.root","recreate");
-  TCanvas* d = new TCanvas("d","",0,0,1000,800);
-  for( int n = 0; n < 1000; n++ ){
+  h_bias->SetLineWidth(1);
+  h_bias->SetFillColor(kYellow);
+  h_bias->GetXaxis()->SetTitle("Bias ((fit-true)/true)");
+  h_bias->GetYaxis()->SetTitle("Counts");
+
+  for( int ntoy = 0; ntoy < 1000; ntoy++ ){
 
     h_fluc->Reset();
     h_hollow_fluc->Reset();
 
-    h_fluc->FillRandom(h_PRmass, h_PRmass->Integral());
+    for( int idata = 0; idata < (int)(h_PRmass->Integral()); idata++ ){
+
+      h_fluc->Fill(f_fitPRmass->GetRandom(40,240));
+     
+    }
 
     int nd1 = (105 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
     int nd2 = (135 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
@@ -623,18 +626,14 @@ void alphaRplots(std::string outputFolder){
     f_fluc->FixParameter(0,h_hollow_fluc->Integral());
 
     h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
-    d->cd();
-    h_fluc->SetMarkerColor(kRed);
-    h_fluc->Draw();
-    h_hollow_fluc->Draw("same");
-    d->Write();
 
     double nSigFit = f_fluc->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
 
-    h_diff->Fill(fabs(nSigFit - nSigHist));
+    h_bias->Fill((nSigFit - nSigHist)/nSigHist);
+    //h_pull->Fill((nSigFit - nSigHist)/fitUncertainty);
 
   }
-  testout->Write();
+
   //// End of the test ////  
 
   // Output results
@@ -694,7 +693,7 @@ void alphaRplots(std::string outputFolder){
   c->Print("alphaRatio.pdf");
 
   c->cd()->SetLogy(0);
-  h_diff->Draw();
+  h_bias->Draw();
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
