@@ -583,7 +583,12 @@ void alphaRplots(std::string outputFolder){
 
   TH1D* h_fluc = (TH1D*)h_PRmass->Clone("h_fluc");
   TH1D* h_hollow_fluc = (TH1D*)h_PRmass->Clone("h_hollow_fluc");
-  TH1D* h_bias = new TH1D("h_bias", "", 20, -5,5);
+  TH1D* h_bias = new TH1D("h_bias", "", 100, -1, 1);
+  TH1D* h_pullUp = new TH1D("h_pullUp", "", 100, -1, 1);
+  TH1D* h_pullDw = new TH1D("h_pullDw", "", 100, -1, 1);
+
+  TCanvas* ctemp = new TCanvas("ctemp","",0,0,1000,800);
+  TFile* outemp = new TFile("testtemp.root","recreate");
 
   h_bias->SetLineWidth(1);
   h_bias->SetFillColor(kYellow);
@@ -591,11 +596,11 @@ void alphaRplots(std::string outputFolder){
   h_bias->GetYaxis()->SetTitle("Counts");
 
   for( int ntoy = 0; ntoy < 1000; ntoy++ ){
-
+    if(ntoy%10==1)cout<<ntoy<<endl;
     h_fluc->Reset();
     h_hollow_fluc->Reset();
 
-    for( int idata = 0; idata < (int)(h_PRmass->Integral()); idata++ ){
+    for( int idata = 0; idata < 1e5/*(int)(h_PRmass->Integral())*/; idata++ ){
 
       h_fluc->Fill(f_fitPRmass->GetRandom(40,240));
      
@@ -627,13 +632,20 @@ void alphaRplots(std::string outputFolder){
 
     h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
 
+    // temp region
+    ctemp->cd();
+    h_fluc->SetLineColor(kRed);
+    h_fluc->Draw();
+    h_hollow_fluc->Draw("same");
+    ctemp->Write();
+
     double nSigFit = f_fluc->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
 
     h_bias->Fill((nSigFit - nSigHist)/nSigHist);
     //h_pull->Fill((nSigFit - nSigHist)/fitUncertainty);
 
   }
-
+  outemp->Write();
   //// End of the test ////  
 
   // Output results
