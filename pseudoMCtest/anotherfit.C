@@ -550,11 +550,11 @@ void anotherfit(std::string outputFolder){
 
     TF1* f_fluc = new TF1("f_fluc", hollow_fitPRmass, 40, 240, 5);
 
-    double tempparFitPRm[4] = {1224,-0.107,139.6,107.4};
-
-    f_fluc->SetParameters(tempparFitPRm[0],tempparFitPRm[1],tempparFitPRm[2],tempparFitPRm[3],h_fluc->GetBinWidth(1));
+    f_fluc->FixParameter(1,f_hollow_fitPRmassBKG->GetParameter(1));
+    f_fluc->FixParameter(2,f_hollow_fitPRmassBKG->GetParameter(2));
+    f_fluc->FixParameter(3,f_hollow_fitPRmassBKG->GetParameter(3));
     f_fluc->FixParameter(4,h_hollow_fluc->GetBinWidth(1));
-    f_fluc->FixParameter(0,h_hollow_fluc->Integral());
+
 
     h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
 
