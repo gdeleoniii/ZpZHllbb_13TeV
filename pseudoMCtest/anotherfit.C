@@ -377,17 +377,9 @@ void anotherfit(std::string outputFolder){
 
   // Declare prefer histogram and add them together
 
-  TH1D* h_hollow_PRmassBKG = addSamples(infiles,"corrPRmass_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
   TH1D* h_PRmassBKG     = addSamples(infiles,"corrPRmassAll_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
   TH1D* h_hollow_PRmass = addSamples(infiles,"corrPRmass_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
   TH1D* h_PRmass        = addSamples(infiles,"corrPRmassAll_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-
-  h_hollow_PRmassBKG->SetMarkerStyle(8);
-  h_hollow_PRmassBKG->SetMarkerSize(1.5);
-  h_hollow_PRmassBKG->SetLineColor(kBlack);
-  h_hollow_PRmassBKG->SetXTitle("Side band corrected pruned mass in pseudo-data");
-  h_hollow_PRmassBKG->SetYTitle("Event numbers");
-  h_hollow_PRmassBKG->SetTitleFont(62);
 
   h_PRmassBKG->SetMarkerStyle(8);
   h_PRmassBKG->SetMarkerSize(1.5);
@@ -414,7 +406,6 @@ void anotherfit(std::string outputFolder){
 
   for( int i = 1; i <= h_PRmass->GetNbinsX(); i++ ){
 
-    h_hollow_PRmassBKG->SetBinError(i,TMath::Sqrt(h_hollow_PRmassBKG->GetBinContent(i)));
     h_PRmassBKG->SetBinError(i,TMath::Sqrt(h_PRmassBKG->GetBinContent(i)));
     h_hollow_PRmass->SetBinError(i,TMath::Sqrt(h_hollow_PRmass->GetBinContent(i)));
     h_PRmass->SetBinError(i,TMath::Sqrt(h_PRmass->GetBinContent(i)));
@@ -466,19 +457,6 @@ void anotherfit(std::string outputFolder){
   g_errorBands->SetFillStyle(1001);
   g_errorBands->SetFillColor(kYellow);
 
-  // Fit pruned mass without signal region in MC (BKG)
-
-  TF1* f_hollow_fitPRmassBKG = new TF1("f_hollow_fitPRmassBKG", hollow_fitPRmass, 40, 240, 5);
-
-  f_hollow_fitPRmassBKG->SetLineWidth(2);
-  f_hollow_fitPRmassBKG->SetLineColor(kBlue);
-  f_hollow_fitPRmassBKG->SetParameters(parFitPRm[0],parFitPRm[1],parFitPRm[2],parFitPRm[3],h_hollow_PRmassBKG->GetBinWidth(1));
-  f_hollow_fitPRmassBKG->FixParameter(4,h_hollow_PRmassBKG->GetBinWidth(1));
-  f_hollow_fitPRmassBKG->FixParameter(0,h_hollow_PRmassBKG->Integral());
-
-  h_hollow_PRmassBKG->Fit("f_hollow_fitPRmassBKG", "Q", "", 40, 240);
-  h_hollow_PRmassBKG->SetMaximum(190);
-
   // Fit pruned mass without signal region 
 
   TF1* f_hollow_fitPRmass = new TF1("f_hollow_fitPRmass", hollow_fitPRmass, 40, 240, 5);
@@ -486,9 +464,9 @@ void anotherfit(std::string outputFolder){
   f_hollow_fitPRmass->SetLineWidth(2);
   f_hollow_fitPRmass->SetLineColor(kBlue);
  
-  f_hollow_fitPRmass->FixParameter(1,f_hollow_fitPRmassBKG->GetParameter(1));
-  f_hollow_fitPRmass->FixParameter(2,f_hollow_fitPRmassBKG->GetParameter(2));
-  f_hollow_fitPRmass->FixParameter(3,f_hollow_fitPRmassBKG->GetParameter(3));
+  f_hollow_fitPRmass->FixParameter(1,f_fitPRmassBKG->GetParameter(1));
+  f_hollow_fitPRmass->FixParameter(2,f_fitPRmassBKG->GetParameter(2));
+  f_hollow_fitPRmass->FixParameter(3,f_fitPRmassBKG->GetParameter(3));
   f_hollow_fitPRmass->FixParameter(4,h_hollow_PRmass->GetBinWidth(1));
  
   h_hollow_PRmass->Fit("f_hollow_fitPRmass", "Q", "", 40, 240);
@@ -550,11 +528,10 @@ void anotherfit(std::string outputFolder){
 
     TF1* f_fluc = new TF1("f_fluc", hollow_fitPRmass, 40, 240, 5);
 
-    f_fluc->FixParameter(1,f_hollow_fitPRmassBKG->GetParameter(1));
-    f_fluc->FixParameter(2,f_hollow_fitPRmassBKG->GetParameter(2));
-    f_fluc->FixParameter(3,f_hollow_fitPRmassBKG->GetParameter(3));
+    f_fluc->FixParameter(1,f_fitPRmassBKG->GetParameter(1));
+    f_fluc->FixParameter(2,f_fitPRmassBKG->GetParameter(2));
+    f_fluc->FixParameter(3,f_fitPRmassBKG->GetParameter(3));
     f_fluc->FixParameter(4,h_hollow_fluc->GetBinWidth(1));
-
 
     h_hollow_fluc->Fit("f_fluc", "Q", "", 40, 240);
 
@@ -601,7 +578,7 @@ void anotherfit(std::string outputFolder){
   lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("anotherfit.pdf(");
-  
+
   c->cd()->SetLogy(0);
   h_hollow_PRmass->Draw();
   g_hollow_errorBands->Draw("3same");
