@@ -21,7 +21,7 @@ catOnetextfile=nEventZHcatOne.txt
 catOnerootfile=mZHmuSetLimitcatOne.root
 
 echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/catOne\"\,\"$catOnerootfile\"\,\"$catOnetextfile\"\)
+root -q -b -l ZHeventplots.C++\(\"outputmZHSig/catOne\"\,\"$catOnerootfile\"\,\"$catOnetextfile\"\)
 
 # catTwo #
 
@@ -29,7 +29,7 @@ catTwotextfile=nEventZHcatTwo.txt
 catTworootfile=mZHmuSetLimitcatTwo.root
 
 echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l mZHSIGplots.C++\(\"outputmZHSig/catTwo\"\,\"$catTworootfile\"\,\"$catTwotextfile\"\)
+root -q -b -l ZHeventplots.C++\(\"outputmZHSig/catTwo\"\,\"$catTworootfile\"\,\"$catTwotextfile\"\)
 
 ## check are the necessary files exist ##
 
@@ -131,15 +131,16 @@ done
 ## plot the results from the root files generate from combine tool ##
 
 cd $pwd
-echo -e "*** Plot the results using plot_Asymptotic.C ***"
+echo -e "*** Plot the results using plotAsymptotic.C ***"
 
-root -q -b -l plot_Asymptotic.C++\(\"Counting\"\)
+root -q -b -l plotAsymptotic.C++\(\)
 
 ## all jobs are completed ##
 
 mv *pdf /afs/cern.ch/user/h/htong/www
-rm -f *.d *.so *.pcm
+rm -f *.d *.so *.pcm 
 rm -rf outputmZHSig/catOne outputmZHSig/catTwo
+rm -rf $catOnecarddr $catTwocarddr
 rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"
