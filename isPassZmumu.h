@@ -10,12 +10,12 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
   
   goodMuID.clear();
 
-  Int_t    nMu         = data.GetInt("nMu");
-  Int_t*   muCharge    = data.GetPtrInt("muCharge");
-  Float_t* muMiniIsoEA = data.GetPtrFloat("muMiniIsoEA");
-  TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
-  vector<bool>& isHighPtMuon        = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
-  vector<bool>& isCustomTrackerMuon = *((vector<bool>*) data.GetPtr("isCustomTrackerMuon"));
+  const Int_t    nMu         = data.GetInt("nMu");
+  const Int_t*   muCharge    = data.GetPtrInt("muCharge");
+  const Float_t* muMiniIsoEA = data.GetPtrFloat("muMiniIsoEA");
+  const TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
+  const vector<bool>& isHighPtMuon        = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
+  const vector<bool>& isCustomTrackerMuon = *((vector<bool>*) data.GetPtr("isCustomTrackerMuon"));
 
   // select good muons
       

@@ -10,12 +10,12 @@ bool isPassZee(TreeReader &data, vector<Int_t>& goodEleID){
 
   goodEleID.clear();
 
-  Int_t    nEle       = data.GetInt("nEle");
-  Int_t*   eleCharge  = data.GetPtrInt("eleCharge");
-  Float_t* eleScEta   = data.GetPtrFloat("eleScEta");
-  Float_t* eleMiniIsoEA = data.GetPtrFloat("eleMiniIsoEA");
-  TClonesArray* eleP4 = (TClonesArray*) data.GetPtrTObject("eleP4");
-  vector<bool>& eleIsPassHEEPNoIso = *((vector<bool>*) data.GetPtr("eleIsPassHEEPNoIso"));
+  const Int_t    nEle       = data.GetInt("nEle");
+  const Int_t*   eleCharge  = data.GetPtrInt("eleCharge");
+  const Float_t* eleScEta   = data.GetPtrFloat("eleScEta");
+  const Float_t* eleMiniIsoEA = data.GetPtrFloat("eleMiniIsoEA");
+  const TClonesArray* eleP4 = (TClonesArray*) data.GetPtrTObject("eleP4");
+  const vector<bool>& eleIsPassHEEPNoIso = *((vector<bool>*) data.GetPtr("eleIsPassHEEPNoIso"));
 
   // select good electrons
         

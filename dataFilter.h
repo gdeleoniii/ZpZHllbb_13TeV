@@ -5,8 +5,8 @@
 
 bool TriggerStatus(TreeReader &data, std::string TRIGGERNAME){
 
-  std::string* trigName    = data.GetPtrString("hlt_trigName");
-  vector<bool>& trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
+  const std::string* trigName    = data.GetPtrString("hlt_trigName");
+  const vector<bool>& trigResult = *((vector<bool>*) data.GetPtr("hlt_trigResult"));
 
   bool triggerStat = false;
 
@@ -30,8 +30,8 @@ bool TriggerStatus(TreeReader &data, std::string TRIGGERNAME){
 
 bool FilterStatus(TreeReader &data, std::string FILTERNAME){
 
-  std::string* filterName    = data.GetPtrString("hlt_filterName");
-  vector<bool>& filterResult = *((vector<bool>*) data.GetPtr("hlt_filterResult"));
+  const std::string* filterName    = data.GetPtrString("hlt_filterName");
+  const vector<bool>& filterResult = *((vector<bool>*) data.GetPtr("hlt_filterResult"));
 
   bool filterStat = false;
     

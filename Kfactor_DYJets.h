@@ -8,12 +8,12 @@
 
 Double_t kfactorWeight(TreeReader &data, TF1* fewk_z){
 
-  Int_t         nGenPar     = data.GetInt("nGenPar"); 
-  Int_t*        genParId    = data.GetPtrInt("genParId");
-  Int_t*        genMomParId = data.GetPtrInt("genMomParId");
-  Int_t*        genParSt    = data.GetPtrInt("genParSt");
-  Float_t       HT          = data.GetFloat("HT");
-  TClonesArray* genParP4    = (TClonesArray*)data.GetPtrTObject("genParP4");
+  const Int_t         nGenPar     = data.GetInt("nGenPar"); 
+  const Int_t*        genParId    = data.GetPtrInt("genParId");
+  const Int_t*        genMomParId = data.GetPtrInt("genMomParId");
+  const Int_t*        genParSt    = data.GetPtrInt("genParSt");
+  const Float_t       HT          = data.GetFloat("HT");
+  const TClonesArray* genParP4    = (TClonesArray*)data.GetPtrTObject("genParP4");
 
   // LO->NLO correction
 
