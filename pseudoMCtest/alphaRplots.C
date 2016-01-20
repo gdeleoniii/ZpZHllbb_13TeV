@@ -23,10 +23,14 @@ const double xmax  = 5000;
 const int    nBins = (xmax-xmin)/100;
 
 double dataLumi  = 3000; //pb-1
-double xSecDY100 = 147.4;
-double xSecDY200 = 40.99;
-double xSecDY400 = 5.678;
-double xSecDY600 = 2.198;
+double xSecDY100 = 147.4*1.23;
+double xSecDY200 = 40.99*1.23;
+double xSecDY400 = 5.678*1.23;
+double xSecDY600 = 2.198*1.23;
+double xSecTT    = 831.76;
+double xSecWW    = 118.7;
+double xSecWZ    = 47.13;
+double xSecZZ    = 16.523;
 
 TFile* getFile(std::string infiles, std::string hname, 
 	       double crossSection, double* scale){
@@ -45,7 +49,7 @@ TFile* getFile(std::string infiles, std::string hname,
 
 }
 
-TH1D* addSamples(std::vector<string>& infiles, std::string hname,
+TH1D* addMainBkg(std::vector<string>& infiles, std::string hname,
 		 TFile* f_DY100, TFile* f_DY200, TFile* f_DY400, TFile* f_DY600){ 
 
   double scaleDY100 = 0;
@@ -81,6 +85,47 @@ TH1D* addSamples(std::vector<string>& infiles, std::string hname,
   h_Total->Add(DY200_temp,scaleDY200);
   h_Total->Add(DY400_temp,scaleDY400);
   h_Total->Add(DY600_temp,scaleDY600);
+
+  return h_Total;
+
+}
+
+TH1D* addMinorBkg(std::vector<string>& infiles, std::string hname,
+		  TFile* f_TT, TFile* f_WW, TFile* f_WZ, TFile* f_ZZ){ 
+
+  double scaleTT = 0;
+  double scaleWW = 0;
+  double scaleWZ = 0;
+  double scaleZZ = 0;
+
+  for(unsigned int i = 0; i < infiles.size(); i++){
+
+    if( infiles[i].find("TT_") != std::string::npos )
+      f_TT = getFile(infiles[i].data(), hname.data(), xSecTT, &scaleTT);
+
+    if( infiles[i].find("WW_") != std::string::npos )
+      f_WW = getFile(infiles[i].data(), hname.data(), xSecWW, &scaleWW);
+
+    if( infiles[i].find("WZ_") != std::string::npos )
+      f_WZ = getFile(infiles[i].data(), hname.data(), xSecWZ, &scaleWZ);
+
+    if( infiles[i].find("ZZ_") != std::string::npos )
+      f_ZZ = getFile(infiles[i].data(), hname.data(), xSecZZ, &scaleZZ);
+
+  }
+
+  TH1D* TT_temp = (TH1D*)(f_TT->Get(Form("%s",hname.c_str())));
+  TH1D* WW_temp = (TH1D*)(f_WW->Get(Form("%s",hname.c_str())));
+  TH1D* WZ_temp = (TH1D*)(f_WZ->Get(Form("%s",hname.c_str())));
+  TH1D* ZZ_temp = (TH1D*)(f_ZZ->Get(Form("%s",hname.c_str())));
+
+  TH1D* h_Total = (TH1D*)(f_TT->Get(Form("%s",hname.c_str())))->Clone("h_Total");
+
+  h_Total->Reset();
+  h_Total->Add(TT_temp,scaleTT);
+  h_Total->Add(WW_temp,scaleWW);
+  h_Total->Add(WZ_temp,scaleWZ);
+  h_Total->Add(ZZ_temp,scaleZZ);
 
   return h_Total;
 
@@ -222,7 +267,7 @@ double fitPRmass(double* v, double* p){
 
   if( p[3] < 1e-2 ) width_tmp = 1e-2;
 
-  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/integral_ErfExp(p[1],p[2],width_tmp, 40, 240)*binwidth;
+  return p[0]*ErfExp(x,p[1],p[2],width_tmp)/integral_ErfExp(p[1],p[2],width_tmp,40,240)*binwidth;
 
 }
 
@@ -377,12 +422,12 @@ void alphaRplots(std::string outputFolder){
 
   // Declare prefer histogram and add them together
 
-  TH1D* h_sideTotalBKG  = addSamples(infiles,"ZprimeSide_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_signTotalBKG  = addSamples(infiles,"ZprimeSign_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_sideDATA      = addSamples(infiles,"ZprimeSide_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_signDATA      = addSamples(infiles,"ZprimeSign_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_hollow_PRmass = addSamples(infiles,"corrPRmass_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
-  TH1D* h_PRmass        = addSamples(infiles,"corrPRmassAll_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_sideTotalBKG  = addMainBkg(infiles,"ZprimeSide_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_signTotalBKG  = addMainBkg(infiles,"ZprimeSign_pMC",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_sideDATA      = addMainBkg(infiles,"ZprimeSide_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_signDATA      = addMainBkg(infiles,"ZprimeSign_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_hollow_PRmass = addMainBkg(infiles,"corrPRmass_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
+  TH1D* h_PRmass        = addMainBkg(infiles,"corrPRmassAll_pDA",f_DY100,f_DY200,f_DY400,f_DY600);
 
   h_sideTotalBKG->SetMarkerStyle(8);
   h_sideTotalBKG->SetMarkerSize(1.5);
@@ -450,7 +495,6 @@ void alphaRplots(std::string outputFolder){
   f_fitPRmass->FixParameter(0,h_PRmass->Integral());
 
   h_PRmass->Fit("f_fitPRmass", "Q", "", 40, 240);
-  h_PRmass->SetMaximum(190);
 
   double chisqr_cpma = f_fitPRmass->GetChisquare();
   int ndf_cpma = f_fitPRmass->GetNDF();
@@ -477,7 +521,6 @@ void alphaRplots(std::string outputFolder){
   f_hollow_fitPRmass->FixParameter(0,h_hollow_PRmass->Integral());
 
   h_hollow_PRmass->Fit("f_hollow_fitPRmass", "Q", "", 40, 240);
-  h_hollow_PRmass->SetMaximum(190);
 
   double chisqr_cpm = f_hollow_fitPRmass->GetChisquare();
   int ndf_cpm = f_hollow_fitPRmass->GetNDF();
@@ -583,7 +626,7 @@ void alphaRplots(std::string outputFolder){
 
   TH1D* h_fluc = (TH1D*)h_PRmass->Clone("h_fluc");
   TH1D* h_hollow_fluc = (TH1D*)h_PRmass->Clone("h_hollow_fluc");
-  TH1D* h_bias = new TH1D("h_bias", "", 100, -1, 1);
+  TH1D* h_bias = new TH1D("h_bias", "", 100, -0.5, 0.5);
   TH1D* h_pullUp = new TH1D("h_pullUp", "", 100, -1, 1);
   TH1D* h_pullDw = new TH1D("h_pullDw", "", 100, -1, 1);
 
@@ -600,13 +643,13 @@ void alphaRplots(std::string outputFolder){
     h_fluc->Reset();
     h_hollow_fluc->Reset();
 
-    for( int idata = 0; idata < 1e5/*(int)(h_PRmass->Integral())*/; idata++ ){
+    for( int idata = 0; idata < (int)(h_PRmass->Integral()); idata++ ){
 
       h_fluc->Fill(f_fitPRmass->GetRandom(40,240));
      
     }
 
-    int nd1 = (105 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
+    int nd1 = (105 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1)+1;
     int nd2 = (135 - h_fluc->GetBinLowEdge(1))/h_fluc->GetBinWidth(1);
 
     double nSigHist = h_fluc->Integral(nd1,nd2);
@@ -634,18 +677,29 @@ void alphaRplots(std::string outputFolder){
 
     // temp region
     ctemp->cd();
-    h_fluc->SetLineColor(kRed);
+    h_fluc->SetMarkerColor(kRed);
     h_fluc->Draw();
     h_hollow_fluc->Draw("same");
     ctemp->Write();
+    //
 
-    double nSigFit = f_fluc->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
+    double nSigFit = f_fluc->Integral(105.00000000,135.00000000)/h_hollow_fluc->GetBinWidth(1);
 
     h_bias->Fill((nSigFit - nSigHist)/nSigHist);
-    //h_pull->Fill((nSigFit - nSigHist)/fitUncertainty);
+
+    double fitUncUp = 0;
+    double fitUncDw = 0;
+
+    // calculate pull
+    //    double nBkgSig = f_hollow_fitPRmass->Integral(105,135)/h_hollow_fluc->GetBinWidth(1);
+    //    fitUncertainty(false, f_hollow_fitPRmass, &corrMatrix, hollow_fitPRmass, h_PRmass, nBkgSig, &fitUncUp, &fitUncDw);
+
+    //h_pullUp->Fill((nSigFit - nSigHist)/fitUncUp);
+    //h_pullDw->Fill((nSigFit - nSigHist)/fitUncDw);
 
   }
   outemp->Write();
+  h_bias->Fit("gaus");
   //// End of the test ////  
 
   // Output results
@@ -673,7 +727,7 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpma,ndf_cpma));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf(");
   
@@ -686,7 +740,7 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
   
@@ -700,13 +754,13 @@ void alphaRplots(std::string outputFolder){
   leg->AddEntry(g_hollow_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.25, 0.40, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
 
   c->cd()->SetLogy(0);
   h_bias->Draw();
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
   
@@ -714,7 +768,7 @@ void alphaRplots(std::string outputFolder){
   h_signTotalBKG->Draw();
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sgb,ndf_sgb));
   lar->DrawLatexNDC(0.50, 0.70, "#font[22]{#color[4]{f_{signal}(x) = p_{0} e^{p_{1}x + #frac{p_{2}}{x}}}}");
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
 
@@ -722,7 +776,7 @@ void alphaRplots(std::string outputFolder){
   h_sideTotalBKG->Draw();
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sdb,ndf_sdb));
   lar->DrawLatexNDC(0.50, 0.70, "#font[22]{#color[4]{f_{side}(x) = p_{0} e^{p_{1}x + #frac{p_{2}}{x}}}}");
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");
 
@@ -732,7 +786,7 @@ void alphaRplots(std::string outputFolder){
   leg->Clear();
   leg->AddEntry(f_fitAlphaR, "#frac{f_{signal}(x)}{f_{side}(x)}", "l");
   leg->Draw();
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRatio.pdf");  
 
@@ -751,7 +805,7 @@ void alphaRplots(std::string outputFolder){
   h_signDATA->GetXaxis()->SetLabelSize(0);
   h_signDATA->Draw();
   h_numbkgDATA->Draw("same");
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2015");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
   lar->DrawLatexNDC(0.70, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
   leg->Clear();
   leg->AddEntry(h_signDATA, "Truth backgrounds", "lp");
