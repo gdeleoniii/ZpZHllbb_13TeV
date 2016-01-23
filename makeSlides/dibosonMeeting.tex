@@ -62,12 +62,12 @@
   \includegraphics[width=2cm]{ncu.jpg}
 }
 
-\title[]{Update for toy-MC test in $Z' \rightarrow ZH \rightarrow llbb$} % The short title appears at the bottom of every slide, the full title is only on the title page
+\title[]{Toy-MC test in $Z' \rightarrow ZH \rightarrow llbb$} % The short title appears at the bottom of every slide, the full title is only on the title page
 \author[Henry Tong]{Yee-Shian Henry Tong} % Your name
 \institute[NCU]{ % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
   National Central University \\ % Your institution for the title page
   \medskip
-  \textit{NCU HEP Group Meeting} % Your email address
+  \textit{Diboson Meeting} % Your email address
 }
 \date{\today} % Date, can be changed to a custom date
 
@@ -82,33 +82,18 @@
 % PRESENTATION SLIDES
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: method}
+  \frametitle{1000 toy-MC test: Method}
   \justifying
   \begin{footnotesize}
     \begin{itemize}
-    \item Besides chi-square fitting, we use another fitting method to test if it can improve the bias in the signal region of pruned mass diatribution.
-    \item The method is as follow:
+    \item Fit the pruned mass distribution (40-240 GeV) in MC (*)
+    \item Generate 1000 toy-MC samples by filling histogram with random data from original fitting function (from the pruned mass distribution (40-240 GeV) in pesudo-data). The total event number is equal to the number as pseudo-data. This is in order to make the shape consistent.
+    \item Dig out the signal region from the 1000 samples, left only side band region for fitting in next step.
+    \item Fit the 1000 toy-MC samples by fixing the "shape" parameters get from (*), left only one degree of freedom (which is normalization parameter).
+    \item Calculate the bias in signal region (105 - 135 GeV) from the formula:
       \begin{itemize}
-      \item Fit the pruned mass distribution (40-240 GeV) in MC (*)
-      \item Generate 1000 toy-MC samples by filling histogram with random data from original fitting function (from the pruned mass distribution (40-240 GeV) in pesudo-data). The total event number is equal to the number as pseudo-data. This is in order to make the shape consistent.
-      \item Dig out the signal region from the 1000 samples, left only side band region for fitting in next step.
-      \item Fit the 1000 toy-MC samples by fixing the "shape" parameters get from (*), left only one degree of freedom (which is normalization parameter).
-      \item Calculate the bias in signal region (105 - 135 GeV) from the formula:  bias =( estimate events from fitting curve - true event from histogram ) / true event from histogram.
+      \item bias = ( estimate events from fitting curve - true event from histogram ) / true event from histogram.
       \end{itemize}
-    \end{itemize}
-  \end{footnotesize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{1000 toy-MC test: method}
-  \justifying
-  \begin{footnotesize}
-    \begin{itemize}
-    \item Based on a good bias (good fitting estimation), we can check pull to know the reliability of fitting. 
-      \begin{itemize}
-      \item pull = ( estimate events from fitting curve - true event from histogram ) / fit uncertainty 
-      \end{itemize} 
-    \item In general, a good bias and good pull are both Gaussian distribution with mean = 0 and sigma $<=$ 1.
     \end{itemize}
   \end{footnotesize}
 \end{frame}
@@ -120,12 +105,72 @@
     \begin{itemize}
     \item We have two fitting functions to deal with the pruned mass which is with or without signal region.
     \item For the pruned mass with signal region,
-      \[\frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4 K_0}\]
+      \[f(x) = \frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4 K_0}\]
+      \begin{itemize}
+      \item $K_0$ is the integrated area from 40-240 GeV.
+      \end{itemize}
     \item For the pruned mass without signal region,
-      \[\frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4(K_1+K_2)}\]
-    \item $K_i$ is a difference of complex $ErfExp$ function. Please see \url{https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/pseudoMCtest/alphaRplots.C\#L172-L215}
+      \[f(x) = \frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4(K_1+K_2)}\]
+      \begin{itemize}
+      \item $K_1$ is the integrated area from 40-65 GeV. 
+      \item $K_2$ is the integrated area from 145-240 GeV.
+      \end{itemize}
+    \item $p_4$ is the histogram bin width.
     \end{itemize}
   \end{footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Preselections}
+  \begin{center}
+    \begin{tiny}
+      \begin{tabular}[t]{ | l | l | }
+        \hline
+        HLT       
+        & HLT\_Ele105\_CaloIdVT\_GsfTrkIdT\_* or HLT\_Mu45\_eta2p1\_*  \\
+        \hline
+        nVtx 
+        & $>=$ 1                                         \\
+        \hline
+        \multirow{7}{*}{Electrons} 
+        & $|\eta|$ $<$ 2.5                               \\
+        & remove 1.4442 $<$ $|\eta|$ $<$ 1.566           \\
+        & HEEP NoIso ID                                  \\
+        & rho-corrected mini Iso $<$ 0.1                 \\
+        & Leading electron $p_T$ $>$ 115 GeV             \\
+        & Sub-leading electron $p_T$ $>$ 35 GeV          \\
+        & Two electrons have opposite charge             \\
+        \hline
+        \multirow{8}{*}{Muons}
+        & Custom Teacker Muon ID                         \\ 
+        & One of both pass High $p_T$ Muon ID            \\
+        & mini Iso $<$ 0.2                               \\
+        & Muon $p_T$ $>$ 20 GeV                          \\
+        & Muon $|\eta|$ $<$ 2.4                          \\
+        & At least one muon $p_T$ $>$ 50 GeV             \\
+        & At least one muon $|\eta|$ $<$ 2.1             \\
+        & Two muons have opposite charge                 \\
+        \hline
+        \multirow{2}{*}{Z bosons}
+        & 70GeV $<$ $M_{ll}$ $<$ 110 GeV                 \\
+        & $p_{Tll}$ $>$ 200 GeV                          \\
+        \hline
+        \multirow{6}{*}{AK8 jets}
+        & $|\eta|$ $<$ 2.4                               \\ 
+        & $p_T$ $>$ 200 GeV                              \\
+        & FATjetPassIDLoose                              \\
+        & $\Delta R$ between jet and lepton $>$ 0.8      \\
+        & side band: 40 GeV $<$ corrPRmass $<$ 65 GeV, corrPRmass $>$ 145 GeV \\
+        & signal region: 105 GeV $<$ corrPRmass $<$ 135 GeV \\
+        \hline
+        $ZH$ mass                 
+        & $>$ 500 GeV                                    \\
+        \hline      
+      \end{tabular}
+      \captionof{table}{\footnotesize{Preselections for the background estimation.}}
+      \label{tab:select}
+    \end{tiny}
+  \end{center}
 \end{frame}
 
 \begin{frame}
@@ -189,56 +234,14 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Background estimation using muon data set}
+  \frametitle{Conclusions}
   \begin{center}
     \begin{footnotesize}
       \begin{itemize}
-      \item I replace the muon data set from pseudo-data ( come from MC) to do the same thing. The MC samples (background) are still DY+Jets.
-      \item In this study, I use the real data luminosity, but I didn't remove the $t\bar{t}$ background and diboson backgrounds (because I dont't know how).
-      \item The fitting error band are wide when fitting the pruned mass (side band + signal region), but the error band didn't comes out when I fit the pruned mass which is side band only.
-      \item The curve of $\alpha$ ratio are bad in high ZH mass region.
+      \item The bias is reduced when the number of events in each toy-MC sample is large.
+      \item The bias is smaller when fixing the shape parameters and the size is about 2\% when the number of events in each toy MC is equivalent to the number of events in data.
       \end{itemize}
     \end{footnotesize}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Results: pruned mass distribution of data}
-  \begin{center}
-    \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=1]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=2]{alphaRwtData.pdf} \\
-    \end{tabular}
-    \captionof{table}{\footnotesize{Left: Side band + signal region. Right: Side band only.}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Results: ZH mass distribution of MC}
-  \begin{center}
-    \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=4]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=5]{alphaRwtData.pdf} \\
-    \end{tabular}
-    \captionof{table}{\footnotesize{Left: Signal region. Right: Side band.}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Results: $\alpha$ ratio and predicted background}
-  \begin{center}
-    \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=6]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=7]{alphaRwtData.pdf} \\
-    \end{tabular}
-    \captionof{table}{\footnotesize{Left: $\alpha$ ratio as a function of ZH mass. Right: The predicted background as a function of ZH mass, in signal region of data. The number is 47 + ? - ?.}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Comparison of expected limit in two cases}
-  \begin{center}
-    \includegraphics[width=0.75\textwidth]{use.pdf}
   \end{center}
 \end{frame}
 

@@ -1,0 +1,219 @@
+\documentclass[a0,portrait]{a0poster}
+
+\usepackage[top=2.2cm, bottom=2.2cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{lmodern}
+\usepackage[fontsize=29.5pt]{scrextend}
+\usepackage{amsmath,xspace,wrapfig}
+\usepackage[format=hang]{caption}
+\usepackage{multicol,multirow,fancybox}
+\usepackage{color,graphicx,subfigure}
+\usepackage{pdfposter}
+\usepackage[svgnames]{xcolor}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\renewcommand{\baselinestretch}{1.15} % Line spacing 
+\renewcommand{\arraystretch}{1.15} % Table line spacing
+\renewcommand{\rmdefault}{phv} % Arial
+\renewcommand{\sfdefault}{phv} % Arial
+
+\pagecolor{DarkCyan}
+
+\begin{document}
+\begin{center}
+
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %                           Start of Header                                    %
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \begin{titlebox}
+    
+    \begin{minipage}[c]{0.085\textwidth}
+      \resizebox{\textwidth}{!}{\includegraphics{images/cms.jpg}}\vspace{1em}
+    \end{minipage}
+    \begin{minipage}[c]{0.80\textwidth}
+      \begin{center}
+        \color{FireBrick}
+        \textbf{\huge Background estimation in the search for \\[0.5em] $Z' \rightarrow ZH \rightarrow llbb$ at $\sqrt{s}$ = 13 TeV with the CMS detector} \\[1.8em]
+        \noindent
+        \color{Black}
+        \textsc{\Large \underline{Yee-Shian Henry Tong}, Shin-Shan Eiko Yu, Raman Khurana} \\[0.8em]
+        \noindent
+            {\large %
+              Department of Physics, National Central University, TaoYuan, Taiwan
+            }
+      \end{center}
+    \end{minipage}
+    \begin{minipage}[r]{0.105\textwidth}
+      \resizebox{\textwidth}{!}{\includegraphics{images/ncu.jpg}}
+    \end{minipage}
+    
+  \end{titlebox}
+  
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %                             End of Header                                    %
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \vspace{-0.4em}
+
+  \begin{multicols}{1}
+    
+    \begin{textbox0}
+      \section*{\color{FireBrick} Abstract}
+      
+      We present the study of standard model (SM) background with the observed data for $Z' \rightarrow ZH \rightarrow llbb$ at $\sqrt{s}$ = 13 TeV with luminosity = 2.08 $fb^{-1}$. We define the signal region, and side-band region as a pure background control region by using $H (\rightarrow b\bar{b})$ jet mass distribution. In order to estimate the final background, we consider the $m_{ZH}$ Monte-Carlo (MC) mass spectrum in the signal and side-band region. A ratio $\alpha (m_{ZH})$ of the two allows a prediction of the mass spectrum in the signal region starting from the measured distribution in the side-band. Under the assumption that this extrapolation from the side-band to the signal region works in the same way both for data and MC, we can estimate the final background distribution by multiplying the $m_{ZH}$ mass spectrum observed in the side-band by this $\alpha$ ratio.
+
+    \end{textbox0}
+
+  \end{multicols}
+  
+  \vspace{-1.25em}
+
+  \begin{multicols}{3}
+    
+    \begin{textbox}
+      \section*{\color{FireBrick} Introduction}
+
+      The aim of this analysis is to compare the predicted SM background with the observed data. We develop a data driven strategy for background estimation, to minimize the dependence on the MC. The signal region is defined in the range [105,135] GeV of the Higgs jet mass, in order to contain as much signal as possible. The side-band region is defined in the range [40,65] GeV and [145,$\infty$) GeV of the Higgs jet mass, as a pure background control region.
+        \vspace{0.85em}
+        \begin{center}
+          \includegraphics[width=0.72\textwidth]{images/fey.jpg}
+          \captionof{figure}{\small{\color{DarkRed} The Feynman diagram of the physics process of $Z' \rightarrow ZH \rightarrow llbb$.}}
+          \label{fig:feyman}
+        \end{center}
+    \end{textbox}
+
+    \begin{textbox}
+      \section*{\color{FireBrick} Pre-selections}
+
+      The following criteria are applied to select Z candidates and Higgs candidates.
+
+      \begin{center}
+        \begin{footnotesize}
+          \begin{tabular}[t]{ | p{6cm} | p{14.5cm} | }
+            \hline
+            \bf Objects
+            & \bf Requirements                         \\
+            \hline
+            \multirow{8}{*}{Muons}
+            & Pass tracker muon ID                     \\
+            & One of both pass high $p_T$ muon ID      \\
+            & Isolation $<$ 0.2                        \\
+            & $p_T$ $>$ 20 GeV                         \\
+            & $|\eta|$ $<$ 2.4                         \\
+            & At least one muon $p_T$ $>$ 50 GeV       \\
+            & At least one muon $|\eta|$ $<$ 2.1       \\
+            & Two muons have opposite charge           \\
+            \hline
+            \multirow{2}{*}{Z bosons}
+            & 70GeV $<$ $M_{ll}$ $<$ 110 GeV           \\
+            & $p_{Tll}$ $>$ 200 GeV                    \\
+            \hline
+            \multirow{3}{*}{AK8 jets}
+            & $|\eta|$ $<$ 2.4                          \\
+            & $p_T$ $>$ 200 GeV                         \\
+            & $\Delta R$ between jet and lepton $>$ 0.8 \\
+            \hline
+            $Z'$
+            & $M_{ZH}$ $>$ 500 GeV                      \\
+            \hline
+          \end{tabular}
+          \captionof{table}{\small{\color{DarkRed} Summary of pre-selections in the analysis.}}
+          \label{tab:select}
+        \end{footnotesize}
+      \end{center}
+    \end{textbox}
+
+    \begin{textbox}
+      \section*{\color{FireBrick} Fit bias test}
+      
+      The fit bias test using toy MC shows that, due to the smaller number of events in data, the fitter result has a -2\% bias on the number of background events in the signal region.
+
+      \begin{center}
+        \includegraphics[page=5,width=0.949\textwidth]{images/aRanoorg.pdf}
+        \captionof{figure}{\small{\color{DarkRed} The fit bias study in MC, with the Gaussian function fitting (blue).}}
+        \label{fig:bias}
+      \end{center}
+      
+    \end{textbox}
+    
+  \end{multicols}
+
+  \vspace{-1.25em}
+
+  \begin{multicols}{2}
+    
+    \begin{textbox2}
+      \section*{\color{FireBrick} The Method of $\alpha$ ratio}
+
+      The $\alpha$ ratio is a ratio of number of events of signal region and side band in $M_{ZH}$ distribution, as in Eq. (\ref{eq:alpha}). The distributions are fitted using Eq. (\ref{eq:zhfunc}). The alpha ratio as a function of $M_{ZH}$ is formed by dividing the two fit curves. Finally, we can obtain the data-drive background estimation using the $\alpha$ ratio, as in Eq. (\ref{eq:nbkg}).
+
+      \begin{equation} \label{eq:alpha}
+        \alpha(M_{ZH}) = \frac{N^{MC,bkg}_{signal}(M_{ZH})}{N^{MC,bkg}_{side}(M_{ZH})}
+      \end{equation}
+      \begin{equation} \label{eq:zhfunc}
+        f(x) = p_0\exp(p_1x+\frac{p_2}{x})
+      \end{equation}
+      \begin{equation} \label{eq:nbkg}
+        N_{bkg}(M_{ZH}) = N^{data}_{side}(M_{ZH})\times \alpha(M_{ZH})
+      \end{equation}
+
+      \begin{center}
+        \begin{tabular}{ll}
+          \includegraphics[page=4,width=0.47\textwidth]{images/alphaRwtData.pdf} &
+          \includegraphics[page=5,width=0.47\textwidth]{images/alphaRwtData.pdf} \\
+        \end{tabular}
+        \captionof{figure}{\small{\color{DarkRed} The $M_{ZH}$ distribution in signal region (left) and side band (right) of MC.}}
+        \label{fig:zpmass}
+      \end{center}
+
+      \begin{center}
+        \begin{tabular}{ll}
+          \includegraphics[page=6,width=0.47\textwidth]{images/alphaRwtData.pdf} &
+          \includegraphics[page=7,width=0.47\textwidth]{images/alphaRwtData.pdf} \\
+        \end{tabular}
+        \captionof{figure}{\small{\color{DarkRed} The $\alpha$ ratio of MC as a function of $M_{ZH}$ (left) and the predicted background as a function of $M_{ZH}$ in signal region of data (right).}}
+        \label{fig:predbkg}
+      \end{center}
+      
+    \end{textbox2}
+
+    \begin{textbox2}
+      \section*{\color{FireBrick} Normalization}
+      
+      In order to use data itself to constrain the normalization, we use Eq. (\ref{eq:fitfunc}) to fit the jet mass without signal region, and calculate the area under the fit curve in signal region, as the normalization factor of estimated background.
+      \vspace{1em}
+      \begin{equation} \label{eq:fitfunc}
+        f_{ErfExp}(x) = p_0\exp(p_1x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}
+      \end{equation}
+      
+      \begin{center}
+        \includegraphics[page=2,width=0.62\textwidth]{images/alphaRwtData.pdf}
+        \captionof{figure}{\small{\color{DarkRed} The side band of $H (\rightarrow b\bar{b})$ jet mass distribution (black) and its fitting curve (blue).}}
+        \label{fig:prmass}
+      \end{center}
+    \end{textbox2}
+    
+    \vspace{0.4em}
+
+    \begin{textbox2}
+      \section*{\color{FireBrick} Conclusions}
+
+      \begin{item0}
+      \item The fit curve for $M_{ZH}$ distributions is inconsistent at high $M_{ZH}$ mass region.
+      \item The $\alpha$ ratio curve is inconsistent at high $M_{ZH}$ mass region.
+      \item There is a -2\% fit bias which will be corrected when fitting data.
+      \end{item0}
+
+    \end{textbox2}
+
+    \vspace{0.4em}
+    
+    \begin{textbox2}
+      \section*{\color{FireBrick} Reference}
+               [1] Andrea Mauri,\emph{Search for new exotic resonances in semileptonic ZH final state at CMS}, University of Pisa, 3 February 2014.
+    \end{textbox2}
+
+  \end{multicols}
+  
+\end{center}
+\end{document}
