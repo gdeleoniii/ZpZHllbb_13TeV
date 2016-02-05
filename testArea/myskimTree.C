@@ -1,18 +1,17 @@
 #define skimTree_cxx
 #include "skimTree.h"
-#include <TH2.h>
-#include <TStyle.h>
-#include <TCanvas.h>
+#include "../dataFilter.h"
+#include "../pileupMCweight.h"
 
 void skimTree::Loop(){
 
-  if (fChain == 0) return;
+  if(fChain == 0) return;
 
-  std::string remword=".root";
+  std::string remword = ".root";
   size_t pos = inputFile_.find(remword);
   std::string forOutput = inputFile_;  
 
-  if(pos!= std::string::npos)
+  if( pos != std::string::npos )
     forOutput.swap(forOutput.erase(pos,remword.length()));   
 
   std::string endfix = "_filtered.root";
@@ -24,27 +23,26 @@ void skimTree::Loop(){
   // clone tree
   TTree* newtree = fChain->CloneTree(0);
   newtree->SetMaxTreeSize(5e9);
-  cout << "Saving " << outputFile << " tree" << endl;
+  std::cout << "Saving " << outputFile << " tree" << std::endl;
 
-  ofstream fout;
+  std::ofstream fout;
   fout.open("wrong.dat");
   Long64_t nentries = fChain->GetEntriesFast();
   Long64_t nPassEvt = 0;
   Long64_t nbytes = 0;
   Long64_t nb = 0;
 
+  TBranch *b_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/D");
+  //newtree->SetBranchAddress("eventWeight",&eventWeight);
+
   for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
     
     Long64_t ientry = LoadTree(jentry);
     
-    if (ientry < 0) break;
+    if( ientry < 0 ) break;
     nb = fChain->GetEntry(jentry);
     nbytes += nb;
     
-    if (jentry%100==0)
-      printf("%4.1f%% done.\r",(float)jentry/(float)nentries*100.);
-
-
     // remove event which is no hard interaction (noise)
 
     if( nVtx < 1 ) continue;
@@ -55,20 +53,8 @@ void skimTree::Loop(){
     
     //h_eventWeight->Fill(0.,eventWeight);
 
-    TBranch *b_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/D");
-    
-    newtree->SetBranchAddress("px",&px);
-    
-    Long64_t nentries = newtree->GetEntries();
-
-    for( Long64_t i = 0; i < nentries; i++ ){
-
-      newtree->GetEntry(i);
-      b_evWeight->Fill();
-
-    }
-
-    // newtree->Print();
+    newtree->GetEntry(jentry);
+    b_evWeight->Fill();
     newtree->Write();
     
     // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
@@ -96,8 +82,8 @@ void skimTree::Loop(){
   delete newfile_data;
   fout.close();
 
-  cout << "nentries = " << nentries << endl;
-  cout << "Number of passed events = " << nPassEvt << endl;
-  cout << "Reduction rate = " << (double)nPassEvt/(double)nentries << endl;
+  std::cout << "nentries = " << nentries << std::endl;
+  std::cout << "Number of passed events = " << nPassEvt << std::endl;
+  std::cout << "Reduction rate = " << (double)nPassEvt/(double)nentries << std::endl;
 
 }

@@ -15,9 +15,6 @@
 // Header file for the classes stored in the TTree if any.
 #include <TClonesArray.h>
 #include <vector>
-#include <vector>
-#include <vector>
-#include <vector>
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
@@ -812,20 +809,48 @@ public :
 #endif
 
 #ifdef skimTree_cxx
-skimTree::skimTree(TTree *tree) : fChain(0) 
+skimTree::skimTree(std::string inputFile, TTree *tree) : fChain(0) 
 {
-// if parameter tree is not specified (or zero), connect the file
-// used to generate this class and read the Tree.
-   if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/data7/syu/NCUGlobalTuples/Spring15_ReMiniAODSim/9b33d00/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/151120_154908/0000/NCUGlobalTuples_10.root");
-      if (!f || !f->IsOpen()) {
-         f = new TFile("/data7/syu/NCUGlobalTuples/Spring15_ReMiniAODSim/9b33d00/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/151120_154908/0000/NCUGlobalTuples_10.root");
-      }
-      TDirectory * dir = (TDirectory*)f->Get("/data7/syu/NCUGlobalTuples/Spring15_ReMiniAODSim/9b33d00/DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/151120_154908/0000/NCUGlobalTuples_10.root:/tree");
-      dir->GetObject("treeMaker",tree);
 
-   }
-   Init(tree);
+  if( inputFile.find(".root") != std::string::npos )  
+    infiles.push_back(inputFile.data());
+  else{
+    string inputTextFile = "inputdir.txt";
+    gSystem->Exec(Form("rm -rf %s",inputTextFile.data()));
+    gSystem->Exec(Form("ls -R %s | grep -a \"%s\" >> %s", inputFile.data(),"data7", inputTextFile.data()));
+    TSystemDirectory *base = new TSystemDirectory("root","root"); 
+    int nfile = 0;
+    string tempdir;
+    ifstream fin;
+    fin.open(inputTextFile.data());
+    fin >> tempdir;
+    TString realDirName = gSystem->GetFromPipe(Form("a=%s; echo ${a%%:*}",tempdir.data()));
+    while( !fin.eof() ){
+      if( realDirName.Contains("fail") ){
+	fin >> tempdir;
+	realDirName = gSystem->GetFromPipe(Form("a=%s; echo ${a%%:*}",tempdir.data()));      
+	continue;
+      }
+      base->SetDirectory(realDirName.Data());
+      TList *listOfFiles = base->GetListOfFiles();
+      TIter fileIt(listOfFiles);
+      TFile *fileH = new TFile();
+      TChain* myChain = new TChain("tree/treeMaker");
+      while( (fileH = (TFile*)fileIt()) ) {
+	std::string fileN = fileH->GetName();
+	std::string baseString = "root";
+	if( fileH->IsFolder() ) continue;
+	if( fileN.find(baseString) == std::string::npos ) continue;
+	nfile++;
+	string tempfile = Form("%s/%s",realDirName.Data(),fileN.data());
+	myChain->Add(tempfile.data());
+	//infiles.push_back(tempfile);
+      }
+      fin >> tempdir;
+      realDirName = gSystem->GetFromPipe(Form("a=%s; echo ${a%%:*}",tempdir.data()));
+    }
+  }
+
 }
 
 skimTree::~skimTree()
