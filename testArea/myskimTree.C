@@ -2,25 +2,25 @@
 #include "skimTree.h"
 #include "../dataFilter.h"
 #include "../pileupMCweight.h"
+#include <fstream>
+#include <iostream>
+
 
 void skimTree::Loop(){
 
   if(fChain == 0) return;
 
-  std::string remword = ".root";
-  size_t pos = inputFile_.find(remword);
-  std::string forOutput = inputFile_;  
+  // Set the name of output root file
+  std::size_t found = inputFile_.find_last_of("/");
+  std::string forOutput = inputFile_.substr(found+1);
+  std::string prefix = "skim_";
+  std::string endfix = ".root";
+  std::string outputFile = prefix + forOutput + endfix;
 
-  if( pos != std::string::npos )
-    forOutput.swap(forOutput.erase(pos,remword.length()));   
-
-  std::string endfix = "_filtered.root";
-  std::string outputFile = forOutput + endfix;
-
-  // now open new root file
+  // Now open new root file
   TFile* newfile_data = new TFile(outputFile.data(),"recreate");
 
-  // clone tree
+  // Clone tree
   TTree* newtree = fChain->CloneTree(0);
   newtree->SetMaxTreeSize(5e9);
   std::cout << "Saving " << outputFile << " tree" << std::endl;
@@ -32,8 +32,9 @@ void skimTree::Loop(){
   Long64_t nbytes = 0;
   Long64_t nb = 0;
 
+
+  Double_t eventWeight;
   TBranch *b_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/D");
-  //newtree->SetBranchAddress("eventWeight",&eventWeight);
 
   for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
     
@@ -43,20 +44,18 @@ void skimTree::Loop(){
     nb = fChain->GetEntry(jentry);
     nbytes += nb;
     
-    // remove event which is no hard interaction (noise)
+    // Remove event which is no hard interaction (noise)
 
     if( nVtx < 1 ) continue;
 
     // Correct the pile-up shape of MC
 
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
+    eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
     
-    //h_eventWeight->Fill(0.,eventWeight);
-
     newtree->GetEntry(jentry);
     b_evWeight->Fill();
     newtree->Write();
-    
+    /*    
     // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
     bool muTrigger  = TriggerStatus(data, "HLT_Mu45");
@@ -72,7 +71,7 @@ void skimTree::Loop(){
     if( isData && !Noise ) continue;
     if( isData && !NoiseIso ) continue;
 
-
+    */
     newtree->Fill();
     nPassEvt++;
 
