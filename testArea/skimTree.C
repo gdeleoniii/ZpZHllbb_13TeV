@@ -2,8 +2,6 @@
 #include "skimTree.h"
 #include "../dataFilter.h"
 #include "../pileupMCweight.h"
-#include <fstream>
-#include <iostream>
 
 void skimTree::Loop(){
 
@@ -24,26 +22,24 @@ void skimTree::Loop(){
   newtree->SetMaxTreeSize(5e9);
   std::cout << "Saving tree in " << outputFile << std::endl;
 
-  std::ofstream fout;
-  fout.open("wrong.dat");
   Long64_t nentries = fChain->GetEntriesFast();
   Long64_t nPassEvt = 0;
-  Long64_t nbytes = 0;
-  Long64_t nb = 0;
+  //Long64_t nbytes = 0;
+  //Long64_t nb = 0;
 
-  Double_t eventWeight;
-  TBranch *b_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/D");
+  Float_t eventWeight;
+  //TBranch *branch_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/F");
 
   for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
     
     Long64_t ientry = LoadTree(jentry);
-
-    if( ientry % 10 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", ientry + 1, nentries);
     
     if( ientry < 0 ) break;
-    nb = fChain->GetEntry(jentry);
-    nbytes += nb;
+    //nb = fChain->GetEntry(jentry);
+    //nbytes += nb;
+
+    if( jentry % 10000 == 0 )
+      fprintf(stderr, "Processing event %lli of %lli\n", jentry + 1, nentries);
     
     // Remove event which is no hard interaction (noise)
 
@@ -51,11 +47,9 @@ void skimTree::Loop(){
 
     // Correct the pile-up shape of MC
 
-    eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    newtree->GetEntry(jentry);
-    b_evWeight->Fill();
-    //newtree->Write();
+    //eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);    
+    //branch_evWeight->Fill();
+
     /*    
     // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
@@ -80,7 +74,6 @@ void skimTree::Loop(){
 
   newtree->AutoSave();
   delete newfile_data;
-  fout.close();
 
   std::cout << "nentries = " << nentries << std::endl;
   std::cout << "Number of passed events = " << nPassEvt << std::endl;
