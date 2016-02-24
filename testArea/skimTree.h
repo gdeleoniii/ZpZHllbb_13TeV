@@ -808,6 +808,9 @@ class skimTree {
   virtual void     Loop();
   virtual Bool_t   Notify();
   virtual void     Show(Long64_t entry = -1);
+  virtual bool     TriggerStatus(std::string TRIGGERNAME);
+  virtual bool     FilterStatus(std::string FILTERNAME);
+  virtual Float_t  pileupWeight(Bool_t isData, Int_t pu_nTrueInt);
   std::string inputFile_;
 
 };
@@ -1637,6 +1640,122 @@ Bool_t skimTree::Notify()
   // user if needed. The return value is currently not used.
 
   return kTRUE;
+}
+
+Float_t skimTree::pileupWeight(Bool_t isData, Int_t pu_nTrueInt){
+
+  Float_t weight[] = {126.337, 
+		       153.753, 
+		       108.762, 
+		       32.4929,
+		       17.9949,
+		       3.34053,
+		       1.97929,
+		       2.5719,
+		       3.42167,
+		       3.33126,
+		       3.00845,
+		       2.65362,
+		       2.08864,
+		       1.39939,
+		       0.792047,
+		       0.386897,
+		       0.18109,
+		       0.0990121,
+		       0.0705014,
+		       0.0587098,
+		       0.0525807,
+		       0.0503863,
+		       0.051229,
+		       0.0538919,
+		       0.0574271,
+		       0.0613761,
+		       0.0657269,
+		       0.0706353,
+		       0.0757276,
+		       0.078729,
+		       0.0744712,
+		       0.0591124,
+		       0.038286,
+		       0.02139,
+		       0.0111463,
+		       0.0057112,
+		       0.00295235,
+		       0.00155243,
+		       0.000828797,
+		       0.000446272,
+		       0.000240566,
+		       0.000129006,
+		       6.85054e-05,
+		       3.59166e-05,
+		       1.85598e-05,
+		       9.44456e-06,
+		       1.16979e-05,
+		       8.50725e-06,
+		       1.49492e-05,
+		       1.0154e-05};
+
+  Float_t pileupweight = -1;
+
+  if( !isData ){
+
+    if( pu_nTrueInt > 0 && pu_nTrueInt < 51 )
+      pileupweight = weight[pu_nTrueInt-1];
+    else if( pu_nTrueInt > 50 )
+      pileupweight = 1;
+
+  }
+
+  else pileupweight = 1;
+
+  return pileupweight;
+
+}
+
+bool skimTree::TriggerStatus(std::string TRIGGERNAME)
+{
+
+  bool triggerStat = false;
+
+  for(unsigned int it = 0; it < (*hlt_trigName).size(); it++){
+
+    std::string thisTrig = (*hlt_trigName)[it];
+    bool results = (*hlt_trigResult)[it];
+
+    if( thisTrig.find(TRIGGERNAME) != std::string::npos && results ){
+
+      triggerStat = true;
+      break;
+
+    }
+
+  }
+
+  return triggerStat;
+
+}
+
+bool skimTree::FilterStatus(std::string FILTERNAME)
+{
+
+  bool filterStat = false;
+    
+  for(unsigned int it = 0; it < (*hlt_filterName).size(); it++){
+    
+    std::string thisFilter = (*hlt_filterName)[it];
+    bool results = (*hlt_filterResult)[it];
+      
+    if( thisFilter.find(FILTERNAME) != std::string::npos && results ){
+
+      filterStat = true;
+      break;
+
+    }
+      
+  }
+
+  return filterStat;
+
 }
 
 void skimTree::Show(Long64_t entry)
