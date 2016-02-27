@@ -1,6 +1,6 @@
 #define skimTree_cxx
 #include "skimTree.h"
-#include "../pileupMCweight.h"
+#include <TH1.h>
 
 void skimTree::Loop(){
 
@@ -14,41 +14,51 @@ void skimTree::Loop(){
   std::string outputFile = prefix + infix + suffix;
 
   // Now open new root file
-  TFile* newfile_data = new TFile(outputFile.data(),"recreate");
+  TFile* newfile_data = new TFile(outputFile.data(), "recreate");
+
+  // Histogram to store total events 
+  TH1D* h_totalEv = new TH1D("h_totalEv", "Total Events", 2, -1, 1);
 
   // Clone tree
   fChain->LoadTree(0);
   TTree* newtree = fChain->GetTree()->CloneTree(0);
+
   std::cout << "Saving tree in " << outputFile << std::endl;
 
-  Long64_t nentries = fChain->GetEntries();
-  Long64_t nPassEv  = 0;
-  Long64_t nbytes   = 0;
-
-  Float_t eventWeight;
-  TBranch *branch_evWeight = newtree->Branch("eventWeight",&eventWeight,"eventWeight/F");
+  Long64_t nentries  = fChain->GetEntries();
+  Long64_t nPassEv   = 0;
+  Float_t  ev_weight;
+  TBranch  *b_eventWeight = newtree->Branch("ev_weight", &ev_weight, "ev_weight/F");
 
   for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
-    
-    Long64_t ientry = LoadTree(jentry);
-    
-    if( ientry < 0 ) break;
-    
-    nbytes += fChain->GetEntry(jentry);
+        
+    if( LoadTree(jentry) < 0 ) break;    
 
-    if( jentry % 10000 == 0 )
+    fChain->GetEntry(jentry);
+
+    if( jentry % 100000 == 0 )
       fprintf(stderr, "Processing event %lli of %lli\n", jentry + 1, nentries);
     
+    // Corrections for MC 
+
+    if( !isData ){
+      
+      Float_t mc_weight = mcWeight > 0 ? +1 : -1;
+      Float_t pu_weight = pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC
+
+      ev_weight = mc_weight * pu_weight;
+
+    }
+
+    else ev_weight = 1;
+
+    h_totalEv->Fill(0.0, ev_weight);
+
     // Remove event which is no hard interaction (noise)
 
     if( nVtx < 1 ) continue;
 
-    // Correct the pile-up shape of MC
-
-    eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);    
-    branch_evWeight->Fill();
-
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
+    // Data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
     bool muTrigger  = TriggerStatus("HLT_Mu45");
     bool eleTrigger = TriggerStatus("HLT_Ele105");
@@ -58,18 +68,23 @@ void skimTree::Loop(){
     bool NoiseIso   = FilterStatus ("Flag_HBHENoiseIsoFilter");
 
     if( !muTrigger || !eleTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
+    if( isData && !CSCT     ) continue;
+    if( isData && !eeBadSc  ) continue;
+    if( isData && !Noise    ) continue;
     if( isData && !NoiseIso ) continue;
 
     nPassEv++;
+
+    b_eventWeight->Fill();
     newtree->Fill();
 
   }
 
+  h_totalEv->Write();
   newtree->AutoSave();
+
   delete newfile_data;
+  gSystem->Exec("rm -f inputdir.txt");
 
   std::cout << "nentries = " << nentries << std::endl;
   std::cout << "Number of passed events = " << nPassEv << std::endl;
