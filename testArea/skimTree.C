@@ -2,14 +2,19 @@
 #include "skimTree.h"
 #include <TH1.h>
 
-void skimTree::Loop(){
+void skimTree::Loop(std::string channel){
 
   if( fChain == 0 ) return;
+  if( channel != "muon" && channel != "electron" ) return;
 
   // Set the name of output root file
   std::string tmpStr = inputFile_.erase(inputFile_.find_last_not_of("/")+1);
   std::string infix  = tmpStr.substr(tmpStr.find_last_of("/")+1); 
-  std::string prefix = "skim_";
+  std::string prefix;
+
+  if( channel == "muon" ) prefix = "skim_mu_";
+  else if( channel == "electron" ) prefix = "skim_ele_";
+
   std::string suffix = ".root";
   std::string outputFile = prefix + infix + suffix;
 
@@ -17,7 +22,7 @@ void skimTree::Loop(){
   TFile* newfile_data = new TFile(outputFile.data(), "recreate");
 
   // Histogram to store total events 
-  TH1D* h_totalEv = new TH1D("h_totalEv", "Total Events", 2, -1, 1);
+  TH1D* h_totalEv = new TH1D("h_totalEv", "totalEvents", 2, -1, 1);
 
   // Clone tree
   fChain->LoadTree(0);
@@ -44,7 +49,7 @@ void skimTree::Loop(){
     if( !isData ){
       
       Float_t mc_weight = mcWeight > 0 ? +1 : -1;
-      Float_t pu_weight = pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC
+      Float_t pu_weight = 1;//pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC
 
       ev_weight = mc_weight * pu_weight;
 
@@ -67,7 +72,8 @@ void skimTree::Loop(){
     bool Noise      = FilterStatus ("Flag_HBHENoiseFilter");
     bool NoiseIso   = FilterStatus ("Flag_HBHENoiseIsoFilter");
 
-    if( !muTrigger || !eleTrigger ) continue;
+    if( channel == "muon"     && !muTrigger  ) continue;
+    if( channel == "electron" && !eleTrigger ) continue;
     if( isData && !CSCT     ) continue;
     if( isData && !eeBadSc  ) continue;
     if( isData && !Noise    ) continue;
