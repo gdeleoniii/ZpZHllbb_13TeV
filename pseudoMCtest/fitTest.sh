@@ -14,13 +14,12 @@ phy=(DYjets TTbar Dibosons SingleTop)
 for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do
 	for ((k=0; k<${#phy[@]}; k++)); do
-
 	    root -q -b -l for${phy[$k]}.C+\(\"${channel[$i]}/cat${cat[$j]}\"\,\"${channel[$i]}_cat${cat[$j]}_${phy[$k]}\"\)
-
 	done
     done
 done
 
+mv *pdf fitTestResults/
 echo "All the jobs are finished."
 
 exit

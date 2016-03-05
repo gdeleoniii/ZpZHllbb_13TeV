@@ -52,7 +52,7 @@ void forTTbar(std::string path, std::string pdfName){
   TH1D* h_dwPull = new TH1D("h_dwPull", "", 50, -1, 1);
 
   fitTest(h_prmass, h_prmass_hollow, 
-	  g_errorBands, g_errorBands_hollow,
+	  &g_errorBands, &g_errorBands_hollow,
 	  h_bias, h_upPull, h_dwPull);
   
   h_bias->SetLineWidth(1);
@@ -89,9 +89,9 @@ void forTTbar(std::string path, std::string pdfName){
   h_prmass->Draw();
   g_errorBands->Draw("3same");
   h_prmass->Draw("same");
-  // leg->AddEntry(h_prmass, "Error = #sqrt{N_{per bin}}", "lp");
-  // leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
-  // leg->Draw();
+  leg->AddEntry(h_prmass, "Error = #sqrt{N_{per bin}}", "lp");
+  leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
+  leg->Draw();
   // lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",
   //				     f_fitprmass->GetChisquare(), f_fitprmass->GetNDF()));
   c->Print(Form("%s.pdf(",pdfName.data()));
@@ -102,9 +102,9 @@ void forTTbar(std::string path, std::string pdfName){
   h_prmass_hollow->Draw();
   g_errorBands_hollow->Draw("3same");
   h_prmass_hollow->Draw("same");
-  //leg->AddEntry(h_prmass_hollow, "Error = #sqrt{N_{per bin}}", "lp");
-  //leg->AddEntry(g_errorBands_hollow, "Uncertainty based on fitting errors", "f");
-  //leg->Draw();
+  leg->AddEntry(h_prmass_hollow, "Error = #sqrt{N_{per bin}}", "lp");
+  leg->AddEntry(g_errorBands_hollow, "Uncertainty based on fitting errors", "f");
+  leg->Draw();
   //lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d", 
   //				     f_fitprmass_hollow->GetChisquare(), f_fitprmass_hollow->GetNDF()));
   c->Print(Form("%s.pdf",pdfName.data()));

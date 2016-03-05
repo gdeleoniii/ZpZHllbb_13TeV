@@ -19,7 +19,7 @@
 */
 
 void fitTest(TH1D* h_prmass, TH1D* h_prmass_hollow,
-	     TGraphAsymmErrors* g_errorBands, TGraphAsymmErrors* g_errorBands_hollow, 
+	     TGraphAsymmErrors** g_errorBands, TGraphAsymmErrors** g_errorBands_hollow, 
 	     TH1D* h_bias, TH1D* h_upPull, TH1D* h_dwPull){
   
   /// Make the statistics error of MC more like data
@@ -50,10 +50,10 @@ void fitTest(TH1D* h_prmass, TH1D* h_prmass_hollow,
   TFitResult fitresult = (*fitptr);
   TMatrixD corrMatrix  = fitresult.GetCorrelationMatrix();  
   
-  g_errorBands = fitErrorBand(f_fitprmass, &corrMatrix, fitPRmass);
+  *g_errorBands = fitErrorBand(f_fitprmass, &corrMatrix, fitPRmass);
 
-  g_errorBands->SetFillStyle(1001);
-  g_errorBands->SetFillColor(kYellow);
+  (*g_errorBands)->SetFillStyle(1001);
+  (*g_errorBands)->SetFillColor(kYellow);
 
   /// Fit pruned mass of (side band only) by using the shape parameters from above
   
@@ -75,10 +75,10 @@ void fitTest(TH1D* h_prmass, TH1D* h_prmass_hollow,
   TFitResult fitresult_hollow = (*fitptr_hollow);
   TMatrixD corrMatrix_hollow  = fitresult_hollow.GetCorrelationMatrix();
   
-  g_errorBands_hollow = fitErrorBand(f_fitprmass_hollow, &corrMatrix_hollow, hollow_fitPRmass);
+  *g_errorBands_hollow = fitErrorBand(f_fitprmass_hollow, &corrMatrix_hollow, hollow_fitPRmass);
 
-  g_errorBands_hollow->SetFillStyle(1001);
-  g_errorBands_hollow->SetFillColor(kYellow);
+  (*g_errorBands_hollow)->SetFillStyle(1001);
+  (*g_errorBands_hollow)->SetFillColor(kYellow);
 
   /// Fluctuate the pruned mass histogram to test the fitting results
 
