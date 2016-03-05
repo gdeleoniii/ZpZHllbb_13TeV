@@ -12,7 +12,7 @@
 #include <TTree.h>
 #include <TKey.h>
 #include <TSystemDirectory.h>
-#include "../setNCUStyle.h"
+#include "setNCUStyle.h"
 
 void myPlot(TH1D* h_DY100,
             TH1D* h_DY200,
@@ -201,10 +201,10 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
 TFile* getFile(std::string infiles, Double_t crossSection, Double_t* scale){
 
   TFile* f = TFile::Open(infiles.data());
-  TH1D* h = (TH1D*)(f->Get("totalEvents"));
+  TH1D* h = (TH1D*)(f->Get("eventWeight"));
   Double_t dataLumi = 2080; //pb-1 
   *scale = dataLumi/(h->Integral()/crossSection);
-
+  cout << *scale << endl;
   return f;
 
 }
@@ -298,7 +298,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
   }
 
   setNCUStyle(true);
-
+  
   Double_t up_height     = 0.8;
   Double_t dw_correction = 1.455;
   Double_t dw_height     = (1-up_height)*dw_correction;
@@ -344,7 +344,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
     
     TH1D *h_data = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_data");
     TH1D *h_bkg  = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_bkg");
-    
+
     myPlot(((TH1D*)(f_DY100->Get(h_name[i].data()))),
 	   ((TH1D*)(f_DY200->Get(h_name[i].data()))),
 	   ((TH1D*)(f_DY400->Get(h_name[i].data()))),

@@ -7,22 +7,18 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../readSample.h"
-#include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
-#include "../../pileupMCweight.h"
 
 void muAlphaR(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
-  std::vector<string> infiles;
-    
-  readSample(inputFile, infiles);
-  
-  TreeReader data(infiles);
+  TreeReader data(inputFile.data());
 
   // Declare the histogram
+
+  TFile* f = new TFile(inputFile.data());
+  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
   //  const Double_t varBins[] = {500,700,900,1100,1300,1500,1700,1900,2100,??????};
   //  Int_t nvarBins = sizeof(varBins)/sizeof(varBins[0])-1;
@@ -34,7 +30,6 @@ void muAlphaR(std::string inputFile, std::string outputFile){
   TH1D* h_ZprimeSign    = new TH1D("h_ZprimeSign",    "ZprimeSign",   nBins, xmin, xmax);
   TH1D* h_ZprimeSide    = new TH1D("h_ZprimeSide",    "ZprimeSide",   nBins, xmin, xmax);
   TH1D* h_corrPRmass    = new TH1D("h_corrPRmass",    "corrPRmass",      40,   40,  240);
-  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "eventWeight",      2,   -1,    1);
 
   h_ZprimeSign    ->Sumw2();
   h_ZprimeSide    ->Sumw2();
@@ -53,9 +48,7 @@ void muAlphaR(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t          nVtx              = data.GetInt("nVtx");
-    Bool_t         isData            = data.GetBool("isData");
-    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
+    Float_t        eventWeight       = data.GetFloat("ev_weight")
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     //Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
@@ -63,30 +56,6 @@ void muAlphaR(std::string inputFile, std::string outputFile){
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
   
-    // remove event which is no hard interaction (noise)
-
-    if( nVtx < 1 ) continue;
-
-    // Correct the pile-up shape of MC
-
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    h_eventWeight->Fill(0.,eventWeight);
-
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
-      
-    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
-    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
-    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
-    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
-    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
-
-    if( !muTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
-    if( isData && !NoiseIso ) continue;
-
     // select good muons
       
     vector<Int_t> goodMuID;
@@ -137,8 +106,11 @@ void muAlphaR(std::string inputFile, std::string outputFile){
   h_ZprimeSign    ->Write("ZprimeSign");
   h_ZprimeSide    ->Write("ZprimeSide");
   h_corrPRmass    ->Write("corrPRmass");
-  h_eventWeight   ->Write("eventWeight");
+  h_totalEvents   ->Write("totalEvents");
 
   outFile->Write();
+
+  delete f;
+  delete outFile;
 
 }

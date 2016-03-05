@@ -344,7 +344,6 @@ void muAlphaRplots(std::string outputFolder){
   TH1D* h_PRmassBKG  = addMCSamples(infiles,"corrPRmass",f_DY100,f_DY200,f_DY400,f_DY600);
 
   TH1D* h_sideDATA   = addDataSamples(infiles,"ZprimeSide",f_data0,f_data1);
-  TH1D* h_signDATA   = addDataSamples(infiles,"ZprimeSign",f_data0,f_data1);
   TH1D* h_PRmassDATA = addDataSamples(infiles,"corrPRmass",f_data0,f_data1);
 
   TH1D* h_hollow_PRmass = (TH1D*)h_PRmassDATA->Clone("h_hollow_PRmass");
@@ -375,14 +374,6 @@ void muAlphaRplots(std::string outputFolder){
   h_signBKG->SetYTitle("Event numbers");
   h_signBKG->SetTitleFont(62);
 
-  h_signDATA->SetMarkerStyle(8);
-  h_signDATA->SetMarkerSize(1.5);
-  h_signDATA->SetMarkerColor(kBlue);
-  h_signDATA->SetLineColor(kBlue);
-  h_signDATA->SetXTitle("ZH mass in signal region of data");
-  h_signDATA->SetYTitle("Event numbers");
-  h_signDATA->SetTitleFont(62);
-
   h_hollow_PRmass->SetMarkerStyle(8);
   h_hollow_PRmass->SetMarkerSize(1.5);
   h_hollow_PRmass->SetLineColor(kBlack);
@@ -396,7 +387,6 @@ void muAlphaRplots(std::string outputFolder){
   h_PRmassDATA->SetXTitle("Corrected pruned mass in data");
   h_PRmassDATA->SetYTitle("Event numbers");
   h_PRmassDATA->SetTitleFont(62);
-
 
   // Fit pruned mass with signal region in MC (BKG)
 
@@ -557,7 +547,6 @@ void muAlphaRplots(std::string outputFolder){
   // Scale the number of backgrounds in signal region
 
   h_numbkgDATA->Scale(nBkgSig/h_numbkgDATA->Integral(0,h_numbkgDATA->GetNbinsX()+1));
-  h_numbkgDATA->SetMinimum(0);
 
   // Output results
 
@@ -583,7 +572,7 @@ void muAlphaRplots(std::string outputFolder){
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpma,ndf_cpma));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf(");
   
@@ -595,7 +584,7 @@ void muAlphaRplots(std::string outputFolder){
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf");
   
@@ -607,21 +596,21 @@ void muAlphaRplots(std::string outputFolder){
   leg->AddEntry(g_hollow_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
   lar->DrawLatexNDC(0.25, 0.40, Form("#chi^{2} / ndf: %f / %d",chisqr_cpm,ndf_cpm));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf");
 
   c->cd()->SetLogy(1);
   h_signBKG->Draw();
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sgb,ndf_sgb));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf");
 
   c->cd()->SetLogy(1);
   h_sideBKG->Draw();
   lar->DrawLatexNDC(0.50, 0.80, Form("#chi^{2} / ndf: %f / %d",chisqr_sdb,ndf_sdb));
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf");
 
@@ -631,13 +620,13 @@ void muAlphaRplots(std::string outputFolder){
   leg->Clear();
   leg->AddEntry(f_fitAlphaR, "#frac{f_{signal}(x)}{f_{side}(x)}", "l");
   leg->Draw();
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf");  
 
-  c->cd()->SetLogy(0);
+  c->cd()->SetLogy();
   h_numbkgDATA->Draw();
-  lar->DrawLatexNDC(0.15, 0.94, "CMS preliminary 2016");
+  lar->DrawLatexNDC(0.15, 0.94, "CMS work in progress");
   lar->DrawLatexNDC(0.65, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
   c->Print("alphaRwtData.pdf)");
 

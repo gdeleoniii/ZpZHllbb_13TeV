@@ -7,23 +7,19 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../readSample.h"
-#include "../../dataFilter.h"
 #include "../../isPassZee.h"
-#include "../../pileupMCweight.h"
 
 void eleZVariable(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
-  std::vector<string> infiles;
- 
-  readSample(inputFile, infiles);
-  
-  TreeReader data(infiles);
+  TreeReader data(inputFile.data());
   
   // Declare the histogram
      
+  TFile* f = new TFile(inputFile.data());
+  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
+
   TH1D* h_Zmass         = new TH1D("h_Zmass",         "Zmass",         30, 60,  120);
   TH1D* h_Zpt           = new TH1D("h_Zpt",           "Zpt",           50,  0, 1000);
   TH1D* h_Zeta          = new TH1D("h_Zeta",          "Zeta",          40, -4,    4);
@@ -32,7 +28,6 @@ void eleZVariable(std::string inputFile, std::string outputFile){
   TH1D* h_leadEleEta    = new TH1D("h_leadEleEta",    "leadEleEta",    40, -4,    4);
   TH1D* h_subleadElePt  = new TH1D("h_subleadElePt",  "subleadElePt",  25,  0,  500);
   TH1D* h_subleadEleEta = new TH1D("h_subleadEleEta", "subleadEleEta", 40, -4,    4);
-  TH1D* h_eventWeight   = new TH1D("h_eventWeight",   "eventWeight",    2, -1,    1);
 
   h_Zmass        ->Sumw2();
   h_Zpt          ->Sumw2();
@@ -61,34 +56,8 @@ void eleZVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t   nVtx        = data.GetInt("nVtx");
-    Bool_t  isData      = data.GetBool("isData");
-    Float_t pu_nTrueInt = data.GetFloat("pu_nTrueInt");
+    Float_t eventWeight = data.GetFloat("ev_weight");
     TClonesArray* eleP4 = (TClonesArray*) data.GetPtrTObject("eleP4");
-
-    // remove event which is no hard interaction (noise)
-
-    if( nVtx < 1 ) continue;
-
-    // Correct the pile-up shape of MC
-
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    h_eventWeight->Fill(0.,eventWeight);
-
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
-      
-    bool eleTrigger = TriggerStatus(data, "HLT_Ele105");
-    bool CSCT       = FilterStatus(data, "Flag_CSCTightHaloFilter");
-    bool eeBadSc    = FilterStatus(data, "Flag_eeBadScFilter");
-    bool Noise      = FilterStatus(data, "Flag_HBHENoiseFilter");
-    bool NoiseIso   = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
-
-    if( !eleTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
-    if( isData && !NoiseIso ) continue;
 
     // select good electrons
 
@@ -135,8 +104,11 @@ void eleZVariable(std::string inputFile, std::string outputFile){
   h_leadEleEta   ->Write("leadEleEta");
   h_subleadElePt ->Write("subleadElePt");
   h_subleadEleEta->Write("subleadEleEta");
-  h_eventWeight  ->Write("eventWeight");
+  h_totalEvents  ->Write("totalEvents");
   
   outFile->Write();
   
+  delete f;
+  delete outFile;
+
 }

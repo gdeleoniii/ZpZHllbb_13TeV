@@ -6,39 +6,32 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../readSample.h"
-#include "../../dataFilter.h"
 #include "../../isPassZmumu.h"
-#include "../../pileupMCweight.h"
 
 void muJetVariable(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
-  std::vector<string> infiles;
-    
-  readSample(inputFile, infiles);
-  
-  TreeReader data(infiles);
+  TreeReader data(inputFile.data());
   
   // Declare the histogram
 
-  Int_t nBin = 20;
+  TFile* f = new TFile(inputFile.data());
+  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
   TH1D* h_nVtx             = new TH1D("h_nVtx",             "nVtx",               30, -0.5, 29.5);     
-  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",         nBin,  100, 1000);
-  TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "FATjetEta",        nBin,   -4,    4);
-  TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "FATjetCISVV2",     nBin,    0,  1.2);
-  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "FATjetSDmass",     nBin,    0,  200);
-  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "FATjetPRmass",     nBin,    0,  200);
-  TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "FATjetPRmassCorr", nBin,    0,  200);
-  TH1D* h_FATjetTau1       = new TH1D("h_FATjetTau1",       "FATjetTau1",       nBin,    0,    1);
-  TH1D* h_FATjetTau2       = new TH1D("h_FATjetTau2",       "FATjetTau2",       nBin,    0,    1);
-  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1", nBin,    0,    1);
-  TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "FATsubjetPt",      nBin,    0,  800);
-  TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "FATsubjetEta",     nBin,   -4,    4);
-  TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "FATsubjetSDCSV",   nBin,    0,  1.2);
-  TH1D* h_eventWeight      = new TH1D("h_eventWeight",      "eventWeight",         2,   -1,    1);
+  TH1D* h_FATjetPt         = new TH1D("h_FATjetPt",         "FATjetPt",           20,  100, 1000);
+  TH1D* h_FATjetEta        = new TH1D("h_FATjetEta",        "FATjetEta",          20,   -4,    4);
+  TH1D* h_FATjetCISVV2     = new TH1D("h_FATjetCISVV2",     "FATjetCISVV2",       20,    0,  1.2);
+  TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "FATjetSDmass",       20,    0,  200);
+  TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "FATjetPRmass",       20,    0,  200);
+  TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "FATjetPRmassCorr",   20,    0,  200);
+  TH1D* h_FATjetTau1       = new TH1D("h_FATjetTau1",       "FATjetTau1",         20,    0,    1);
+  TH1D* h_FATjetTau2       = new TH1D("h_FATjetTau2",       "FATjetTau2",         20,    0,    1);
+  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1",   20,    0,    1);
+  TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "FATsubjetPt",        20,    0,  800);
+  TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "FATsubjetEta",       20,   -4,    4);
+  TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "FATsubjetSDCSV",     20,    0,  1.2);
 
   h_nVtx            ->Sumw2();
   h_FATjetPt        ->Sumw2();   
@@ -78,11 +71,10 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     data.GetEntry(ev);
 
     Int_t          nVtx              = data.GetInt("nVtx");
-    Bool_t         isData            = data.GetBool("isData");
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
-    Float_t        pu_nTrueInt       = data.GetFloat("pu_nTrueInt");
     Float_t*       FATjetCISVV2      = data.GetPtrFloat("FATjetCISVV2");
     Float_t*       FATjetSDmass      = data.GetPtrFloat("FATjetSDmass");
     Float_t*       FATjetPRmass      = data.GetPtrFloat("FATjetPRmass");
@@ -96,30 +88,6 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
     vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
-
-    // remove event which is no hard interaction (noise)
-
-    if( nVtx < 1 ) continue;
-
-    // Correct the pile-up shape of MC
-
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    h_eventWeight->Fill(0.,eventWeight);
-    
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
-      
-    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
-    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
-    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
-    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
-    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
-
-    if( !muTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
-    if( isData && !NoiseIso ) continue;
 
     // select good muons
       
@@ -196,8 +164,11 @@ void muJetVariable(std::string inputFile, std::string outputFile){
   h_FATsubjetPt     ->Write("FATsubjetPt");
   h_FATsubjetEta    ->Write("FATsubjetEta");
   h_FATsubjetSDCSV  ->Write("FATsubjetSDCSV");
-  h_eventWeight     ->Write("eventWeight");
+  h_totalEvents     ->Write("totalEvents"); 
 
   outFile->Write();
   
+  delete f;
+  delete outFile;
+
 }

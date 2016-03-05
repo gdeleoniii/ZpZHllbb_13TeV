@@ -6,21 +6,16 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../readSample.h"
-#include "../../dataFilter.h"
-#include "../../pileupMCweight.h"
 
 void muVariable(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
-  std::vector<string> infiles;
+  TreeReader data(inputFile.data());
 
-  readSample(inputFile, infiles);
-    
-  TreeReader data(infiles);
-  
   // Declare the histogram (hightptMuon, customizeTrackerMuon)
+
+  TFile* f = new TFile(inputFile.data());
 
   TH1D* h_muHits[2]; 
   TH1D* h_muMatches[2];
@@ -30,9 +25,11 @@ void muVariable(std::string inputFile, std::string outputFile){
   TH1D* h_mudxy[2]; 
   TH1D* h_mudz[2];   
   TH1D* h_muMiniIsoEA[2]; 
-  TH1D* h_eventWeight[2];
+  TH1D* h_totalEvents[2];
 
   for(Int_t i = 0; i < 2; i++){
+
+    h_totalEvents[i]       = (TH1D*)f->Get("h_totalEv");
 
     h_muHits[i]            = new TH1D(Form("h_muHits%d",i),            "muHits",             60,  -0.5, 59.5);
     h_muMatches[i]         = new TH1D(Form("h_muMatches%d",i),         "muMatches",           7,  -0.5,  6.5);
@@ -42,7 +39,6 @@ void muVariable(std::string inputFile, std::string outputFile){
     h_mudxy[i]             = new TH1D(Form("h_mudxy%d",i),             "mudxy",              20, -0.01, 0.01);
     h_mudz[i]              = new TH1D(Form("h_mudz%d",i),              "mudz",               20, -0.05, 0.05);  
     h_muMiniIsoEA[i]       = new TH1D(Form("h_muMiniIsoEA%d",i),       "muMiniIsoEA",        20,     0, 0.15);
-    h_eventWeight[i]       = new TH1D(Form("h_eventWeight%d",i),       "eventWeight",       100,    -1,    1);
 
     h_muHits[i]           ->Sumw2();
     h_muMatches[i]        ->Sumw2();
@@ -73,14 +69,12 @@ void muVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t    nVtx        = data.GetInt("nVtx");
+    Float_t  eventWeight = data.GetFloat("ev_weight");
     Int_t    nMu         = data.GetInt("nMu");
     Int_t*   muHits      = data.GetPtrInt("muHits");
     Int_t*   muMatches   = data.GetPtrInt("muMatches");
     Int_t*   muTrkLayers = data.GetPtrInt("muTrkLayers");
     Int_t*   muPixelHits = data.GetPtrInt("muPixelHits");
-    Bool_t   isData      = data.GetBool("isData");
-    Float_t  pu_nTrueInt = data.GetFloat("pu_nTrueInt");
     Float_t* muTrkPtErr  = data.GetPtrFloat("muTrkPtErr");	
     Float_t* muTrkPt     = data.GetPtrFloat("muTrkPt");
     Float_t* mudxy       = data.GetPtrFloat("mudxy");
@@ -89,31 +83,6 @@ void muVariable(std::string inputFile, std::string outputFile){
     TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
     vector<bool>& isGlobalMuon  = *((vector<bool>*) data.GetPtr("isGlobalMuon"));
     vector<bool>& isTrackerMuon = *((vector<bool>*) data.GetPtr("isTrackerMuon"));
-
-    // remove event which is no hard interaction (noise)
-
-    if( nVtx < 1 ) continue;
-
-    // Correct the pile-up shape of MC
-
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    h_eventWeight[0]->Fill(0.,eventWeight);
-    h_eventWeight[1]->Fill(0.,eventWeight);
-
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
-      
-    bool muTrigger = TriggerStatus(data, "HLT_Mu45");
-    bool CSCT      = FilterStatus(data, "Flag_CSCTightHaloFilter");
-    bool eeBadSc   = FilterStatus(data, "Flag_eeBadScFilter");
-    bool Noise     = FilterStatus(data, "Flag_HBHENoiseFilter");
-    bool NoiseIso  = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
-
-    if( !muTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
-    if( isData && !NoiseIso ) continue;
 
     // choosing muon pair
 
@@ -237,10 +206,13 @@ void muVariable(std::string inputFile, std::string outputFile){
     h_mudz[i]             ->Write("mudz");
     h_muMiniIsoEA[i]      ->Write("muMiniIsoEA");
     h_muHits[i]           ->Write("muHits");
-    h_eventWeight[i]      ->Write("eventWeight");
+    h_totalEvents[i]      ->Write("totalEvents");
 
     outFile[i]->Write();
+    delete outFile[i];
 
   }
+
+  delete f;
   
 }

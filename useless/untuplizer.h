@@ -111,9 +111,9 @@ class TreeReader {
 
    // TTree/TChain initializers
    TreeReader(TTree* tree);
-   TreeReader(const char* path, const char* treename = "treeMaker");
-   TreeReader(const char** paths, int npaths, const char* treename = "treeMaker");
-   TreeReader(std::vector<std::string> paths, const char* treename = "treeMaker");
+   TreeReader(const char* path, const char* treename = "tree/treeMaker");
+   TreeReader(const char** paths, int npaths, const char* treename = "tree/treeMaker");
+   TreeReader(std::vector<std::string> paths, const char* treename = "tree/treeMaker");
 
    virtual ~TreeReader();
 

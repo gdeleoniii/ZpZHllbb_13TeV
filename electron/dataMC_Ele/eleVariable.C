@@ -7,21 +7,16 @@
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
-#include "../../readSample.h"
-#include "../../dataFilter.h"
-#include "../../pileupMCweight.h"
 
 void eleVariable(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
-  std::vector<string> infiles;
-
-  readSample(inputFile, infiles);
-  
-  TreeReader data(infiles);
+  TreeReader data(inputFile.data());
   
   // Declare the histogram (barrel,endcap)
+
+  TFile* f = new TFile(inputFile.data());
 
   TH1D* h_eleEtaseedAtVtx[2]; 
   TH1D* h_eledPhiAtVtx[2];
@@ -32,9 +27,11 @@ void eleVariable(std::string inputFile, std::string outputFile){
   TH1D* h_eleMissHits[2]; 
   TH1D* h_eleD0[2];   
   TH1D* h_eleMiniIsoEA[2]; 
-  TH1D* h_eventWeight[2];
+  TH1D* h_totalEvents[2];
 
   for(Int_t i = 0; i < 2; i++){
+
+    h_totalEvents[i]             = (TH1D*)f->Get("h_totalEv");
 
     h_eleEtaseedAtVtx[i]         = new TH1D(Form("h_eleEtaseedAtVtx%d",i),         "eleEtaseedAtVtx",         20,  -0.01,  0.01);
     h_eledPhiAtVtx[i]            = new TH1D(Form("h_eledPhiAtVtx%d",i),            "eledPhiAtVtx",            20,  -0.03,  0.03);
@@ -45,7 +42,6 @@ void eleVariable(std::string inputFile, std::string outputFile){
     h_eleMissHits[i]             = new TH1D(Form("h_eleMissHits%d",i),             "eleMissHits",              6,   -0.5,   5.5);
     h_eleD0[i]                   = new TH1D(Form("h_eleD0%d",i),                   "eleD0",                   20, -0.015, 0.015);  
     h_eleMiniIsoEA[i]            = new TH1D(Form("h_eleMiniIsoEA%d",i),            "eleMiniIsoEA",            20,      0,  0.12);
-    h_eventWeight[i]             = new TH1D(Form("h_eventWeight%d",i),             "eventWeight",              2,     -1,     1);
 
     h_eleEtaseedAtVtx[i]        ->Sumw2();
     h_eledPhiAtVtx[i]           ->Sumw2();
@@ -78,11 +74,9 @@ void eleVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Int_t    nVtx                    = data.GetInt("nVtx");
     Int_t    nEle                    = data.GetInt("nEle");
     Int_t*   eleMissHits             = data.GetPtrInt("eleMissHits");
-    Bool_t   isData                  = data.GetBool("isData");
-    Float_t  pu_nTrueInt             = data.GetFloat("pu_nTrueInt");
+    Float_t  eventWeight             = data.GetFloat("ev_weight");
     Float_t* eleScEn                 = data.GetPtrFloat("eleScEn");
     Float_t* eleScEt                 = data.GetPtrFloat("eleScEt");
     Float_t* eleScEta                = data.GetPtrFloat("eleScEta");
@@ -97,31 +91,6 @@ void eleVariable(std::string inputFile, std::string outputFile){
     Float_t* eleMiniIsoEA            = data.GetPtrFloat("eleMiniIsoEA");
     TClonesArray* eleP4              = (TClonesArray*) data.GetPtrTObject("eleP4");
     vector<bool>& eleEcalDrivenSeed  = *((vector<bool>*) data.GetPtr("eleEcalDrivenSeed"));
-
-    // remove event which is no hard interaction (noise)
-
-    if( nVtx < 1 ) continue;
-
-    // Correct the pile-up shape of MC
-
-    Double_t eventWeight = pileupWeight(isData, (Int_t)pu_nTrueInt);
-    
-    h_eventWeight[0]->Fill(0.,eventWeight);
-    h_eventWeight[1]->Fill(0.,eventWeight);
-      
-    // data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
-      
-    bool eleTrigger = TriggerStatus(data, "HLT_Ele105");
-    bool CSCT       = FilterStatus(data, "Flag_CSCTightHaloFilter");
-    bool eeBadSc    = FilterStatus(data, "Flag_eeBadScFilter");
-    bool Noise      = FilterStatus(data, "Flag_HBHENoiseFilter");
-    bool NoiseIso   = FilterStatus(data, "Flag_HBHENoiseIsoFilter");
-
-    if( !eleTrigger ) continue;
-    if( isData && !CSCT ) continue;
-    if( isData && !eeBadSc ) continue;
-    if( isData && !Noise ) continue;
-    if( isData && !NoiseIso ) continue;
 
     // choosing electron
 
@@ -262,10 +231,13 @@ void eleVariable(std::string inputFile, std::string outputFile){
     h_eleMissHits[i]            ->Write("eleMissHits");
     h_eleD0[i]                  ->Write("eleD0");
     h_eleMiniIsoEA[i]           ->Write("eleMiniIsoEA");
-    h_eventWeight[i]            ->Write("eventWeight");
+    h_totalEvents[i]            ->Write("totalEvents");
 
     outFile[i]->Write();
+    delete outFile[i];
 
   }
   
+  delete f;
+
 }
