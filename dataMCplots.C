@@ -12,7 +12,7 @@
 #include <TTree.h>
 #include <TKey.h>
 #include <TSystemDirectory.h>
-#include "../setNCUStyle.h"
+#include "setNCUStyle.h"
 
 void myPlot(TH1D* h_DY100,
             TH1D* h_DY200,

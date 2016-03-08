@@ -30,12 +30,12 @@ fi
 
 if [ $muon == true ]; then
 
-#    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Mu/outputMu/highpt\"\,\"highPtMuVariables\"\)
-#    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Mu/outputMu/tracker\"\,\"trackerMuVariables\"\)
-#    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Zmumu/outputZmumu\"\,\"ZmumuVariables\"\)
+    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Mu/outputMu/highpt\"\,\"highPtMuVariables\"\)
+    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Mu/outputMu/tracker\"\,\"trackerMuVariables\"\)
+    root -q -b -l dataMCplots.C+\(\"muon/dataMC_Zmumu/outputZmumu\"\,\"ZmumuVariables\"\)
     root -q -b -l dataMCplots.C+\(\"muon/dataMC_Jetmumu/outputJetmumu\"\,\"JetmumuVariables\"\)
 
-#    root -q -b -l dataMCplots.C+\(\"muon/forLimitCalc/outputmZHmu\"\,\"mZHmuVariables\"\)
+    root -q -b -l dataMCplots.C+\(\"muon/dataMC_ZHmu/outputmZHmu\"\,\"mZHmuVariables\"\)
 
 else
 
