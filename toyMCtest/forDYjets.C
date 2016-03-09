@@ -69,14 +69,12 @@ void forDYjets(std::string path, std::string pdfName){
   h_bias->GetXaxis()->SetTitle("Bias ((fit-true)/true)");
 
   h_upPull->SetLineWidth(1);
-  h_upPull->SetFillColor(kYellow);
-  h_upPull->GetXaxis()->SetTitle("+Pull ((fit-true)/unc)");
+  h_upPull->SetLineColor(kRed);
+  h_upPull->GetXaxis()->SetTitle("Pull ((fit-true)/unc)");
 
   h_dwPull->SetLineWidth(1);
-  h_dwPull->SetFillColor(kYellow);
-  h_dwPull->GetXaxis()->SetTitle("-Pull ((fit-true)/unc)");
-
-  /// Output results
+  h_dwPull->SetFillColor(kBlue);
+  h_dwPull->GetXaxis()->SetTitle("Pull ((fit-true)/unc)");
 
   TLegend* leg = new TLegend(0.35, 0.77, 0.87, 0.87);
 
@@ -101,8 +99,8 @@ void forDYjets(std::string path, std::string pdfName){
   leg->AddEntry(h_prmass, "Error = #sqrt{N_{per bin}}", "lp");
   leg->AddEntry(g_errorBands, "Uncertainty based on fitting errors", "f");
   leg->Draw();
-  // lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d",
-  //				     f_fitprmass->GetChisquare(), f_fitprmass->GetNDF()));
+  lar->DrawLatexNDC(0.50, 0.65, Form("# of events : %f", h_prmass->Integral()));
+  // lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2}/ndf: %f/%d", f_fitprmass->GetChisquare(), f_fitprmass->GetNDF()));
   c->Print(Form("%s.pdf(",pdfName.data()));
   
   leg->Clear();
@@ -114,8 +112,8 @@ void forDYjets(std::string path, std::string pdfName){
   leg->AddEntry(h_prmass_hollow, "Error = #sqrt{N_{per bin}}", "lp");
   leg->AddEntry(g_errorBands_hollow, "Uncertainty based on fitting errors", "f");
   leg->Draw();
-  //lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2} / ndf: %f / %d", 
-  //				     f_fitprmass_hollow->GetChisquare(), f_fitprmass_hollow->GetNDF()));
+  lar->DrawLatexNDC(0.50, 0.65, Form("# of events : %f", h_prmass_hollow->Integral()));
+  //lar->DrawLatexNDC(0.50, 0.65, Form("#chi^{2}/ndf: %f/%d", f_fitmass_hollow->GetChisquare(), f_fitprmass_hollow->GetNDF()));
   c->Print(Form("%s.pdf",pdfName.data()));
   
   c->cd();
@@ -124,10 +122,10 @@ void forDYjets(std::string path, std::string pdfName){
 
   c->cd();
   h_upPull->Draw();
-  c->Print(Form("%s.pdf",pdfName.data()));
-
-  c->cd();
-  h_dwPull->Draw();
+  h_dwPull->Draw("same");
+  leg->AddEntry(h_upPull, "positive pull", "");
+  leg->AddEntry(h_dwPull, "negative pull", "");
+  leg->Draw();
   c->Print(Form("%s.pdf)",pdfName.data()));
 
 }
