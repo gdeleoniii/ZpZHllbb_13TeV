@@ -19,22 +19,12 @@ void toyMCmu_cat1(std::string inputFile, std::string outputFile){
   TFile* f = new TFile(inputFile.data());
   TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
-  const Double_t xmin  = 500;
-  const Double_t xmax  = 5000;
-  const Int_t    nBins = (xmax-xmin)/100;
-     
-  TH1D* h_ZprimeSign  = new TH1D("h_ZprimeSign",  "ZprimeSign",  nBins, xmin, xmax);
-  TH1D* h_ZprimeSide  = new TH1D("h_ZprimeSide",  "ZprimeSide",  nBins, xmin, xmax);
   TH1D* h_PRmassNoSIG = new TH1D("h_PRmassNoSIG", "PRmassNoSIG",    40,   40,  240);
   TH1D* h_PRmassAll   = new TH1D("h_PRmassAll",   "PRmassAll",      40,   40,  240);
 
-  h_ZprimeSign ->Sumw2();
-  h_ZprimeSide ->Sumw2();
   h_PRmassNoSIG->Sumw2();
   h_PRmassAll  ->Sumw2();
 
-  h_ZprimeSign ->GetXaxis()->SetTitle("ZprimeSign");
-  h_ZprimeSide ->GetXaxis()->SetTitle("ZprimeSide");
   h_PRmassNoSIG->GetXaxis()->SetTitle("corrPRmass");
   h_PRmassAll  ->GetXaxis()->SetTitle("corrPRmass");
 
@@ -135,22 +125,17 @@ void toyMCmu_cat1(std::string inputFile, std::string outputFile){
 
     h_PRmassAll->Fill(corrPRmass[goodFATJetID],eventWeight);
 
-    if( corrPRmass[goodFATJetID] > 30 && !(corrPRmass[goodFATJetID] > 65 && corrPRmass[goodFATJetID] < 135) && corrPRmass[goodFATJetID] < 300 ){
-      h_ZprimeSide ->Fill(mllbb,eventWeight);
+    if( corrPRmass[goodFATJetID] > 30 && !(corrPRmass[goodFATJetID] > 65 && corrPRmass[goodFATJetID] < 135) && corrPRmass[goodFATJetID] < 300 )
       h_PRmassNoSIG->Fill(corrPRmass[goodFATJetID],eventWeight);
-    }
 
-    if( corrPRmass[goodFATJetID] > 105 && corrPRmass[goodFATJetID] < 135 )
-      h_ZprimeSign->Fill(mllbb,eventWeight);
-  
+    // if( corrPRmass[goodFATJetID] > 105 && corrPRmass[goodFATJetID] < 135 )
+      
   } // end of event loop
 
   fprintf(stderr, "Processed all events\n");
 
   TFile* outFile = new TFile(Form("%s_pseudoTest.root",outputFile.c_str()), "recreate");
   
-  h_ZprimeSign ->Write("ZprimeSign");
-  h_ZprimeSide ->Write("ZprimeSide");
   h_PRmassNoSIG->Write("corrPRmass");
   h_PRmassAll  ->Write("corrPRmassAll");
   h_totalEvents->Write("totalEvents");
