@@ -1,6 +1,6 @@
 #include <iostream>
 #include <TMath.h>
-
+/*
 double fitZpmass(double* v, double* p){
 
   double x = v[0];
@@ -14,7 +14,7 @@ double divFunc(double* v, double* p){
   return (p[0]*TMath::Exp(p[1]*x+p[2]/x))/(p[3]*TMath::Exp(p[4]*x+p[5]/x));
 
 }
-
+*/
 double ErfExp(double x, double c, double offset, double width){
   
   if( width < 1e-2 ) width = 1e-2;
