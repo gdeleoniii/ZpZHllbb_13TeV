@@ -29,7 +29,7 @@ readHist::readHist(std::string rootFile){
 
 double readHist::crossSection(std::string token){
 
-  std::ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/pseudoMCtest/textFile.txt");
+  std::ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/textFile.txt");
   std::string thisPath;
 
   double crosssection = 0.;

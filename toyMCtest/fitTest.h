@@ -84,7 +84,7 @@ void fitTest(TH1D* h_prmass, TH1D* h_prmass_hollow,
 
   TH1D* h_fluc = (TH1D*)h_prmass->Clone("h_fluc");
   TH1D* h_fluc_hollow = (TH1D*)h_prmass->Clone("h_fluc_hollow");
-  
+
   for( int ntoy = 0; ntoy < 1000; ntoy++ ){
 
     if( ntoy % 10 == 0 ) std::cout << "Process ntoy = " << ntoy+1 << std::endl;
@@ -136,5 +136,5 @@ void fitTest(TH1D* h_prmass, TH1D* h_prmass_hollow,
     h_dwPull->Fill((nSigFit - nSigHist)/dwfitUnc);
 
   } // end of ntoy loop
-  
+
 }
