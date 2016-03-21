@@ -54,7 +54,7 @@ TH1D* readHist::getHist(std::string hname){
 
   TH1D* thisHist = (TH1D*)(thisFile->Get(Form("%s", hname.c_str())));  
   thisHist->Scale(thisScale);
-  
+  cout << thisScale << endl;  
   return thisHist;
 
 }

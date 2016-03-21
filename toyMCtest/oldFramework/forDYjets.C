@@ -14,13 +14,18 @@ void forDYjets(std::string path, std::string pdfName){
   readHist dy400(Form("%s/DYjets/DYJetsToLL_M-50_HT-400to600_13TeV_pseudoTest.root",path.data()));
   readHist dy600(Form("%s/DYjets/DYJetsToLL_M-50_HT-600toInf_13TeV_pseudoTest.root",path.data()));
  
-  TH1D* h_prmass = (TH1D*)(dy100.getHist("corrPRmassAll"))->Clone("h_prmass");
+  TH1D* h_prmass = (TH1D*)(dy400.getHist("corrPRmassAll"))->Clone("h_prmass");
 
   h_prmass->Reset();
   h_prmass->Add(dy100.getHist("corrPRmassAll"));
   h_prmass->Add(dy200.getHist("corrPRmassAll"));
   h_prmass->Add(dy400.getHist("corrPRmassAll"));
   h_prmass->Add(dy600.getHist("corrPRmassAll"));
+
+  TCanvas* c = new TCanvas("c","",0,0,800,600);
+  c->cd();
+  h_prmass->Draw();
+  c->Print("test.pdf");
 
   TH1D* h_prmass_hollow = (TH1D*)(dy100.getHist("corrPRmass"))->Clone("h_prmass_hollow");
 

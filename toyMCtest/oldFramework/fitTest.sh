@@ -9,7 +9,8 @@ cd $pwd
 
 channel=(mu ele)
 cat=(1 2)
-phy=(DYjets TTbar Dibosons SingleTop)
+phy=(DYjets TTbar) 
+# Dibosons SingleTop)
 
 for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do

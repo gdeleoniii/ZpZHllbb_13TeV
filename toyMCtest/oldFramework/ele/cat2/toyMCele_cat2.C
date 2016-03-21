@@ -1,60 +1,32 @@
 #include <vector>
 #include <string>
-#include <fstream>
 #include <iostream>
 #include <TH1D.h>
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
-#include "../../../untuplizer.h"
-#include "../../../isPassZee.h"
+#include "../../../../untuplizer.h"
+#include "../../../../isPassZee.h"
 
-Double_t CrossSection(std::string token){
-
-  std::ifstream textFile("textFile.txt");
-  std::string thisSample;
-
-  double crosssection = 0.;
-  double thisNum = 0.;
-
-  while( textFile >> thisSample >> thisNum ){
-
-    if( token.find(thisSample) != std::string::npos )
-      crosssection = thisNum;
-
-  }
-
-  return crosssection;
-  
-}
-
-void toyMCnew_ele(std::string inputFile, std::string outputFile){
+void toyMCele_cat2(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
 
+  // Declare the histogram
+
   TFile* f = new TFile(inputFile.data());
   TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
-  // Create a tree to store variables
+  TH1D* h_PRmassNoSIG = new TH1D("h_PRmassNoSIG",  "PRmassNoSIG",    40,   40,  240);
+  TH1D* h_PRmassAll   = new TH1D("h_PRmassAll",    "PRmassAll",      40,   40,  240);
 
-  TFile* outFile = new TFile(Form("%s_toyMCnew.root",outputFile.c_str()), "recreate");
-  TTree* tree = new TTree("tree", "TreeForRooFit");
+  h_PRmassNoSIG->Sumw2();
+  h_PRmassAll  ->Sumw2();
 
-  Int_t cat = 0;
-  Float_t mllbb, prmass, evweight;
-
-  tree->Branch("cat",      &cat,      "cat/I");
-  tree->Branch("mllbb",    &mllbb,    "mllbb/F");
-  tree->Branch("prmass",   &prmass,   "prmass/F");
-  tree->Branch("evweight", &evweight, "evweight/F");
-
-  // Calculate the scale correspond to inputFile
-
-  Double_t totalEvents  = h_totalEvents->Integral();
-  Double_t crossSection = CrossSection(inputFile.data());
-  Double_t scale        = 3000./(totalEvents/crossSection); // dataLumi = 3000/pb
+  h_PRmassNoSIG->GetXaxis()->SetTitle("corrPRmass");
+  h_PRmassAll  ->GetXaxis()->SetTitle("corrPRmass");
 
   // begin of event loop
 
@@ -88,7 +60,7 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
     TLorentzVector* thatLep = NULL;
 
     if( !isPassZee(data,goodLepID) ) continue;
-
+	
     thisLep = (TLorentzVector*)eleP4->At(goodLepID[0]);   
     thatLep = (TLorentzVector*)eleP4->At(goodLepID[1]);   
 
@@ -137,31 +109,35 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
       // deltaR depends loose cut
 
-      if     ( subjetDeltaR < 0.3 && nsubBjet > 0 ) cat = 1;
-      else if( subjetDeltaR > 0.3 && nsubBjet > 1 ) cat = 2;
-      else continue;
+      if( subjetDeltaR < 0.3 ) continue;
+      if( nsubBjet < 2 ) continue;
       
       goodFATJetID = ij;
       break;
 
-    } // end of FatnJet loop
+    }
 
     if( goodFATJetID < 0 ) continue;
 
-    mllbb = (*thisLep+*thatLep+*thisJet).M();  
+    Float_t mllbb = (*thisLep+*thatLep+*thisJet).M();  
 
     if( mllbb < 750 ) continue;
 
-    prmass = corrPRmass[goodFATJetID];
-    evweight = eventWeight * scale;
+    h_PRmassAll->Fill(corrPRmass[goodFATJetID],eventWeight);
 
-    tree->Fill();
-
+    if( corrPRmass[goodFATJetID] > 30 && !(corrPRmass[goodFATJetID] > 65 && corrPRmass[goodFATJetID] < 135) && corrPRmass[goodFATJetID] < 300 )
+      h_PRmassNoSIG->Fill(corrPRmass[goodFATJetID],eventWeight);
+  
   } // end of event loop
 
   fprintf(stderr, "Processed all events\n");
 
-  tree->Write();  
+  TFile* outFile = new TFile(Form("%s_pseudoTest.root",outputFile.c_str()), "recreate");
+  
+  h_PRmassNoSIG->Write("corrPRmass");
+  h_PRmassAll  ->Write("corrPRmassAll");
+  h_totalEvents->Write("totalEvents");
+
   outFile->Write();
 
   delete f;

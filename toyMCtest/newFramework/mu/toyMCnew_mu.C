@@ -45,7 +45,7 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
   Int_t cat = 0;
   Float_t mllbb, prmass, evweight;
 
-  tree->Branch("cat",      cat,       "cat/I");
+  tree->Branch("cat",      &cat,      "cat/I");
   tree->Branch("mllbb",    &mllbb,    "mllbb/F");
   tree->Branch("prmass",   &prmass,   "prmass/F");
   tree->Branch("evweight", &evweight, "evweight/F");
@@ -139,6 +139,7 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
 
       if     ( subjetDeltaR < 0.3 && nsubBjet > 0 ) cat = 1;
       else if( subjetDeltaR > 0.3 && nsubBjet > 1 ) cat = 2;
+      else continue;
       
       goodFATJetID = ij;
       break;
