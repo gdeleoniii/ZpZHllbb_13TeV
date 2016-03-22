@@ -81,11 +81,13 @@ void rooFitTest(std::string path){
   
   offset.setConstant(true);
 
+
+
   // Define DYjets model
+  // Fit to whole range of jet mass
+  // Plot the results on a frame
 
   RooErfExpPdf model("model", "Error function for Z+jets mass", mJet, constant, offset, width);
-
-  // Fit to whole range of jet mass
 
   RooFitResult* mJet_result = model.fitTo(setDYjets, 
 					  SumW2Error(true), 
@@ -102,9 +104,15 @@ void rooFitTest(std::string path){
   setDYjets.plotOn(mJetFrame, Binning(binsmJet));
   model.plotOn(mJetFrame);
 
-  // Fit to side band of jet mass
 
-  RooFitResult* mJetSB_result = model.fitTo(setDYjetsSB,
+
+  // Define DYjets model
+  // Fit to side band of jet mass
+  // Plot the results on a frame
+
+  RooErfExpPdf model_("model_", "Error function for Z+jets mass", mJet, constant, offset, width);
+
+  RooFitResult* mJetSB_result = model_.fitTo(setDYjetsSB,
 					    SumW2Error(true),
 					    Range("lowSB,highSB"),
 					    Strategy(2),
@@ -114,25 +122,23 @@ void rooFitTest(std::string path){
   RooPlot* mJetFrameSB = mJet.frame();
 
   setDYjetsSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  model.plotOn(mJetFrameSB, VisualizeError(*mJetSB_result,1), FillColor(kYellow));
+  model_.plotOn(mJetFrameSB, Range("allRange"), VisualizeError(*mJetSB_result,1), FillColor(kYellow));
   setDYjetsSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  model.plotOn(mJetFrameSB);
+  model_.plotOn(mJetFrameSB, Range("allRange"));
+
 
 
   // Produce n toyMCs to study fit bias and pull
   
-
   TH1D* h_bias   = new TH1D("h_bias",   "", 50, -1, 1);
-  TH1D* h_upPull = new TH1D("h_upPull", "", 50, -1, 1);
-  TH1D* h_dwPull = new TH1D("h_dwPull", "", 50, -1, 1);
+  
+  
   /*
-
-  RooMCStudy toyMC(model,model,mJet,"","");
-
+  RooMCStudy toyMC(model_, model_, mJet);
   toyMC.generateAndFit(100, setDYjets.sumEntries());
-
   RooPlot* pullFrame = toyMC.plotPull(mJet, -3., 3., 25, true);
   */
+  
   // Properties of pull: 
   // Mean is 0 if there is no bias
   // Width is 1 if error is correct
