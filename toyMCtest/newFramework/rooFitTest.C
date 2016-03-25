@@ -23,23 +23,23 @@ void rooFitTest(std::string path){
   // Define all the variables from the trees
 
   RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "M_{jet}", 40.,  240., "GeV");
+  RooRealVar mJet("prmass", "M_{jet}", 30.,  300., "GeV");
   RooRealVar mZH ("mllbb",   "M_{ZH}",  0., 2000., "GeV");
   RooRealVar evWeight("evweight", "", 0, 1.e3);
 
   // Set the range in jet mass
 
-  mJet.setRange("allRange", 40., 240.);
-  mJet.setRange("lowSB",    40.,  65.);
-  mJet.setRange("highSB",  135., 240.);
+  mJet.setRange("allRange", 30., 300.);
+  mJet.setRange("lowSB",    30.,  65.);
+  mJet.setRange("highSB",  135., 300.);
   mJet.setRange("signal",  105., 135.);
 
-  RooBinning binsmJet(40, 40, 240);
+  RooBinning binsmJet(54, 30, 300);
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
 
   TCut catCut = "cat==1";
-  TCut sbCut  = "prmass>40 && !(prmass>65 && prmass<135) && prmass<240";
+  TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
 
@@ -69,6 +69,7 @@ void rooFitTest(std::string path){
 					  Minimizer("Minuit2"), 
 					  Save(1));
 
+  // Require fit to converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima.
 
   RooPlot* mJetFrame = mJet.frame();
 
@@ -78,12 +79,12 @@ void rooFitTest(std::string path){
   model.plotOn(mJetFrame);
 
   // Produce n toyMCs to study fit bias and pull                                                                                                                                                        
-
-  RooMCStudy toyMC(model, model, mJet);
-  toyMC.generateAndFit(1000, setDYjets.sumEntries(), "", "");
-  RooPlot* pullconstFrame = toyMC.plotPull(constant, -5., 5., 25, true);
-  RooPlot* pullwidthFrame = toyMC.plotPull(width, -5., 5., 25, true);
-  
+  /*
+    RooMCStudy toyMC(model, model, mJet);
+    toyMC.generateAndFit(1000, setDYjets.sumEntries(), "", "");
+    RooPlot* pullconstFrame = toyMC.plotPull(constant, -5., 5., 25, true);
+    RooPlot* pullwidthFrame = toyMC.plotPull(width, -5., 5., 25, true);
+  */
 
   /*******************************************/
   /*                SIDE BAND                */
@@ -102,7 +103,6 @@ void rooFitTest(std::string path){
   RooRealVar widthSB   ("widthSB",     "width of the erf",   70.,   0., 200.);
 
   offsetSB.setConstant(true);
-  width.setConstant(true);
 
   RooErfExpPdf modelSB("modelSB", "Error function for Z+jets mass", mJet, constant, offset, width);
 
@@ -128,6 +128,9 @@ void rooFitTest(std::string path){
   // Produce n toyMCs to study fit bias and pull  
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
 
+  RooRealVar bias("bias", "bias", -3, 3);
+  RooRealVar pull("pull", "pull", -3, 3);
+
   TH1D* h_bias = new TH1D("h_bias", "", 50, -3, 3);
   TH1D* h_pull = new TH1D("h_pull", "", 50, -3, 3);
 
@@ -135,35 +138,50 @@ void rooFitTest(std::string path){
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = model.generate(mjet, setDYjets.sumEntries());
+    RooDataSet* setToyMC = modelSB.generate(mjet, setDYjets.sumEntries());
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
 
-    RooRealVar constant_toyMC ("constant_toyMC",  "slope of the exp", -0.02, -1., 0.);
-    RooRealVar offset_toyMC("offset_toyMC", "offset of the erf", offset.getVal());
-    RooRealVar width_toyMC ("width_toyMC",  "width of the erf",  width.getVal());
+    RooRealVar constant_toyMC("constant_toyMC",  "slope of the exp", -0.02,  -1.,   0.);
+    RooRealVar offset_toyMC  ("offset_toyMC",   "offset of the erf",   30., -50., 200.);
+    RooRealVar width_toyMC   ("width_toyMC",     "width of the erf",   70.,   0., 200.);
+
+    offset_toyMC.setConstant(true);
 
     RooErfExpPdf model_toyMC("model_toyMC", "Error function for Z+jets mass", mJet, constant_toyMC, offset_toyMC, width_toyMC);
     
     RooFitResult* toyMC_result = model_toyMC.fitTo(thisToyMC,
 						   SumW2Error(true),
-						   Range("allRange"),
+						   Range("lowSB,highSB"),
 						   Strategy(2),
 						   Minimizer("Minuit2"),
 						   Save(1));
+   
+    double nsbreal = thisToyMC.sumEntries(sbCut);
 
-    RooAbsReal* getnFit = model_toyMC.createIntegral(mjet, Range("signal"));
+    RooRealVar nSBReal("nSBReal", "", nsbreal, 0., 1.e4);
+   
+    RooAbsReal* nSIGFit = model_toyMC.createIntegral(mjet, Range("signal"));
+    RooAbsReal* nSBFit  = model_toyMC.createIntegral(mjet, Range("lowSB,highSB"));
 
-    double nSigFit  = getnFit->getVal();
+    RooFormulaVar formula("formula", "ev in signal region of toyMC", "@0*@1/@2", RooArgList(nSBReal, *nSIGFit, *nSBFit));
+    
+    double nSigFit  = nSIGFit->getVal();
     double nSigReal = setDYjets.sumEntries(sigCut);
-
-    RooFormulaVar formula("formula", "formula", mjet);
-    double fitUnc = formula.getPropagatedError(toyMC_result);
+    double fitUnc   = formula.getPropagatedError(*toyMC_result);
 
     h_bias->Fill((nSigFit - nSigReal)/nSigReal);
     h_pull->Fill((nSigFit - nSigReal)/fitUnc);
 
   } // End of ntoy loop
 
+  RooDataHist hbias("hbias", "", bias, Import(*h_bias));
+  RooDataHist hpull("hpull", "", pull, Import(*h_pull));
+
+  RooPlot* biasFrame = bias.frame();
+  hbias.plotOn(biasFrame);
+
+  RooPlot* pullFrame = pull.frame();
+  hpull.plotOn(pullFrame);
 
   /*******************************************/
   /*                 OUTPUT                  */
@@ -177,13 +195,22 @@ void rooFitTest(std::string path){
   c->cd();
   mJetFrameSB->Draw();
   c->Print("roofitCheck.pdf");
-
+  
   c->cd();
-  pullconstFrame->Draw();
+  biasFrame->Draw();
   c->Print("roofitCheck.pdf");
 
   c->cd();
-  pullwidthFrame->Draw();
+  pullFrame->Draw();
   c->Print("roofitCheck.pdf)");
-  
+
+  /*
+    c->cd();
+    pullconstFrame->Draw();
+    c->Print("roofitCheck.pdf");
+
+    c->cd();
+    pullwidthFrame->Draw();
+    c->Print("roofitCheck.pdf)");
+  */
 }
