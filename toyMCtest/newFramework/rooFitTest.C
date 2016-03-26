@@ -1,5 +1,3 @@
-#ifndef __CINT__
-#endif
 R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
@@ -73,17 +71,25 @@ void rooFitTest(std::string path){
 
   RooPlot* mJetFrame = mJet.frame();
 
-  setDYjets.plotOn(mJetFrame, Binning(binsmJet));
-  model.plotOn(mJetFrame, VisualizeError(*mJet_result,1), FillColor(kYellow));
-  setDYjets.plotOn(mJetFrame, Binning(binsmJet));
-  model.plotOn(mJetFrame);
+  setDYjets.plotOn(mJetFrame,
+		   Binning(binsmJet));
+ 
+  model.plotOn(mJetFrame, 
+	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent),
+	       VisualizeError(*mJet_result,1),
+	       FillColor(kYellow));
 
-  // Produce n toyMCs to study fit bias and pull                                                                                                                                                        
+  setDYjets.plotOn(mJetFrame,
+		   Binning(binsmJet));
+
+  model.plotOn(mJetFrame, 
+	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent));
+
   /*
-    RooMCStudy toyMC(model, model, mJet);
-    toyMC.generateAndFit(1000, setDYjets.sumEntries(), "", "");
-    RooPlot* pullconstFrame = toyMC.plotPull(constant, -5., 5., 25, true);
-    RooPlot* pullwidthFrame = toyMC.plotPull(width, -5., 5., 25, true);
+  RooMCStudy toyMC(model, model, mJet);
+  toyMC.generateAndFit(1000, setDYjets.sumEntries(), "", "");
+  RooPlot* pullconstFrame = toyMC.plotPull(constant, -5., 5., 25, true);
+  RooPlot* pullwidthFrame = toyMC.plotPull(width, -5., 5., 25, false);
   */
 
   /*******************************************/
@@ -115,10 +121,21 @@ void rooFitTest(std::string path){
 
   RooPlot* mJetFrameSB = mJet.frame();
 
-  setDYjetsSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  modelSB.plotOn(mJetFrameSB, Range("allRange"), VisualizeError(*mJetSB_result,1), FillColor(kYellow));
-  setDYjetsSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  modelSB.plotOn(mJetFrameSB, Range("allRange"));
+  setDYjetsSB.plotOn(mJetFrameSB,
+		     Binning(binsmJet));
+
+  modelSB.plotOn(mJetFrameSB, 
+		 Normalization(setDYjetsSB.sumEntries(),RooAbsReal::NumEvent),
+		 Range("allRange"),
+		 VisualizeError(*mJetSB_result,1),
+		 FillColor(kYellow));
+
+  setDYjetsSB.plotOn(mJetFrameSB,
+		     Binning(binsmJet));
+
+  modelSB.plotOn(mJetFrameSB, 
+		 Normalization(setDYjetsSB.sumEntries(),RooAbsReal::NumEvent),
+		 Range("allRange"));
 
 
   /*******************************************/
@@ -128,13 +145,10 @@ void rooFitTest(std::string path){
   // Produce n toyMCs to study fit bias and pull  
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
 
-  RooRealVar bias("bias", "bias", -3, 3);
-  RooRealVar pull("pull", "pull", -3, 3);
+  TH1D* h_bias = new TH1D("h_bias", "", 16, -2, 2);
+  TH1D* h_pull = new TH1D("h_pull", "", 40, -5, 5);
 
-  TH1D* h_bias = new TH1D("h_bias", "", 50, -3, 3);
-  TH1D* h_pull = new TH1D("h_pull", "", 50, -3, 3);
-
-  for( int ntoy = 0; ntoy < 1000; ntoy++ ){
+  for( int ntoy = 0; ntoy < 2000; ntoy++ ){
 
     RooArgSet mjet(mJet);
 
@@ -156,17 +170,17 @@ void rooFitTest(std::string path){
 						   Minimizer("Minuit2"),
 						   Save(1));
    
-    double nsbreal = thisToyMC.sumEntries(sbCut);
+    double nsbreal = setToyMC->sumEntries(sbCut)/setToyMC->sumEntries();
 
-    RooRealVar nSBReal("nSBReal", "", nsbreal, 0., 1.e4);
+    RooRealVar nSBReal("nSBReal", "", nsbreal, 0., 1.);
    
-    RooAbsReal* nSIGFit = model_toyMC.createIntegral(mjet, Range("signal"));
-    RooAbsReal* nSBFit  = model_toyMC.createIntegral(mjet, Range("lowSB,highSB"));
+    RooAbsReal* nSIGFit = model_toyMC.createIntegral(mjet, NormSet(mjet), Range("signal"));
+    RooAbsReal* nSBFit  = model_toyMC.createIntegral(mjet, NormSet(mjet), Range("lowSB,highSB"));
 
     RooFormulaVar formula("formula", "ev in signal region of toyMC", "@0*@1/@2", RooArgList(nSBReal, *nSIGFit, *nSBFit));
     
     double nSigFit  = nSIGFit->getVal();
-    double nSigReal = setDYjets.sumEntries(sigCut);
+    double nSigReal = setToyMC->sumEntries(sigCut)/setToyMC->sumEntries();
     double fitUnc   = formula.getPropagatedError(*toyMC_result);
 
     h_bias->Fill((nSigFit - nSigReal)/nSigReal);
@@ -174,14 +188,26 @@ void rooFitTest(std::string path){
 
   } // End of ntoy loop
 
+  RooRealVar bias("bias", "bias", -2, 2);
+  RooRealVar pull("pull", "pull", -5, 5);
+
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
+
+  RooRealVar mean  ("mean",   "mean", 0, -10, 10);
+  RooRealVar sigma ("sigma", "sigma", 3, 0.1, 10);
+  RooGaussian gauss("gauss", "gauss", pull, mean, sigma);
+
+  gauss.fitTo(hpull);
+
+  cout << mean.getVal() << "\t" << sigma.getVal() << endl;
 
   RooPlot* biasFrame = bias.frame();
   hbias.plotOn(biasFrame);
 
   RooPlot* pullFrame = pull.frame();
   hpull.plotOn(pullFrame);
+  gauss.plotOn(pullFrame);
 
   /*******************************************/
   /*                 OUTPUT                  */
@@ -191,7 +217,15 @@ void rooFitTest(std::string path){
   c->cd();
   mJetFrame->Draw();
   c->Print("roofitCheck.pdf(");
+  /*
+  c->cd();                                                                                                                                                 
+  pullconstFrame->Draw();
+  c->Print("roofitCheck.pdf");
 
+  c->cd();
+  pullwidthFrame->Draw();      
+  c->Print("roofitCheck.pdf");  
+  */
   c->cd();
   mJetFrameSB->Draw();
   c->Print("roofitCheck.pdf");
@@ -204,13 +238,4 @@ void rooFitTest(std::string path){
   pullFrame->Draw();
   c->Print("roofitCheck.pdf)");
 
-  /*
-    c->cd();
-    pullconstFrame->Draw();
-    c->Print("roofitCheck.pdf");
-
-    c->cd();
-    pullwidthFrame->Draw();
-    c->Print("roofitCheck.pdf)");
-  */
 }
