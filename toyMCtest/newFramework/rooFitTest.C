@@ -1,22 +1,54 @@
 R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
+using namespace std;
 
-void rooFitTest(std::string path){
+void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
-  RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
 
   TChain* tree = new TChain("tree");
 
-  tree->Add(Form("%s/DYjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMCnew.root", path.data()));
-  tree->Add(Form("%s/DYjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMCnew.root", path.data()));
-  tree->Add(Form("%s/DYjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMCnew.root", path.data()));
-  tree->Add(Form("%s/DYjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMCnew.root", path.data()));
+  if( channel != "ele" && channel != "mu" ) return;
+
+  if( phy == "Zjets" ){
+  
+    tree->Add(Form("%s/%s/DYJetsToLL_M-50_HT-100to200_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/DYJetsToLL_M-50_HT-200to400_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/DYJetsToLL_M-50_HT-400to600_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMCnew.root", channel.data(), phy.data()));
+
+  }
+
+  else if( phy == "VV" ){
+
+    tree->Add(Form("%s/%s/WW_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/WZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/ZZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data(), phy.data()));
+
+  }
+
+  else if( phy == "TTbar" ){
+
+    tree->Add(Form("%s/%s/TT_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data(), phy.data()));
+
+  }
+
+  else if( phy == "SingleTop" ){
+
+    tree->Add(Form("%s/%s/ST_s_4f_leptonDecays_13TeV_toyMCnew.root",             channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/ST_t_antitop_4f_leptonDecays_13TeV_toyMCnew.root",     channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/ST_t_top_4f_leptonDecays_13TeV_toyMCnew.root",         channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/ST_tW_antitop_5f_inclusiveDecays_13TeV_toyMCnew.root", channel.data(), phy.data()));
+    tree->Add(Form("%s/%s/ST_tW_top_5f_inclusiveDecays_13TeV_toyMCnew.root",     channel.data(), phy.data()));
+
+  }
+
+  else return;
 
   // Define all the variables from the trees
 
@@ -36,14 +68,15 @@ void rooFitTest(std::string path){
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
 
-  TCut catCut = "cat==1";
+  TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
-
 
   /*******************************************/
   /*                 ALL RANGE               */
   /*******************************************/
+
+  // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
   RooDataSet setDYjets("setDYjets", 
 		       "setDYjets",
@@ -52,14 +85,23 @@ void rooFitTest(std::string path){
 		       WeightVar(evWeight), 
 		       Import(*tree));
 
-  RooRealVar constant("constant",  "slope of the exp",   -0.02,  -1.,   0.);
-  RooRealVar offset  ("offset",   "offset of the erf",     30., -50., 200.);
-  RooRealVar width   ("width",     "width of the erf",    100.,   0., 200.);
+  // Define the variables for pdf
 
-  offset.setConstant(true);
+  RooRealVar constant("constant",  "slope of the exp", -0.02,  -1.,   0.);
+  RooRealVar offset  ("offset",   "offset of the erf",   30., -50., 200.);
+  RooRealVar width   ("width",     "width of the erf",  100.,   0., 200.);
+
+  // Set the parameter fixed when fitting
+
+  bool isFixed = false;
+  if( phy == "Zjets" && catcut == "1" ) isFixed = true;
+
+  offset.setConstant(isFixed);
+
+  // Define the pdf and fitting
 
   RooErfExpPdf model("model", "Error function for Z+jets mass", mJet, constant, offset, width);
-
+  
   RooFitResult* mJet_result = model.fitTo(setDYjets, 
 					  SumW2Error(true), 
 					  Range("allRange"),
@@ -67,7 +109,7 @@ void rooFitTest(std::string path){
 					  Minimizer("Minuit2"), 
 					  Save(1));
 
-  // Require fit to converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima.
+  // Plot results on a frame
 
   RooPlot* mJetFrame = mJet.frame();
 
@@ -76,7 +118,7 @@ void rooFitTest(std::string path){
  
   model.plotOn(mJetFrame, 
 	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent),
-	       VisualizeError(*mJet_result,1),
+	       VisualizeError(*mJet_result),
 	       FillColor(kYellow));
 
   setDYjets.plotOn(mJetFrame,
@@ -84,13 +126,6 @@ void rooFitTest(std::string path){
 
   model.plotOn(mJetFrame, 
 	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent));
-
-  /*
-  RooMCStudy toyMC(model, model, mJet);
-  toyMC.generateAndFit(1000, setDYjets.sumEntries(), "", "");
-  RooPlot* pullconstFrame = toyMC.plotPull(constant, -5., 5., 25, true);
-  RooPlot* pullwidthFrame = toyMC.plotPull(width, -5., 5., 25, false);
-  */
 
   /*******************************************/
   /*                SIDE BAND                */
@@ -105,12 +140,12 @@ void rooFitTest(std::string path){
 
 
   RooRealVar constantSB("constantSB",  "slope of the exp", -0.02,  -1.,   0.);
-  RooRealVar offsetSB  ("offsetSB",   "offset of the erf",   30., -50., 200.);
-  RooRealVar widthSB   ("widthSB",     "width of the erf",   70.,   0., 200.);
+  RooRealVar offsetSB  ("offsetSB",   "offset of the erf", offset.getVal(), -50., 200.);
+  RooRealVar widthSB   ("widthSB",     "width of the erf", 70.,   0., 200.);
 
   offsetSB.setConstant(true);
 
-  RooErfExpPdf modelSB("modelSB", "Error function for Z+jets mass", mJet, constant, offset, width);
+  RooErfExpPdf modelSB("modelSB", "Error function for Z+jets mass", mJet, constantSB, offsetSB, widthSB);
 
   RooFitResult* mJetSB_result = modelSB.fitTo(setDYjetsSB,
 					      SumW2Error(true),
@@ -127,7 +162,7 @@ void rooFitTest(std::string path){
   modelSB.plotOn(mJetFrameSB, 
 		 Normalization(setDYjetsSB.sumEntries(),RooAbsReal::NumEvent),
 		 Range("allRange"),
-		 VisualizeError(*mJetSB_result,1),
+		 VisualizeError(*mJetSB_result),
 		 FillColor(kYellow));
 
   setDYjetsSB.plotOn(mJetFrameSB,
@@ -144,11 +179,17 @@ void rooFitTest(std::string path){
 
   // Produce n toyMCs to study fit bias and pull  
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
+  // Fit is converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima
 
   TH1D* h_bias = new TH1D("h_bias", "", 16, -2, 2);
   TH1D* h_pull = new TH1D("h_pull", "", 40, -5, 5);
 
+  RooMsgService::instance().setSilentMode(true);
+
   for( int ntoy = 0; ntoy < 2000; ntoy++ ){
+
+    if( !pullTest ) break;
+    if( ntoy % 100 == 0 ) fprintf(stderr, "Processing ntoy %i of 2000\n", ntoy + 1);
 
     RooArgSet mjet(mJet);
 
@@ -188,19 +229,19 @@ void rooFitTest(std::string path){
 
   } // End of ntoy loop
 
+  RooMsgService::instance().setSilentMode(false);
+
   RooRealVar bias("bias", "bias", -2, 2);
   RooRealVar pull("pull", "pull", -5, 5);
 
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
 
-  RooRealVar mean  ("mean",   "mean", 0, -10, 10);
-  RooRealVar sigma ("sigma", "sigma", 3, 0.1, 10);
+  RooRealVar  mean ("mean",   "mean", 0, -10, 10);
+  RooRealVar  sigma("sigma", "sigma", 3, 0.1, 10);
   RooGaussian gauss("gauss", "gauss", pull, mean, sigma);
 
   gauss.fitTo(hpull);
-
-  cout << mean.getVal() << "\t" << sigma.getVal() << endl;
 
   RooPlot* biasFrame = bias.frame();
   hbias.plotOn(biasFrame);
@@ -208,34 +249,28 @@ void rooFitTest(std::string path){
   RooPlot* pullFrame = pull.frame();
   hpull.plotOn(pullFrame);
   gauss.plotOn(pullFrame);
+  gauss.paramOn(pullFrame);
 
   /*******************************************/
   /*                 OUTPUT                  */
   /*******************************************/
 
   TCanvas* c = new TCanvas("c","",0,0,1000,800);
-  c->cd();
-  mJetFrame->Draw();
-  c->Print("roofitCheck.pdf(");
-  /*
-  c->cd();                                                                                                                                                 
-  pullconstFrame->Draw();
-  c->Print("roofitCheck.pdf");
 
   c->cd();
-  pullwidthFrame->Draw();      
-  c->Print("roofitCheck.pdf");  
-  */
+  mJetFrame->Draw();
+  c->Print(Form("rooFit_toyMC_%s_%s_cat%s.pdf(", channel.data(), phy.data(), catcut.data()));
+
   c->cd();
   mJetFrameSB->Draw();
-  c->Print("roofitCheck.pdf");
+  c->Print(Form("rooFit_toyMC_%s_%s_cat%s.pdf",  channel.data(), phy.data(), catcut.data()));
   
   c->cd();
   biasFrame->Draw();
-  c->Print("roofitCheck.pdf");
+  c->Print(Form("rooFit_toyMC_%s_%s_cat%s.pdf",  channel.data(), phy.data(), catcut.data()));
 
   c->cd();
   pullFrame->Draw();
-  c->Print("roofitCheck.pdf)");
+  c->Print(Form("rooFit_toyMC_%s_%s_cat%s.pdf)", channel.data(), phy.data(), catcut.data()));
 
 }

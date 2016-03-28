@@ -23,7 +23,7 @@ for ((i=0; i<${#channel[@]}; i++)); do
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-400to600_13TeV\"\)
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-600toInf_13TeV\"\)
 
-    mv *root DYjets
+    mv *root Zjets
 
     echo "Processing diBosons background..."
 
@@ -31,13 +31,13 @@ for ((i=0; i<${#channel[@]}; i++)); do
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\)
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\)
 
-    mv *root diBosons
+    mv *root VV
 
     echo "Processing ttbar background..."
 
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\)
 
-    mv *root ttbar
+    mv *root TTbar
 
     echo "Processing singleTop background..."
 
@@ -47,7 +47,7 @@ for ((i=0; i<${#channel[@]}; i++)); do
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_antitop_5f_inclusiveDecays_13TeV\"\)
     root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_top_5f_inclusiveDecays_13TeV\"\)
 
-    mv *root singleTop
+    mv *root SingleTop
 
     rm -f inputdir.txt
     rm -f *.pcm *.d *.so
