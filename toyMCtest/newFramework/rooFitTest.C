@@ -38,16 +38,6 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   }
 
-  else if( phy == "SingleTop" ){
-
-    tree->Add(Form("%s/%s/ST_s_4f_leptonDecays_13TeV_toyMCnew.root",             channel.data(), phy.data()));
-    tree->Add(Form("%s/%s/ST_t_antitop_4f_leptonDecays_13TeV_toyMCnew.root",     channel.data(), phy.data()));
-    tree->Add(Form("%s/%s/ST_t_top_4f_leptonDecays_13TeV_toyMCnew.root",         channel.data(), phy.data()));
-    tree->Add(Form("%s/%s/ST_tW_antitop_5f_inclusiveDecays_13TeV_toyMCnew.root", channel.data(), phy.data()));
-    tree->Add(Form("%s/%s/ST_tW_top_5f_inclusiveDecays_13TeV_toyMCnew.root",     channel.data(), phy.data()));
-
-  }
-
   else return;
 
   // Define all the variables from the trees
@@ -78,12 +68,12 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
-  RooDataSet setDYjets("setDYjets", 
-		       "setDYjets",
-		       variables,
-		       Cut(catCut),
-		       WeightVar(evWeight), 
-		       Import(*tree));
+  RooDataSet dataSet("dataSet", 
+		     "dataSet",
+		     variables,
+		     Cut(catCut),
+		     WeightVar(evWeight), 
+		     Import(*tree));
 
   // Define the variables for pdf
 
@@ -102,7 +92,7 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   RooErfExpPdf model("model", "Error function for Z+jets mass", mJet, constant, offset, width);
   
-  RooFitResult* mJet_result = model.fitTo(setDYjets, 
+  RooFitResult* mJet_result = model.fitTo(dataSet, 
 					  SumW2Error(true), 
 					  Range("allRange"),
 					  Strategy(2),
@@ -113,30 +103,30 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   RooPlot* mJetFrame = mJet.frame();
 
-  setDYjets.plotOn(mJetFrame,
-		   Binning(binsmJet));
+  dataSet.plotOn(mJetFrame,
+		 Binning(binsmJet));
  
   model.plotOn(mJetFrame, 
-	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent),
+	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent),
 	       VisualizeError(*mJet_result),
 	       FillColor(kYellow));
 
-  setDYjets.plotOn(mJetFrame,
-		   Binning(binsmJet));
+  dataSet.plotOn(mJetFrame,
+		 Binning(binsmJet));
 
   model.plotOn(mJetFrame, 
-	       Normalization(setDYjets.sumEntries(),RooAbsReal::NumEvent));
+	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
 
   /*******************************************/
   /*                SIDE BAND                */
   /*******************************************/
 
-  RooDataSet setDYjetsSB("setDYjetsSB",
-			 "setDYjetsSB",
-			 variables,
-			 Cut(catCut && sbCut), 
-			 WeightVar(evWeight),
-			 Import(*tree));
+  RooDataSet dataSetSB("dataSetSB",
+		       "dataSetSB",
+		       variables,
+		       Cut(catCut && sbCut), 
+		       WeightVar(evWeight),
+		       Import(*tree));
 
 
   RooRealVar constantSB("constantSB",  "slope of the exp", -0.02,  -1.,   0.);
@@ -147,7 +137,7 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   RooErfExpPdf modelSB("modelSB", "Error function for Z+jets mass", mJet, constantSB, offsetSB, widthSB);
 
-  RooFitResult* mJetSB_result = modelSB.fitTo(setDYjetsSB,
+  RooFitResult* mJetSB_result = modelSB.fitTo(dataSetSB,
 					      SumW2Error(true),
 					      Range("lowSB,highSB"),
 					      Strategy(2),
@@ -156,22 +146,21 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   RooPlot* mJetFrameSB = mJet.frame();
 
-  setDYjetsSB.plotOn(mJetFrameSB,
-		     Binning(binsmJet));
+  dataSetSB.plotOn(mJetFrameSB,
+		   Binning(binsmJet));
 
   modelSB.plotOn(mJetFrameSB, 
-		 Normalization(setDYjetsSB.sumEntries(),RooAbsReal::NumEvent),
+		 Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent),
 		 Range("allRange"),
 		 VisualizeError(*mJetSB_result),
 		 FillColor(kYellow));
 
-  setDYjetsSB.plotOn(mJetFrameSB,
-		     Binning(binsmJet));
+  dataSetSB.plotOn(mJetFrameSB,
+		   Binning(binsmJet));
 
   modelSB.plotOn(mJetFrameSB, 
-		 Normalization(setDYjetsSB.sumEntries(),RooAbsReal::NumEvent),
+		 Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent),
 		 Range("allRange"));
-
 
   /*******************************************/
   /*            BIAS AND PULL                */
@@ -193,12 +182,12 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = modelSB.generate(mjet, setDYjets.sumEntries());
+    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries());
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
 
     RooRealVar constant_toyMC("constant_toyMC",  "slope of the exp", -0.02,  -1.,   0.);
-    RooRealVar offset_toyMC  ("offset_toyMC",   "offset of the erf",   30., -50., 200.);
-    RooRealVar width_toyMC   ("width_toyMC",     "width of the erf",   70.,   0., 200.);
+    RooRealVar offset_toyMC  ("offset_toyMC",   "offset of the erf", offset.getVal(), -50., 200.);
+    RooRealVar width_toyMC   ("width_toyMC",     "width of the erf", 70.,   0., 200.);
 
     offset_toyMC.setConstant(true);
 
@@ -237,19 +226,19 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
 
-  RooRealVar  mean ("mean",   "mean", 0, -10, 10);
-  RooRealVar  sigma("sigma", "sigma", 3, 0.1, 10);
-  RooGaussian gauss("gauss", "gauss", pull, mean, sigma);
+  RooRealVar  m("m",  "mean", 0, -10, 10);
+  RooRealVar  s("s", "sigma", 3, 0.1, 10);
+  RooGaussian g("g", "gauss", pull, m, s);
 
-  gauss.fitTo(hpull);
+  g.fitTo(hpull);
 
   RooPlot* biasFrame = bias.frame();
   hbias.plotOn(biasFrame);
 
   RooPlot* pullFrame = pull.frame();
   hpull.plotOn(pullFrame);
-  gauss.plotOn(pullFrame);
-  gauss.paramOn(pullFrame);
+  g.plotOn(pullFrame);
+  g.paramOn(pullFrame);
 
   /*******************************************/
   /*                 OUTPUT                  */
