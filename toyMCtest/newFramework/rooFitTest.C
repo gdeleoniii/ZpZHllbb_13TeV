@@ -32,7 +32,7 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
   }
 
-  else if( phy == "TTbar" ){
+  else if( phy == "TT" ){
 
     tree->Add(Form("%s/%s/TT_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data(), phy.data()));
 
@@ -162,6 +162,12 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 		 Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent),
 		 Range("allRange"));
 
+  model.plotOn(mJetFrameSB,
+	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent),
+	       Range("allRange"),
+	       LineStyle(7),
+	       LineColor(kRed));
+
   /*******************************************/
   /*            BIAS AND PULL                */
   /*******************************************/
@@ -182,7 +188,7 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries());
+    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries()*20);
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
 
     RooRealVar constant_toyMC("constant_toyMC",  "slope of the exp", -0.02,  -1.,   0.);
@@ -199,6 +205,7 @@ void rooFitTest(string channel, string phy, string catcut, bool pullTest=true){
 						   Strategy(2),
 						   Minimizer("Minuit2"),
 						   Save(1));
+    if( toyMC_result->status() != 0 ) continue;
    
     double nsbreal = setToyMC->sumEntries(sbCut)/setToyMC->sumEntries();
 

@@ -7,47 +7,69 @@ export SCRAM_ARCH=slc6_amd64_gcc481
 eval `scramv1 runtime -sh`
 cd $pwd
 
-channel=(ele mu)
+ch=(ele mu)
 
-for ((i=0; i<${#channel[@]}; i++)); do
+for ((i=0; i<${#ch[@]}; i++)); do
 
-    mcpath=/data7/htong/skim_samples/${channel[$i]}
+    mcpath=/data7/htong/skim_samples/${ch[$i]}
+    datapath=/data7/htong/
 
-    cd $pwd/${channel[$i]}
+    cd $pwd/${ch[$i]}
 
     echo "We are now in " $PWD
+
+    if [ `echo ${ch[$i]} | grep -c "mu"` -gt 0 ]; then
+
+	echo "Processing muon data set..."
+
+	root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_crab_SingleMuon-Run2015D-05Oct2015-v1_20151119_2p2fb_SingleMuTextFile.root\"\,\"SingleMuon-Run2015D-05Oct2015-v1\"\)
+	root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_crab_SingleMuon-Run2015D-PromptReco-V420151119_2p2fb_SingleMuTextFile.root\"\,\"SingleMuon-Run2015D-PromptReco-V4\"\)
+
+	mv *root data
+
+    elif [ `echo ${ch[$i]} | grep -c "ele"` -gt 0 ]; then
+
+	echo "Processing electron data set..."
+
+        root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_crab_SingleElectron-Run2015D-05Oct2015-v1_20151117_2p2fb_SingleEleTextFile.root\"\,\"SingleElectron-Run2015D-05Oct2015-v1\"\)
+	root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_crab_SingleElectron-Run2015D-PromptReco-V420151117_2p2fb_SingleEleTextFile.root\"\,\"SingleElectron-Run2015D-PromptReco-V4\"\)
+
+	mv *root data
+
+    fi
+
     echo "Processing DY+jets background..."
 
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-100to200_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-200to400_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-400to600_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-600toInf_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-100to200_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-200to400_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-400to600_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-600toInf_13TeV\"\)
 
     mv *root Zjets
 
     echo "Processing diBosons background..."
 
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_WW_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WW_TuneCUETP8M1_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_WW_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WW_TuneCUETP8M1_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\)
 
     mv *root VV
 
     echo "Processing ttbar background..."
 
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\)
+    root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\)
 
-    mv *root TTbar
+    mv *root TT
 
-    echo "Processing singleTop background..."
+    #echo "Processing singleTop background..."
 
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1.root\"\,\"ST_s_4f_leptonDecays_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_t_antitop_4f_leptonDecays_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_t_top_4f_leptonDecays_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_antitop_5f_inclusiveDecays_13TeV\"\)
-    root -q -b -l toyMCnew_${channel[$i]}.C+\(\"$mcpath/skim_${channel[$i]}_ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_top_5f_inclusiveDecays_13TeV\"\)
+    #root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ST_s-ch_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1.root\"\,\"ST_s_4f_leptonDecays_13TeV\"\)
+    #root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ST_t-ch_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_t_antitop_4f_leptonDecays_13TeV\"\)
+    #root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ST_t-ch_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_t_top_4f_leptonDecays_13TeV\"\)
+    #root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_antitop_5f_inclusiveDecays_13TeV\"\)
+    #root -q -b -l toyMCnew_${ch[$i]}.C+\(\"$mcpath/skim_${ch[$i]}_ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1.root\"\,\"ST_tW_top_5f_inclusiveDecays_13TeV\"\)
 
-    mv *root SingleTop
+    #mv *root SingleTop
 
     rm -f inputdir.txt
     rm -f *.pcm *.d *.so
