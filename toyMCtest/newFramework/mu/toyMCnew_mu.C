@@ -56,6 +56,15 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
   Double_t crossSection = CrossSection(inputFile.data());
   Double_t scale        = 3000./(totalEvents/crossSection); // dataLumi = 3000/pb
 
+  // Mark minor backgounds
+
+  Int_t minor = 1;
+
+  if( (inputFile.find("WW") != std::string::npos) ||
+      (inputFile.find("WZ") != std::string::npos) ||
+      (inputFile.find("ZZ") != std::string::npos) ||
+      (inputFile.find("TT") != std::string::npos)  ) minor = -1;
+
   // begin of event loop
 
   Long64_t nentries = data.GetEntriesFast();
@@ -67,6 +76,7 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
+    Bool_t         isData            = data.GetBool("isData");
     Float_t        eventWeight       = data.GetFloat("ev_weight"); 
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -153,7 +163,11 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
     if( mllbb < 750 ) continue;
 
     prmass = corrPRmass[goodFATJetID];
-    evweight = eventWeight * scale;
+
+    if( isData ) 
+      evweight = 1;
+    else
+      evweight = eventWeight * scale * minor;
 
     tree->Fill();
 
