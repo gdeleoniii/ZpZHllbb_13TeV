@@ -3,7 +3,7 @@ R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 using namespace std;
 
-void forData(string channel, string catcut){
+void forData(string channel, string catcut, bool removeMinor=true){
 
   // Suppress all the INFO message
 
@@ -13,7 +13,6 @@ void forData(string channel, string catcut){
 
   TChain* treeData  = new TChain("tree");
   TChain* treeZjets = new TChain("tree");
-  TChain* treeMinor = new TChain("tree");
 
   if( channel == "ele" ){
 
@@ -30,16 +29,22 @@ void forData(string channel, string catcut){
   }
 
   else return;
-  
+
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMCnew.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMCnew.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMCnew.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMCnew.root", channel.data()));
 
-  treeMinor->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-  treeMinor->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-  treeMinor->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-  treeMinor->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+  // To remove minor background contribution in data set (weight is -1)
+
+  if( removeMinor ){
+
+    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+
+  }
 
   // Define all the variables from the trees
 
@@ -65,11 +70,25 @@ void forData(string channel, string catcut){
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
-  RooDataSet dataSetData("dataSetData", 
+  RooDataSet dataSetData("dataSetData",
 			 "dataSetData",
 			 variables,
-			 Cut(catCut && sbCut),
+			 Cut(catCut),
+			 WeightVar(evWeight),
 			 Import(*treeData));
+
+  for(int i=0; i< dataSetData.sumEntries();i++){
+    dataSetData.get(i);
+    cout << dataSetData.weight()<<endl;;
+
+  }
+
+  RooDataSet dataSetDataSB("dataSetDataSB", 
+			   "dataSetDataSB",
+			   variables,
+			   Cut(catCut && sbCut),
+			   WeightVar(evWeight),
+			   Import(*treeData));
 
   RooDataSet dataSetZjetsSB("dataSetZjetsSB",
 			    "dataSetZjetsSB",
@@ -85,13 +104,19 @@ void forData(string channel, string catcut){
 			    WeightVar(evWeight),
 			    Import(*treeZjets));
   
-  RooDataSet dataSetMinor("dataSetMinor",
-			  "dataSetMinor",
-			  variables,
-			  Cut(catCut && sbCut),
-			  WeightVar(evWeight),
-			  Import(*treeMinor));
+  // Total events number
 
+  float totalMcEv   = dataSetZjetsSB.sumEntries() + dataSetZjetsSG.sumEntries();
+  float totalDataEv = dataSetData.sumEntries();
+
+  RooRealVar nMcEvents("nMcEvents", "nMcEvents", 0., 99999.);
+  RooRealVar nDataEvents("nDataEvents", "nDataEvents", 0., 99999.);
+
+  nMcEvents.setVal(totalMcEv);
+  nMcEvents.setConstant(true);
+
+  nDataEvents.setVal(totalDataEv);
+  nDataEvents.setConstant(true);
 
   // Define the variables for pdf
 
@@ -107,9 +132,7 @@ void forData(string channel, string catcut){
   
   RooErfExpPdf model_mJet("model_mJet", "model_mJet", mJet, constant, offset, width);
 
-  RooRealVar nZHsb("nZHsb", "nZHsb", dataSetZjetsSB.sumEntries());
-
-  RooExtendPdf ext_model_mJet("ext_model_mJet", "ext_model_mJet", model_mJet, nZHsb);
+  RooExtendPdf ext_model_mJet("ext_model_mJet", "ext_model_mJet", model_mJet, nMcEvents);
 
   RooFitResult* mJet_result = ext_model_mJet.fitTo(dataSetZjetsSB,
 						   SumW2Error(true),
@@ -119,9 +142,9 @@ void forData(string channel, string catcut){
 						   Minimizer("Minuit2"),
 						   Save(1));
 
-  RooAbsReal* nSIGFit = ext_model_mJet.createIntegral(RooArgSet(mJet), Range("signal"));
-  float normFactor = nSIGFit->getVal();
-  cout << normFactor << endl;
+  RooAbsReal* nSIGFit = ext_model_mJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
+
+  float normFactor = nSIGFit->getVal() * totalMcEv;
   
   // Plot the results on a frame
 
@@ -148,12 +171,9 @@ void forData(string channel, string catcut){
   RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
   RooGenericPdf model_ZH  ("model_ZH",   "model_ZH",   "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
 
-  RooRealVar nZHsg("nZHsg", "nZHsg", dataSetZjetsSG.sumEntries());
-  RooRealVar nZH  ("nZH",   "nZH",   dataSetData.sumEntries()   );
-
-  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nZHsb);
-  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nZHsg);
-  RooExtendPdf ext_model_ZH  ("ext_model_ZH",   "ext_model_ZH",   model_ZH,   nZH  );
+  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nMcEvents);
+  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nMcEvents);
+  RooExtendPdf ext_model_ZH  ("ext_model_ZH",   "ext_model_ZH",   model_ZH,   nDataEvents);
 
   // Fit ZH mass in side band  
 
@@ -183,7 +203,7 @@ void forData(string channel, string catcut){
 
   // Fit ZH mass in side band region (data)
 
-  RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetData,
+  RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB,
 						SumW2Error(true),
 						Extended(true),
 						Range("fullRange"),
@@ -206,10 +226,10 @@ void forData(string channel, string catcut){
   dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH));
   ext_model_ZHSG.plotOn(mZHFrameMC, LineStyle(7), LineColor(kRed));
 
-  dataSetData.plotOn (mZHFrame, Binning(binsmZH));
-  ext_model_ZH.plotOn(mZHFrame, VisualizeError(*mZH_result), FillColor(kYellow));
-  dataSetData.plotOn (mZHFrame, Binning(binsmZH));
-  ext_model_ZH.plotOn(mZHFrame, LineStyle(7), LineColor(kBlue));
+  dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
+  ext_model_ZH .plotOn(mZHFrame, VisualizeError(*mZH_result), FillColor(kYellow));
+  dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
+  ext_model_ZH .plotOn(mZHFrame, LineStyle(7), LineColor(kBlue));
   
   // Draw the model of alpha ratio
 
@@ -218,11 +238,10 @@ void forData(string channel, string catcut){
   RooPlot* alphaFrame = mZH.frame();
   model_alpha.plotOn(alphaFrame);
 
-
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region 
 
   RooProdPdf model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
-  model_sigData.plotOn(mZHFrame, Normalization(50,RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
+  model_sigData.plotOn(mZHFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
 
   /*******************************************/
   /*                 OUTPUT                  */
