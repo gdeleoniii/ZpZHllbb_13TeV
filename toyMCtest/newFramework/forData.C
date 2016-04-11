@@ -77,7 +77,7 @@ void forData(string channel, string catcut, bool removeMinor=true){
   
   // Total events number
 
-  float totalMcEv   = dataSetZjetsSB.sumEntries() + dataSetZjetsSG.sumEntries();
+  float totalMcEv   = dataSetZjets.sumEntries();
   float totalDataEv = dataSetData.sumEntries();
 
   RooRealVar nMcEvents("nMcEvents", "nMcEvents", 0., 99999.);
@@ -89,8 +89,8 @@ void forData(string channel, string catcut, bool removeMinor=true){
   nDataEvents.setVal(totalDataEv);
   nDataEvents.setConstant(true);
 
-  // Signal region jet mass
-
+  // Full region jet mass in data
+  /*
   RooRealVar constant("constant", "constant", -0.02,  -1.,   0.);
   RooRealVar offset  ("offset",   "offset",     30., -50., 200.);
   RooRealVar width   ("width",    "width",     100.,   0., 200.);
@@ -100,34 +100,35 @@ void forData(string channel, string catcut, bool removeMinor=true){
   RooErfExpPdf model_mJet("model_mJet", "model_mJet", mJet, constant, offset, width);
   RooExtendPdf ext_model_mJet("ext_model_mJet", "ext_model_mJet", model_mJet, nMcEvents);
 
-  RooFitResult* mJet_result = ext_model_mJet.fitTo(dataSetZjets, SumW2Error(true), Extended(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* mJet_result = ext_model_mJet.fitTo(dataSetData, SumW2Error(true), Extended(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  */
+  // Side band jet mass in data
 
-  // Side band jet mass
+  RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
+  RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
+  RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
 
-  RooRealVar constantSB("constantSB", "constantSB", constant.getVal(),  -1.,   0.);
-  RooRealVar offsetSB  ("offsetSB",   "offsetSB",   offset.getVal(),   -50., 200.);
-  RooRealVar widthSB   ("widthSB",    "widthSB",    width.getVal(),      0., 200.);
-
-  offsetSB.setConstant(true);
+  if( catcut == "1" ) offsetSB.setConstant(true);
 
   RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
   RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nMcEvents);
 
-  RooFitResult* mJetSB_result = ext_model_mJetSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   RooAbsReal* nSIGFit = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
+  RooAbsReal* nSBFit  = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
 
-  float normFactor = nSIGFit->getVal() * totalMcEv;
+  float normFactor = dataSetDataSB.sumEntries()*(nSIGFit->getVal()/nSBFit->getVal());
   
   // Plot the results on a frame
 
   RooPlot* mJetFrame = mJet.frame();
 
-  dataSetZjetsSB.  plotOn(mJetFrame, Binning(binsmJet));  
+  dataSetDataSB.   plotOn(mJetFrame, Binning(binsmJet));  
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
-  dataSetZjetsSB.  plotOn(mJetFrame, Binning(binsmJet));  
+  dataSetDataSB.   plotOn(mJetFrame, Binning(binsmJet));  
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"));
-  mJetFrame->SetTitle("M_{jet} distribution in Z+jets MC");
+  mJetFrame->SetTitle("M_{jet} distribution in data");
 
   // Alpha ratio part
 
