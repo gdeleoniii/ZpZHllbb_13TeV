@@ -89,19 +89,6 @@ void forData(string channel, string catcut, bool removeMinor=true){
   nDataEvents.setVal(totalDataEv);
   nDataEvents.setConstant(true);
 
-  // Full region jet mass in data
-  /*
-  RooRealVar constant("constant", "constant", -0.02,  -1.,   0.);
-  RooRealVar offset  ("offset",   "offset",     30., -50., 200.);
-  RooRealVar width   ("width",    "width",     100.,   0., 200.);
-
-  if( catcut == "1" ) offset.setConstant(true);
-  
-  RooErfExpPdf model_mJet("model_mJet", "model_mJet", mJet, constant, offset, width);
-  RooExtendPdf ext_model_mJet("ext_model_mJet", "ext_model_mJet", model_mJet, nMcEvents);
-
-  RooFitResult* mJet_result = ext_model_mJet.fitTo(dataSetData, SumW2Error(true), Extended(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-  */
   // Side band jet mass in data
 
   RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);

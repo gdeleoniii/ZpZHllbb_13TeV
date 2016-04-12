@@ -54,7 +54,7 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
 
   Double_t totalEvents  = h_totalEvents->Integral();
   Double_t crossSection = CrossSection(inputFile.data());
-  Double_t scale        = 3000./(totalEvents/crossSection); // dataLumi = 3000/pb
+  Double_t scale        = 2080./(totalEvents/crossSection); // dataLumi = 2080/pb
 
   // Mark minor backgounds
 
