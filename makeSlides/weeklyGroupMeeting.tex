@@ -1,4 +1,3 @@
-
 \documentclass{beamer}
 \mode<presentation>{
   \usetheme{Madrid}
@@ -82,164 +81,126 @@
 % PRESENTATION SLIDES
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: method}
+  \frametitle{toy-MC test}
   \justifying
   \begin{footnotesize}
     \begin{itemize}
-    \item Besides chi-square fitting, we use another fitting method to test if it can improve the bias in the signal region of pruned mass diatribution.
-    \item The method is as follow:
-      \begin{itemize}
-      \item Fit the pruned mass distribution (40-240 GeV) in MC (*)
-      \item Generate 1000 toy-MC samples by filling histogram with random data from original fitting function (from the pruned mass distribution (40-240 GeV) in pesudo-data). The total event number is equal to the number as pseudo-data. This is in order to make the shape consistent.
-      \item Dig out the signal region from the 1000 samples, left only side band region for fitting in next step.
-      \item Fit the 1000 toy-MC samples by fixing the "shape" parameters get from (*), left only one degree of freedom (which is normalization parameter).
-      \item Calculate the bias in signal region (105 - 135 GeV) from the formula:  bias =( estimate events from fitting curve - true event from histogram ) / true event from histogram.
-      \end{itemize}
+    \item Split e and mu channels (combine e and mu before)
+    \item Cut at ZH mass $>$ 750 GeV (cut at 500 GeV before)
+    \item Use sidebands 30-65 GeV, 135-300 GeV (40-65 GeV, 145-inf GeV before)
+    \item Apply 1 and 2 b-tags on the subjet (no apply any b-tags before)
+    \item For the b-tags selection, also need to be split in two categories.
+    \item Not use isPassLoose now, use HEEPNoIso+miniIso in the Z-related selection.
+    \item Need to study separately for every single background (DY+jets, ttbar, dibosons, single-top)
+    \item In summary, there are four sets of results for four kinds of backgrounds.
     \end{itemize}
   \end{footnotesize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: method}
-  \justifying
-  \begin{footnotesize}
-    \begin{itemize}
-    \item Based on a good bias (good fitting estimation), we can check pull to know the reliability of fitting. 
-      \begin{itemize}
-      \item pull = ( estimate events from fitting curve - true event from histogram ) / fit uncertainty 
-      \end{itemize} 
-    \item In general, a good bias and good pull are both Gaussian distribution with mean = 0 and sigma $<=$ 1.
-    \end{itemize}
-  \end{footnotesize}
+  \Huge{\centerline{Electron channel, DY+jets}}
 \end{frame}
 
-\begin{frame}
-  \frametitle{1000 toy-MC test: Fitting function}
-  \justifying
-  \begin{footnotesize}
-    \begin{itemize}
-    \item We have two fitting functions to deal with the pruned mass which is with or without signal region.
-    \item For the pruned mass with signal region,
-      \[\frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4 K_0}\]
-    \item For the pruned mass without signal region,
-      \[\frac{p_0\exp(p_1 x)\frac{1+Erf(\frac{x-p_2}{p_3})}{2}}{p_4(K_1+K_2)}\]
-    \item $K_i$ is a difference of complex $ErfExp$ function. Please see \url{https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/pseudoMCtest/alphaRplots.C\#L172-L215}
-    \end{itemize}
-  \end{footnotesize}
-\end{frame}
 
-\begin{frame}
-  \frametitle{1000 toy-MC test: Pruned mass distribution}
-  \begin{center}
-    \begin{footnotesize}
-      \begin{itemize}
-      \item We use the parameters from the fit curve of right plot to fit the 1000 samples of pruned mass (without signal region) in pseudo-data.
-      \end{itemize}
-    \end{footnotesize}
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Electron channel, DY+jets}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=1]{aRanoorg.pdf} &
-      \includegraphics[width=0.45\textwidth,page=2]{aRanoorg.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_Zjets_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_Zjets_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Pruned mass distribution of (side band + signal region) in pseudo-data (left) and in MC (right).}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: Pruned mass distribution}
-  \begin{center}
+  \Huge{\centerline{Electron channel, Dibosons}}
+\end{frame}
+
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Electron channel, Dibosons}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=1]{aRanoorg.pdf} &
-      \includegraphics[width=0.45\textwidth,page=3]{aRanoorg.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_VV_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_VV_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Pruned mass distribution of (side band + signal region)(left) and of side band region only (right) in pseudo-data.}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
+
+
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: Comparison of bias}
-  \begin{center}
-    \begin{footnotesize}
-      \begin{itemize}
-      \item Below are the bias distribution for different event numbers in pruned mass. If we have more events in pseudo-data, we can get a better bias. Red line is fit curve using Gaussian function.
-      \end{itemize}
-    \end{footnotesize}
+  \Huge{\centerline{Electron channel, TT}}
+\end{frame}
+
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Electron channel, TT}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=5]{aRanoorg.pdf} &
-      \includegraphics[width=0.45\textwidth,page=4]{aRano1e5.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_TT_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_ele_TT_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Left: Bias with the same event number as data. (Mean=-0.019 $\sigma$=0.079); Right: Bias with event number = 100000. (Mean=-0.00013, $\sigma$=0.010)}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
 
 \begin{frame}
-  \frametitle{1000 toy-MC test: Comparison of bias (original fitting method)}
-  \begin{center}
-    \begin{footnotesize}
-      \begin{itemize}
-      \item The original fit means fixing the normalization parameter, let 3 shape parameters float freely when fit the pruned mass.
-      \item Below are the bias distribution for different event numbers in pruned mass. The results are worse compare with the fitting method in previous slides. Red line is fit curve using Gaussian function.
-      \end{itemize}
-    \end{footnotesize}
+  \Huge{\centerline{Muon channel, DY+jets}}
+\end{frame}
+
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Muon channel, DY+jets}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=4]{aRorgorg.pdf} &
-      \includegraphics[width=0.45\textwidth,page=4]{aRorg1e5.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_Zjets_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_Zjets_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Left: Bias with the same event number as data. (Mean=-0.053 $\sigma$=0.18); Right: Bias with event number = 100000. (Mean=0.016, $\sigma$=0.035)}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
 
 \begin{frame}
-  \frametitle{Background estimation using muon data set}
-  \begin{center}
-    \begin{footnotesize}
-      \begin{itemize}
-      \item I replace the muon data set from pseudo-data ( come from MC) to do the same thing. The MC samples (background) are still DY+Jets.
-      \item In this study, I use the real data luminosity, but I didn't remove the $t\bar{t}$ background and diboson backgrounds (because I dont't know how).
-      \item The fitting error band are wide when fitting the pruned mass (side band + signal region), but the error band didn't comes out when I fit the pruned mass which is side band only.
-      \item The curve of $\alpha$ ratio are bad in high ZH mass region.
-      \end{itemize}
-    \end{footnotesize}
-  \end{center}
+  \Huge{\centerline{Muon channel, Dibosons}}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Results: pruned mass distribution of data}
-  \begin{center}
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Muon channel, Dibosons}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=1]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=2]{alphaRwtData.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_VV_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_VV_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Left: Side band + signal region. Right: Side band only.}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
+
+
 
 \begin{frame}
-  \frametitle{Results: ZH mass distribution of MC}
-  \begin{center}
+  \Huge{\centerline{Muon channel, TT}}
+\end{frame}
+
+\foreach \n/\m in {1/1,2/2,3/3,4/4}{
+  \begin{frame}
+    \frametitle{Muon channel, TT}
+    Left: deltaR $<$ 0.3, subjet $>$ 0; Right: deltaR $>$ 0.3, subjet $>$ 1
     \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=4]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=5]{alphaRwtData.pdf} \\
+      \includegraphics[page=\n,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_TT_cat1.pdf} &
+      \includegraphics[page=\m,width=0.45\textwidth]{rooFittoyMCResults/rooFit_toyMC_mu_TT_cat2.pdf} \\
     \end{tabular}
-    \captionof{table}{\footnotesize{Left: Signal region. Right: Side band.}}
-  \end{center}
-\end{frame}
+  \end{frame}
+}
 
 \begin{frame}
-  \frametitle{Results: $\alpha$ ratio and predicted background}
-  \begin{center}
-    \begin{tabular}{ll}
-      \includegraphics[width=0.45\textwidth,page=6]{alphaRwtData.pdf} &
-      \includegraphics[width=0.45\textwidth,page=7]{alphaRwtData.pdf} \\
-    \end{tabular}
-    \captionof{table}{\footnotesize{Left: $\alpha$ ratio as a function of ZH mass. Right: The predicted background as a function of ZH mass, in signal region of data. The number is 47 + ? - ?.}}
-  \end{center}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Comparison of expected limit in two cases}
-  \begin{center}
-    \includegraphics[width=0.75\textwidth]{use.pdf}
-  \end{center}
-\end{frame}
+   \frametitle{Summary}
+   \justifying
+   \begin{footnotesize}
+     \begin{itemize}
+     \item Start to study estimate the background in data set. All the fitting procedure are being studied using RooFit.
+     \item For minor backgrounds such as VV and TT (ignore single top), subtract them directly from data set (according to MC). Will assign systematic uncertainty to this assumption.
+     \end{itemize}
+   \end{footnotesize}
+ \end{frame}
 
 \end{document}
