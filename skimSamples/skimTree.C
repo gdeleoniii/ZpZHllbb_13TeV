@@ -2,7 +2,7 @@
 #include "skimTree.h"
 #include <TH1.h>
 
-void skimTree::Loop(std::string channel){
+void skimTree::Loop(std::string channel, TF1* fewk_z){
 
   if( fChain == 0 ) return;
   if( channel != "muon" && channel != "electron" ) return;
@@ -29,7 +29,7 @@ void skimTree::Loop(std::string channel){
 
   // Clone tree and add a new branch
 
-  Float_t  ev_weight;
+  Float_t ev_weight;
 
   fChain->LoadTree(0);
 
@@ -55,9 +55,10 @@ void skimTree::Loop(std::string channel){
     if( !isData ){
       
       Float_t mc_weight = mcWeight > 0 ? +1 : -1;
-      Float_t pu_weight = pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC
+      Float_t pu_weight = pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC      
+      Float_t k_weight  = infix.find("DYJets") != std::string::npos ? kfactorWeight(fewk_z) : +1;
 
-      ev_weight = mc_weight * pu_weight;
+      ev_weight = mc_weight * pu_weight * k_weight;
 
     }
 

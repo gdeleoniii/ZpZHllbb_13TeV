@@ -8,6 +8,8 @@
 #ifndef skimTree_h
 #define skimTree_h
 
+#include <TF1.h>
+#include <TH1.h>
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -15,6 +17,7 @@
 #include <TSystemDirectory.h>
 
 // Header file for the classes stored in the TTree if any.
+#include <TLorentzVector.h>
 #include <TClonesArray.h>
 #include <vector>
 #include <string>
@@ -805,13 +808,14 @@ class skimTree {
   //virtual Int_t    Cut(Long64_t entry);
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
-  virtual void     Init(TTree *tree);
-  virtual void     Loop(std::string channel);
+  virtual void     Init(TTree* tree);
+  virtual void     Loop(std::string channel,TF1* fewk_z);
   virtual Bool_t   Notify();
   virtual void     Show(Long64_t entry = -1);
   virtual bool     TriggerStatus(std::string TRIGGERNAME);
   virtual bool     FilterStatus(std::string FILTERNAME);
   virtual Float_t  pileupWeight(Int_t puntrueint);
+  virtual Float_t  kfactorWeight(TF1* fewk_z);
   std::string inputFile_;
 
 };
@@ -1645,6 +1649,8 @@ Bool_t skimTree::Notify()
 
 Float_t skimTree::pileupWeight(Int_t puntrueint){
 
+  if( puntrueint < 0 ) return 1.;
+
   Float_t puweight[200]= {1.};
 
   puweight[0]   =  1.;
@@ -1701,6 +1707,58 @@ Float_t skimTree::pileupWeight(Int_t puntrueint){
   if( puntrueint >= 50 ) puweight[puntrueint] = 0;
 
   return puweight[puntrueint];
+
+}
+
+Float_t skimTree::kfactorWeight(TF1* fewk_z)
+{
+
+  // LO->NLO correction
+
+  const Double_t varBins[] = {0,200,400,600,1e10};
+
+  TH1D* h = new TH1D("h","", 4, varBins);
+
+  // for DYJetsToLL only
+
+  Double_t kfactor[4] = {1.588,
+			 1.438,
+			 1.494,
+			 1.139};
+
+  // HT: The scalar sum pt of the outgoing parton ( product of hard collisions, not including those from pileups)
+
+  Double_t k1 = kfactor[h->FindBin(HT)-1];
+
+  h->Clear();  
+
+  // NLO->NLO+EW correction
+
+  vector<Int_t> goodLepID;
+
+  for(Int_t ig = 0; ig < nGenPar; ig++){
+
+    if( abs((*genParId)[ig]) != 11 && 
+	abs((*genParId)[ig]) != 13 && 
+	abs((*genParId)[ig]) != 15 ) continue;
+
+    if( ((*genParSt)[ig] != 1 && abs((*genParId)[ig]) != 15) || 
+	((*genParSt)[ig] != 2 && abs((*genParId)[ig]) == 15) ) continue;
+
+    if( (*genMomParId)[ig] != 23 && (*genMomParId)[ig] != (*genParId)[ig] ) continue;
+
+    goodLepID.push_back(ig);
+
+  }
+
+  TLorentzVector* l4_thisLep = (TLorentzVector*)genParP4->At(goodLepID[0]);
+  TLorentzVector* l4_thatLep = (TLorentzVector*)genParP4->At(goodLepID[1]);
+
+  TLorentzVector l4_z = (*l4_thisLep+*l4_thatLep);
+
+  Double_t k2 = fewk_z->Eval(l4_z.Pt());
+
+  return k1*k2;
 
 }
 

@@ -7,13 +7,14 @@ channel=(ele mu)
 
 for ((i=0; i<${#channel[@]}; i++)); do
     echo "Now running ==> channel: " ${channel[$i]}
-    root -q -b -l rooFitData.C\(\"${channel[$i]}\"\)
+    root -q -b -l rooFitTest.C\(\"${channel[$i]}\"\)
 done
 
-mkdir rooFitDataResults/
-mv *pdf rooFitDataResults/
-rm -rf $HOME/www/rooFitDataResults/
-mv rooFitDataResults/ $HOME/www/
+mkdir rooFitTestResults/
+mv *pdf rooFitTestResults/
+rm -rf $HOME/www/rooFitTestResults/
+mv rooFitTestResults/ $HOME/www/
+
 
 echo "All the jobs are finished."
 

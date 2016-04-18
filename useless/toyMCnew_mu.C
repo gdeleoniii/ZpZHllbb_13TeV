@@ -42,8 +42,10 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
   TFile* outFile = new TFile(Form("%s_toyMCnew.root",outputFile.c_str()), "recreate");
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
+  Int_t cat = 0;
   Float_t mllbb, prmass, evweight;
 
+  tree->Branch("cat",      &cat,      "cat/I");
   tree->Branch("mllbb",    &mllbb,    "mllbb/F");
   tree->Branch("prmass",   &prmass,   "prmass/F");
   tree->Branch("evweight", &evweight, "evweight/F");
@@ -82,6 +84,10 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
     Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
+    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
+    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
+    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
+    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
 
     // select good leptons
@@ -118,9 +124,32 @@ void toyMCnew_mu(std::string inputFile, std::string outputFile){
 
       }
 
-      // require at least 1 b-tag jet
+      Double_t subjetDeltaR = -1;
 
-      if ( nsubBjet < 1 ) continue;
+      if( nsubBjet == 2 ){
+
+	TLorentzVector l4_subjet0(0,0,0,0);
+	TLorentzVector l4_subjet1(0,0,0,0);
+
+	l4_subjet0.SetPxPyPzE(FATsubjetSDPx[ij][0],
+			      FATsubjetSDPy[ij][0],
+			      FATsubjetSDPz[ij][0],
+			      FATsubjetSDE [ij][0]);
+
+	l4_subjet1.SetPxPyPzE(FATsubjetSDPx[ij][1],
+			      FATsubjetSDPy[ij][1],
+			      FATsubjetSDPz[ij][1],
+			      FATsubjetSDE [ij][1]);
+
+	subjetDeltaR = l4_subjet0.DeltaR(l4_subjet1);
+
+      }
+
+      // deltaR depends loose cut
+
+      if     ( subjetDeltaR < 0.3 && nsubBjet > 0 ) cat = 1;
+      else if( subjetDeltaR > 0.3 && nsubBjet > 1 ) cat = 2;
+      else continue;
       
       goodFATJetID = ij;
       break;
