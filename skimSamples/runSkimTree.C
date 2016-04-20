@@ -3,13 +3,6 @@
 
 void runSkimTree(std::string channel){
 
-  if( channel != "muon" && channel != "electron" ){
-
-    std::cout << "Wrong channel!" << endl;
-    return;
-
-  }
-
   std::fstream samplePath("samplePath.txt");
 
   if( !samplePath.is_open() ){
@@ -26,7 +19,7 @@ void runSkimTree(std::string channel){
 
   while( samplePath >> thisPath ){
 
-    if( channel == "muon" )          keyWord = "SingleEle";
+    if     ( channel == "muon"     ) keyWord = "SingleEle";
     else if( channel == "electron" ) keyWord = "SingleMuon";
 
     if( thisPath.find(keyWord.data()) == std::string::npos ){

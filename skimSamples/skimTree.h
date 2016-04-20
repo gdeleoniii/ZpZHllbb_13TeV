@@ -802,20 +802,18 @@ class skimTree {
   TBranch        *b_ADDsubjetSDPartonFlavor;   //!
   TBranch        *b_ADDsubjetSDHadronFlavor;   //!
   TBranch        *b_ADDsubjetSDCSV;   //!
-
+  
   skimTree(std::string inputFile, TTree *tree=0);
   virtual ~skimTree();
-  //virtual Int_t    Cut(Long64_t entry);
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree* tree);
   virtual void     Loop(std::string channel,TF1* fewk_z);
   virtual Bool_t   Notify();
-  virtual void     Show(Long64_t entry = -1);
   virtual bool     TriggerStatus(std::string TRIGGERNAME);
   virtual bool     FilterStatus(std::string FILTERNAME);
-  virtual Float_t  pileupWeight(Int_t puntrueint);
-  virtual Float_t  kfactorWeight(TF1* fewk_z);
+  virtual Float_t  puWeight(Int_t puntrueint);
+  virtual Float_t  kWeight(TF1* fewk_z);
   std::string inputFile_;
 
 };
@@ -1243,6 +1241,7 @@ void skimTree::Init(TTree *tree)
   ADDsubjetSDPartonFlavor = 0;
   ADDsubjetSDHadronFlavor = 0;
   ADDsubjetSDCSV = 0;
+  
   // Set branch addresses and branch pointers
   if (!tree) return;
   fChain = tree;
@@ -1632,7 +1631,7 @@ void skimTree::Init(TTree *tree)
   fChain->SetBranchAddress("ADDsubjetSDE", &ADDsubjetSDE, &b_ADDsubjetSDE);
   fChain->SetBranchAddress("ADDsubjetSDPartonFlavor", &ADDsubjetSDPartonFlavor, &b_ADDsubjetSDPartonFlavor);
   fChain->SetBranchAddress("ADDsubjetSDHadronFlavor", &ADDsubjetSDHadronFlavor, &b_ADDsubjetSDHadronFlavor);
-  fChain->SetBranchAddress("ADDsubjetSDCSV", &ADDsubjetSDCSV, &b_ADDsubjetSDCSV);
+  fChain->SetBranchAddress("ADDsubjetSDCSV", &ADDsubjetSDCSV, &b_ADDsubjetSDCSV);  
   Notify();
 }
 
@@ -1647,7 +1646,7 @@ Bool_t skimTree::Notify()
   return kTRUE;
 }
 
-Float_t skimTree::pileupWeight(Int_t puntrueint){
+Float_t skimTree::puWeight(Int_t puntrueint){
 
   if( puntrueint < 0 ) return 1.;
 
@@ -1710,14 +1709,14 @@ Float_t skimTree::pileupWeight(Int_t puntrueint){
 
 }
 
-Float_t skimTree::kfactorWeight(TF1* fewk_z)
+Float_t skimTree::kWeight(TF1* fewk_z)
 {
 
   // LO->NLO correction
 
   const Double_t varBins[] = {0,200,400,600,1e10};
 
-  TH1D* h = new TH1D("h","", 4, varBins);
+  TH1D h("h","", 4, varBins);
 
   // for DYJetsToLL only
 
@@ -1728,15 +1727,15 @@ Float_t skimTree::kfactorWeight(TF1* fewk_z)
 
   // HT: The scalar sum pt of the outgoing parton ( product of hard collisions, not including those from pileups)
 
-  Double_t k1 = kfactor[h->FindBin(HT)-1];
+  Double_t k1 = kfactor[h.FindBin(HT)-1];
 
-  h->Clear();  
+  h.Clear();  
 
   // NLO->NLO+EW correction
 
   vector<Int_t> goodLepID;
 
-  for(Int_t ig = 0; ig < nGenPar; ig++){
+  for(Int_t ig = 0; ig < nGenPar; ++ig){
 
     if( abs((*genParId)[ig]) != 11 && 
 	abs((*genParId)[ig]) != 13 && 
@@ -1767,7 +1766,7 @@ bool skimTree::TriggerStatus(std::string TRIGGERNAME)
 
   bool triggerStat = false;
 
-  for(unsigned int it = 0; it < (*hlt_trigName).size(); it++){
+  for(unsigned int it = 0; it < (*hlt_trigName).size(); ++it){
 
     std::string thisTrig = (*hlt_trigName)[it];
     bool results = (*hlt_trigResult)[it];
@@ -1790,7 +1789,7 @@ bool skimTree::FilterStatus(std::string FILTERNAME)
 
   bool filterStat = false;
     
-  for(unsigned int it = 0; it < (*hlt_filterName).size(); it++){
+  for(unsigned int it = 0; it < (*hlt_filterName).size(); ++it){
     
     std::string thisFilter = (*hlt_filterName)[it];
     bool results = (*hlt_filterResult)[it];
@@ -1808,20 +1807,4 @@ bool skimTree::FilterStatus(std::string FILTERNAME)
 
 }
 
-void skimTree::Show(Long64_t entry)
-{
-  // Print contents of entry.
-  // If entry is not specified, print current entry
-  if (!fChain) return;
-  fChain->Show(entry);
-}
-/*
-  Int_t skimTree::Cut(Long64_t entry)
-  {
-  // This function may be called from Loop.
-  // returns  1 if entry is accepted.
-  // returns -1 otherwise.
-  return 1;
-  }
-*/
 #endif // #ifdef skimTree_cxx

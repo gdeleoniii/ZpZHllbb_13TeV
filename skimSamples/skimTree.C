@@ -1,23 +1,16 @@
 #define skimTree_cxx
 #include "skimTree.h"
-#include <TH1.h>
 
-void skimTree::Loop(std::string channel, TF1* fewk_z){
+void skimTree::Loop(string channel, TF1* fewk_z){
 
   if( fChain == 0 ) return;
   if( channel != "muon" && channel != "electron" ) return;
 
   // Set the name of output root file
 
-  std::string tmpStr = inputFile_.erase(inputFile_.find_last_not_of("/")+1);
-  std::string infix  = tmpStr.substr(tmpStr.find_last_of("/")+1); 
-  std::string prefix;
-
-  if( channel == "muon" ) prefix = "skim_mu_";
-  else if( channel == "electron" ) prefix = "skim_ele_";
-
-  std::string suffix = ".root";
-  std::string outputFile = prefix + infix + suffix;
+  string tmpStr = inputFile_.erase(inputFile_.find_last_not_of("/")+1);
+  string infix  = tmpStr.substr(tmpStr.find_last_of("/")+1); 
+  string outputFile = ((channel == "muon") ? "skim_mu_" : "skim_ele_") + infix + ".root";
 
   // Now open new root file
 
@@ -36,35 +29,24 @@ void skimTree::Loop(std::string channel, TF1* fewk_z){
   TTree* newtree = fChain->GetTree()->CloneTree(0);
   newtree->Branch("ev_weight", &ev_weight, "ev_weight/F");
 
-  std::cout << "Saving tree in " << outputFile << std::endl;
+  cout << "Saving tree in " << outputFile << endl;
 
-  Long64_t nentries  = fChain->GetEntries();
-  Long64_t nPassEv   = 0;
+  Long64_t nentries = fChain->GetEntries();
+  Long64_t nPassEv  = 0;
 
-  for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
+  for( Long64_t jentry = nentries-1; jentry >= 0; --jentry ){
         
     if( LoadTree(jentry) < 0 ) break;    
 
     fChain->GetEntry(jentry);
 
-    if( jentry % 100000 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", jentry + 1, nentries);
+    if( jentry % 10000 == 0 ) fprintf(stdout, "Still left events %lli of %lli\n", jentry, nentries);
     
-    // Corrections for MC 
+    // Apply MC weight, pile-up weight (Correct the pile-up shape of MC), and k factor weight for MC
+    
+    ev_weight = !isData ? ((mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt))*(infix.find("DYJets") != string::npos ? kWeight(fewk_z) : 1)) : 1;
 
-    if( !isData ){
-      
-      Float_t mc_weight = mcWeight > 0 ? +1 : -1;
-      Float_t pu_weight = pileupWeight((Int_t)pu_nTrueInt); // Correct the pile-up shape of MC      
-      Float_t k_weight  = infix.find("DYJets") != std::string::npos ? kfactorWeight(fewk_z) : +1;
-
-      ev_weight = mc_weight * pu_weight * k_weight;
-
-    }
-
-    else ev_weight = 1;
-
-    h_totalEv->Fill(0.0, ev_weight);
+    h_totalEv->Fill(0., ev_weight);
 
     // Remove event which is no hard interaction (noise)
     
@@ -72,21 +54,15 @@ void skimTree::Loop(std::string channel, TF1* fewk_z){
 
     // Data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
-    bool muTrigger  = TriggerStatus("HLT_Mu45");
-    bool eleTrigger = TriggerStatus("HLT_Ele105");
-    bool CSCT       = FilterStatus ("Flag_CSCTightHaloFilter");
-    bool eeBadSc    = FilterStatus ("Flag_eeBadScFilter");
-    bool Noise      = FilterStatus ("Flag_HBHENoiseFilter");
-    bool NoiseIso   = FilterStatus ("Flag_HBHENoiseIsoFilter");
-
-    if( channel == "muon"     && !muTrigger  ) continue;
-    if( channel == "electron" && !eleTrigger ) continue;
-    if( isData && !CSCT     ) continue;
-    if( isData && !eeBadSc  ) continue;
-    if( isData && !Noise    ) continue;
-    if( isData && !NoiseIso ) continue;
+    if( channel == "muon"     && !TriggerStatus("HLT_Mu45"  )) continue;
+    if( channel == "electron" && !TriggerStatus("HLT_Ele105")) continue;
+    if( isData && (
+		   !FilterStatus("Flag_CSCTightHaloFilter") || 
+		   !FilterStatus("Flag_eeBadScFilter"     ) || 
+		   !FilterStatus("Flag_HBHENoiseFilter"   ) ||
+		   !FilterStatus("Flag_HBHENoiseIsoFilter") )) continue;
     
-    nPassEv++;
+    ++nPassEv;
 
     newtree->Fill();
 
@@ -96,10 +72,11 @@ void skimTree::Loop(std::string channel, TF1* fewk_z){
   newtree->AutoSave();
 
   delete newfile_data;
+
   gSystem->Exec("rm -f inputdir.txt");
 
-  std::cout << "nentries = " << nentries << std::endl;
-  std::cout << "Number of passed events = " << nPassEv << std::endl;
-  std::cout << "Reduction rate = " << (double)nPassEv/(double)nentries << std::endl;
+  cout << "nentries = " << nentries << endl;
+  cout << "Number of passed events = " << nPassEv << endl;
+  cout << "Reduction rate = " << (double)nPassEv/(double)nentries << endl;
 
 }
