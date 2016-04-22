@@ -16,8 +16,8 @@ float getEfficiency(string inputFile){
 
   TreeReader data(inputFile.data());
   
-  int genGoodMu  = 0;
-  int recoGoodMu = 0;
+  int genGoodEv  = 0;
+  int recoGoodEv = 0;
 
   // begin of event loop
 
@@ -38,6 +38,9 @@ float getEfficiency(string inputFile){
     vector<bool>& isHighPtMuon        = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
     vector<bool>& isCustomTrackerMuon = *((vector<bool>*) data.GetPtr("isCustomTrackerMuon"));
 
+    bool foundGoodGenEv = false;
+    bool foundGoodRecoEv = false;
+
     // select good generator level muons
 
     for(Int_t ig = nGenPar-1; ig >= 0; --ig){
@@ -45,7 +48,7 @@ float getEfficiency(string inputFile){
       if( abs(genParId[ig]) != 13 || genParSt[ig] != 1 ) continue;
       if( genMomParId[ig] != 23 && genMomParId[ig] != genParId[ig] ) continue;
 
-      ++genGoodMu;
+      foundGoodGenEv = true;
 
     }
 
@@ -60,15 +63,18 @@ float getEfficiency(string inputFile){
       if( fabs(myMu->Eta()) > 2.4 ) continue;
       if( myMu->Pt() < 20 ) continue;
 
-      ++recoGoodMu;
+      foundGoodRecoEv = true;
 
     }
+
+    if( foundGoodGenEv  ) ++genGoodEv;
+    if( foundGoodRecoEv ) ++recoGoodEv;
 
   } // end of event loop
 
   fprintf(stdout, "Processed all events\n");
   
-  return (float)recoGoodMu/(float)genGoodMu;
+  return (float)recoGoodEv/(float)genGoodEv;
 
 }
 
