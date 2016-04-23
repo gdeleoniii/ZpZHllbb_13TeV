@@ -9,13 +9,13 @@
 #include "../../../untuplizer.h"
 #include "../../../isPassZee.h"
 
-Double_t CrossSection(std::string token){
+Float_t CrossSection(std::string token){
 
   std::ifstream textFile("textFile.txt");
   std::string thisSample;
 
-  double crosssection = 0.;
-  double thisNum = 0.;
+  Float_t crosssection = 0.;
+  Float_t thisNum = 0.;
 
   while( textFile >> thisSample >> thisNum ){
 
@@ -50,13 +50,11 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
   // Calculate the scale correspond to inputFile
 
-  Double_t totalEvents  = h_totalEvents->Integral();
-  Double_t crossSection = CrossSection(inputFile.data());
-  Double_t scale        = 2080./(totalEvents/crossSection); // dataLumi = 2080/pb
+  Float_t scale = 2080./(h_totalEvents->Integral()/CrossSection(inputFile.data())); // dataLumi = 2080/pb
 
   // Mark minor backgounds
 
-  Int_t minor = 1;
+  int minor = 1;
 
   if( (inputFile.find("WW") != std::string::npos) ||
       (inputFile.find("WZ") != std::string::npos) ||
@@ -65,12 +63,10 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
   // begin of event loop
 
-  Long64_t nentries = data.GetEntriesFast();
+  for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-  for(Long64_t ev = 0; ev < nentries; ev++){
-
-    if( ev % 1000000 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", ev + 1, nentries);
+    if( (unsigned)ev % 500000 == 0 )
+      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
 
     data.GetEntry(ev);
 
@@ -86,10 +82,9 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
     // select good leptons
       
-    vector<Int_t> goodLepID;
+    vector<int> goodLepID;
 
-    TLorentzVector* thisLep = NULL;
-    TLorentzVector* thatLep = NULL;
+    TLorentzVector *thisLep = NULL, *thatLep = NULL;
 
     if( !isPassZee(data,goodLepID) ) continue;
 
@@ -98,10 +93,10 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
     // select good FATjet
 
-    Int_t goodFATJetID = -1;
+    int goodFATJetID = -1;
     TLorentzVector* thisJet = NULL;
 
-    for(Int_t ij = 0; ij < FATnJet; ij++){
+    for( int ij = 0; ij < FATnJet; ++ij ){
 
       thisJet = (TLorentzVector*)FATjetP4->At(ij);
 
@@ -110,9 +105,9 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
       if( !FATjetPassIDLoose[ij] ) continue;
       if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
       
-      Int_t nsubBjet = 0;
+      int nsubBjet = 0;
 
-      for(Int_t is = 0; is < FATnSubSDJet[ij]; is++){
+      for( int is = 0; is < FATnSubSDJet[ij]; ++is ){
 
 	if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
 
@@ -120,7 +115,7 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
       // require at least 1 b-tag jet
 
-      if ( nsubBjet < 1 ) continue;
+      if( nsubBjet == 0 ) continue;
       
       goodFATJetID = ij;
       break;
@@ -135,16 +130,13 @@ void toyMCnew_ele(std::string inputFile, std::string outputFile){
 
     prmass = corrPRmass[goodFATJetID];
 
-    if( isData ) 
-      evweight = 1;
-    else
-      evweight = eventWeight * scale * minor;
+    evweight = isData ? 1 : eventWeight * scale * minor;
 
     tree->Fill();
 
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
 
   tree->Write();  
   outFile->Write();

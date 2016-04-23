@@ -155,10 +155,9 @@ void rooFitTest(string channel, bool pullTest=true){
 
   RooMsgService::instance().setSilentMode(true);
 
-  for( int ntoy = 0; ntoy < 2000; ntoy++ ){
+  for( int ntoy = 1999; ntoy >= 0; --ntoy ){
 
     if( !pullTest ) break;
-    if( ntoy % 100 == 0 ) fprintf(stderr, "Processing ntoy %i of 2000\n", ntoy + 1);
 
     RooArgSet mjet(mJet);
 

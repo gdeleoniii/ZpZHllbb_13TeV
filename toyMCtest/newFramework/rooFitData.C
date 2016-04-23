@@ -152,7 +152,6 @@ void rooFitData(string channel, bool removeMinor=true){
 
   RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
 
-  float n0 = nZHSBFit->getVal();
   float p0 = a.getVal();
   float p1 = b.getVal();
 
@@ -162,7 +161,6 @@ void rooFitData(string channel, bool removeMinor=true){
 
   RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
 
-  float n1 = nZHSGFit->getVal();
   float p2 = a.getVal();
   float p3 = b.getVal();
 
@@ -173,7 +171,7 @@ void rooFitData(string channel, bool removeMinor=true){
   // Draw the model of alpha ratio
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("(%f*TMath::Exp(%f*@0+%f/@0))/(%f*TMath::Exp(%f*@0+%f/@0))", n1,p2,p3,n0,p0,p1), RooArgSet(mZH));
+  RooGenericPdf model_alpha  ("model_alpha", "model_alpha", Form("TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", p2,p3,p0,p1), RooArgSet(mZH));
   RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
 
   // Plot the results to a frame 
