@@ -5,12 +5,14 @@
 #include <TGraph.h>
 #include <TFile.h>
 #include <TCanvas.h>
+#include <TLegend.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../untuplizer.h"
 #include "../isPassZee.h"
+#include "../setNCUStyle.h"
 
-float getEfficiency(string inputFile){
+float getEfficiency(string inputFile, int cat){
 
   // read the ntuples (in pcncu)
 
@@ -92,8 +94,8 @@ float getEfficiency(string inputFile){
  
       // deltaR depends b-tag cut
  
-      if( !(subjetDeltaR < 0.3 && nsubBjet > 0) ) continue;
-      //if( !(subjetDeltaR > 0.3 && nsubBjet > 1) ) continue;
+      if( cat == 1 && !(subjetDeltaR < 0.3 && nsubBjet > 0) ) continue;
+      if( cat == 2 && !(subjetDeltaR > 0.3 && nsubBjet > 1) ) continue;
        
       goodFATJetID = ij;
 
@@ -104,6 +106,7 @@ float getEfficiency(string inputFile){
     if( goodFATJetID < 0 ) continue;
 
     if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
+    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+*thisJet).Eta()) < 5.0 ) continue;
 
     ++passEvent;
 
@@ -115,18 +118,40 @@ float getEfficiency(string inputFile){
 
 void signalEfficiency(){
 
+  setNCUStyle();
+
   Float_t x_mzh[13] = {600,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4500};
-  Float_t y_eff[13];
+  Float_t y_eff1[13], y_eff2[13];
 
-  for( int i = 0; i < 13; ++i )
-    y_eff[i] = getEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]));
+  for( int i = 0; i < 13; ++i ){
 
-  TGraph g_eff(13, x_mzh, y_eff);
+    y_eff1[i] = getEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]), 1);
+    y_eff2[i] = getEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]), 2);
+
+  }
+
+  TGraph *g_eff1 = new TGraph(13, x_mzh, y_eff1);
+  TGraph *g_eff2 = new TGraph(13, x_mzh, y_eff2);
+
+  g_eff1->GetXaxis()->SetTitle("m_{ZH}");
+  g_eff1->SetLineColor(kBlue);
+  g_eff1->SetMarkerColor(kBlue);
+
+  TLegend leg(0.73, 0.60, 0.90, 0.87);
+  
+  leg.SetBorderSize(0);
+  leg.SetFillColor(0);
+  leg.SetFillStyle(0);
+  leg.SetTextSize(0.04);
+  leg.AddEntry(g_eff1, "1 b-tag", "l");
+  leg.AddEntry(g_eff2, "2 b-tag", "l");
 
   TCanvas c("c", "", 0, 0, 800, 600);
 
   c.cd();
-  g_eff.Draw();
+  g_eff1->Draw();
+  g_eff2->Draw("same");
+  leg.Draw();
   c.Print("eleIDeff.pdf");
 
 }
