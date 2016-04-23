@@ -22,9 +22,6 @@ float getEfficiency(string inputFile){
 
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
-
     data.GetEntry(ev);
 
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
@@ -62,7 +59,7 @@ float getEfficiency(string inputFile){
       if( fabs(thisJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
       if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
-      if( FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 145 ) continue;
+      if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
 
       int nsubBjet = 0;
 
@@ -111,8 +108,6 @@ float getEfficiency(string inputFile){
     ++passEvent;
 
   } // end of event loop
-
-  fprintf(stdout, "Processed all events\n");
   
   return (float)passEvent/(float)data.GetEntriesFast();
 
@@ -124,7 +119,7 @@ void signalEfficiency(){
   Float_t y_eff[13];
 
   for( int i = 0; i < 13; ++i )
-    y_eff[i] = getEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_ZprimeToZhToZlephbb_narrow_M-%f_13TeV-madgraph.root",x_mzh[i]));
+    y_eff[i] = getEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]));
 
   TGraph g_eff(13, x_mzh, y_eff);
 
