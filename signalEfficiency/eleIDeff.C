@@ -106,7 +106,7 @@ float getEfficiency(string inputFile, int cat){
     if( goodFATJetID < 0 ) continue;
 
     if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+*thisJet).Eta()) < 5.0 ) continue;
+    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+*thisJet).Eta()) > 5.0 ) continue;
 
     ++passEvent;
 
