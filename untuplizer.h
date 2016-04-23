@@ -266,7 +266,7 @@ TreeReader::TreeReader(std::vector<std::string> paths, const char* treename) :
    const char* paths2[npaths];
 
    // convert vector<string> into array of null-terminated strings
-   for (int i = 0; i < npaths; i++)
+   for (int i = 0; i < npaths; ++i)
        paths2[i] = paths[i].c_str();
 
    InitTChain(paths2, npaths, treename);
@@ -302,7 +302,7 @@ void TreeReader::Print()
    TObjArray* leafs = fTree->GetListOfLeaves();
 
    // leaf loop
-   for (int i = 0; i < leafs->GetEntriesFast(); i++) {
+   for (int i = 0; i < leafs->GetEntriesFast(); ++i) {
       TLeaf* leaf = dynamic_cast<TLeaf*>(leafs->At(i));
       if (!leaf)
          FATAL("leaf is NULL");
@@ -331,7 +331,7 @@ void TreeReader::Print()
             "ULong64_t", "ULong64_t", "ULong64_t", "Long64_t",
             "vector<float>", "vector<Int_t>", "vector<std::string>"};
 
-         for (int c = 0; c < 34; c++)
+         for (int c = 0; c < 34; ++c)
             if (descr.compare(Form("vector<%s>", types[c])) == 0) {
                descr = Form("%s*", type_descr[c]);
                break;
@@ -412,7 +412,7 @@ void TreeReader::GetEntry(Long64_t entry)
    }
 
    // reset cache of addresses to leaf payloads
-   for (size_t i = 0; i < fLeafValue.size(); i++)
+   for (size_t i = 0; i < fLeafValue.size(); ++i)
       fLeafValue[i] = NULL;
 }
 
@@ -592,7 +592,7 @@ void TreeReader::InitTChain(const char** paths, int npaths, const char* treename
    fTree = new TChain(treename);
 
    // add root files with TTrees, reading the number of entries in each file
-   for (int i = 0; i < npaths; i++)
+   for (int i = 0; i < npaths; ++i)
       if (((TChain*)fTree)->AddFile(paths[i], 0) != 1)
          FATAL("TChain::AddFile() failed");
 
