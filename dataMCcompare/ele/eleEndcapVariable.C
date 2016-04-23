@@ -51,10 +51,10 @@ void eleEndcapVariable(std::string inputFile, std::string outputFile){
 
   // begin of event loop
 
-  for( Long64_t ev = 0; ev < data.GetEntriesFast(); ev++ ){
+  for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( ev % 1000000 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", ev + 1, data.GetEntriesFast());
+    if( (unsigned)ev % 500000 == 0 )
+      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
 
     data.GetEntry(ev);
 
@@ -163,7 +163,7 @@ void eleEndcapVariable(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
     
-  TFile* outFile = new TFile(Form("%s_Endcap.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_eleEndcapVariable.root",outputFile.c_str()), "recreate");
       
   h_eleEtaseedAtVtx        ->Write("eleEtaseedAtVtx");
   h_eledPhiAtVtx           ->Write("eledPhiAtVtx");

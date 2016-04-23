@@ -13,27 +13,12 @@
 #include <TKey.h>
 #include <TSystemDirectory.h>
 #include "../setNCUStyle.h"
+#include "../readHists.h"
 
-void myPlot(TH1D* h_DY100,
-            TH1D* h_DY200,
-            TH1D* h_DY400,
-            TH1D* h_DY600,
-            TH1D* h_TTbar,
-            TH1D* h_WW,
-            TH1D* h_WZ,
-            TH1D* h_ZZ,
-            TH1D* h_data0,
-	    TH1D* h_data1,
-            Double_t scaleDY100,
-            Double_t scaleDY200,
-            Double_t scaleDY400,
-            Double_t scaleDY600,
-            Double_t scaleTTbar,
-            Double_t scaleWW,
-            Double_t scaleWZ,
-            Double_t scaleZZ,
-	    TH1D* h_data,
-	    TH1D* h_bkg){
+void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600, 
+	    TH1D* h_TT, TH1D* h_WW, TH1D* h_WZ, TH1D* h_ZZ,
+            TH1D* h_data0, TH1D* h_data1,
+	    TH1D* h_data, TH1D* h_bkg){
 
   h_data->Reset();
   h_data->Add(h_data0);
@@ -42,32 +27,28 @@ void myPlot(TH1D* h_DY100,
   TH1D* h_DY = (TH1D*)h_DY100->Clone("h_DY");
 
   h_DY->Reset();
-  h_DY->Add(h_DY100, scaleDY100);
-  h_DY->Add(h_DY200, scaleDY200);
-  h_DY->Add(h_DY400, scaleDY400);
-  h_DY->Add(h_DY600, scaleDY600);
+  h_DY->Add(h_DY100);
+  h_DY->Add(h_DY200);
+  h_DY->Add(h_DY400);
+  h_DY->Add(h_DY600);
   h_DY->SetFillColor(kOrange-3);
   h_DY->SetLineColor(kBlack);
 
-  h_TTbar->Scale(scaleTTbar);
-  h_TTbar->SetFillColor(kGreen);
-  h_TTbar->SetLineColor(kBlack);
+  h_TT->SetFillColor(kGreen);
+  h_TT->SetLineColor(kBlack);
 
-  h_WW->Scale(scaleWW);
   h_WW->SetFillColor(kYellow);
   h_WW->SetLineColor(kBlack);
 
-  h_WZ->Scale(scaleWZ);
   h_WZ->SetFillColor(kCyan);
   h_WZ->SetLineColor(kBlack);
 
-  h_ZZ->Scale(scaleZZ);
   h_ZZ->SetFillColor(kPink);
   h_ZZ->SetLineColor(kBlack);
 
   h_bkg->Reset();
   h_bkg->Add(h_DY);
-  h_bkg->Add(h_TTbar);
+  h_bkg->Add(h_TT);
   h_bkg->Add(h_WW);
   h_bkg->Add(h_WZ);
   h_bkg->Add(h_ZZ);
@@ -75,7 +56,7 @@ void myPlot(TH1D* h_DY100,
   THStack *h_stack = new THStack("h_stack", "");
 
   h_stack->Add(h_DY);
-  h_stack->Add(h_TTbar);
+  h_stack->Add(h_TT);
   h_stack->Add(h_WW);
   h_stack->Add(h_WZ);
   h_stack->Add(h_ZZ);
@@ -118,7 +99,7 @@ void myPlot(TH1D* h_DY100,
   leg->SetTextSize(0.04);
     
   leg->AddEntry(h_DY, "DY+Jets", "f");
-  leg->AddEntry(h_TTbar, "t#bar{t}", "f");
+  leg->AddEntry(h_TT, "t#bar{t}", "f");
   leg->AddEntry(h_WW, "WW", "f");
   leg->AddEntry(h_WZ, "WZ", "f");
   leg->AddEntry(h_ZZ, "ZZ", "f");
@@ -189,6 +170,7 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   Double_t y1 = 1.;
 
   TLine* one = new TLine(x0,y0,x1,y1);
+
   one->SetLineColor(2);
   one->SetLineStyle(1);
   one->SetLineWidth(2);
@@ -198,106 +180,20 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
 
 }
 
-TFile* getFile(std::string infiles, Double_t crossSection, Double_t* scale){
-
-  TFile* f = TFile::Open(infiles.data());
-  TH1D* h = (TH1D*)(f->Get("totalEvents"));
-  Double_t dataLumi = 2080; //pb-1 
-  *scale = dataLumi/(h->Integral()/crossSection);
-
-  return f;
-
-}
-
-void dataMCplots(std::string outputFolder, std::string pdfName){
-
-  std::vector<string> infiles;
- 
-  TSystemDirectory *base = new TSystemDirectory("root","root");
-  base->SetDirectory(outputFolder.data());
-  TList *listOfFiles = base->GetListOfFiles();
-  TIter fileIt(listOfFiles);
-  TFile *fileH = new TFile();
-  Long64_t nfiles = 0;
-
-  while( (fileH = (TFile*)fileIt()) ){
-    
-    std::string fileN = fileH->GetName();
-    std::string baseString = "root";
-    if( fileN.find(baseString) == std::string::npos ) continue;
-    infiles.push_back(Form("%s/%s",outputFolder.data(),fileN.data()));
-    nfiles++;
-    
-  }
-
-  TFile *f_DY100 = NULL;
-  TFile *f_DY200 = NULL;
-  TFile *f_DY400 = NULL;
-  TFile *f_DY600 = NULL;
-  TFile *f_TTbar = NULL;
-  TFile *f_WW    = NULL;
-  TFile *f_WZ    = NULL;
-  TFile *f_ZZ    = NULL;
-  TFile *f_data0 = NULL;
-  TFile *f_data1 = NULL;
-
-  Double_t xSecDY100 = 147.4;
-  Double_t xSecDY200 = 40.99;
-  Double_t xSecDY400 = 5.678;
-  Double_t xSecDY600 = 2.198;
-  Double_t xSecTTbar = 831.76;
-  Double_t xSecWW    = 118.7;
-  Double_t xSecWZ    = 47.13;
-  Double_t xSecZZ    = 16.523;
-
-  Double_t scaleDY100 = 0;
-  Double_t scaleDY200 = 0;
-  Double_t scaleDY400 = 0;
-  Double_t scaleDY600 = 0;
-  Double_t scaleTTbar = 0;
-  Double_t scaleWW    = 0;
-  Double_t scaleWZ    = 0;
-  Double_t scaleZZ    = 0;
-
-  Double_t dummy = -1;
-
-  for(unsigned int i = 0; i < infiles.size(); i++){
-
-    cout << "Input file: " << infiles[i] << endl;
-
-    if( infiles[i].find("HT-100") != std::string::npos )    
-      f_DY100 = getFile(infiles[i].data(), xSecDY100, &scaleDY100);
-
-    if( infiles[i].find("HT-200") != std::string::npos )
-      f_DY200 = getFile(infiles[i].data(), xSecDY200, &scaleDY200);
-
-    if( infiles[i].find("HT-400") != std::string::npos )
-      f_DY400 = getFile(infiles[i].data(), xSecDY400, &scaleDY400); 
-
-    if( infiles[i].find("HT-600") != std::string::npos )
-      f_DY600 = getFile(infiles[i].data(), xSecDY600, &scaleDY600);
-
-    if( infiles[i].find("TT_") != std::string::npos )
-      f_TTbar = getFile(infiles[i].data(), xSecTTbar, &scaleTTbar);
-
-    if( infiles[i].find("WW_") != std::string::npos )
-      f_WW = getFile(infiles[i].data(), xSecWW, &scaleWW);
-
-    if( infiles[i].find("WZ_") != std::string::npos )
-      f_WZ = getFile(infiles[i].data(), xSecWZ, &scaleWZ);
-
-    if( infiles[i].find("ZZ_") != std::string::npos )
-      f_ZZ = getFile(infiles[i].data(), xSecZZ, &scaleZZ);
-
-    if( infiles[i].find("V12015") != std::string::npos )
-      f_data0 = getFile(infiles[i].data(), dummy, &dummy);
-
-    if( infiles[i].find("V42015") != std::string::npos )
-      f_data1 = getFile(infiles[i].data(), dummy, &dummy);
-
-  }
+void dataMCplots(std::string channel, std::string outputFolder, std::string pdfName){
 
   setNCUStyle(true);
+ 
+  readHist data1(Form("%s/Single%s-Run2015D-V120151117_%s.root",      outputFolder.data(), channel.data(), pdfName.data()));
+  readHist data2(Form("%s/Single%s-Run2015D-V120151117_%s.root",      outputFolder.data(), channel.data(), pdfName.data()));
+  readHist dy100(Form("%s/DYJetsToLL_M-50_HT-100to200_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist dy200(Form("%s/DYJetsToLL_M-50_HT-200to400_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist dy400(Form("%s/DYJetsToLL_M-50_HT-400to600_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist dy600(Form("%s/DYJetsToLL_M-50_HT-600toInf_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist tt   (Form("%s/TT_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist ww   (Form("%s/WW_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist wz   (Form("%s/WZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist zz   (Form("%s/ZZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
 
   Double_t up_height     = 0.8;
   Double_t dw_correction = 1.455;
@@ -315,7 +211,7 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
 
   // To get the name of histograms
   
-  TFile *f_ = TFile::Open(infiles[0].data());
+  TFile *f_ = TFile::Open(Form("%s/Single%s-Run2015D-V120151117_%s.root", outputFolder.data(), channel.data(), pdfName.data()));
   f_->cd();
   
   TDirectory *current_sourcedir = gDirectory;
@@ -324,11 +220,11 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
 
   vector<std::string> h_name;
 
-  while ( (key = (TKey*)nextkey()) ) {
+  while( (key = (TKey*)nextkey()) ){
 
     TObject *obj = key->ReadObj();
 
-    if ( obj->IsA()->InheritsFrom("TH1") ) 
+    if( obj->IsA()->InheritsFrom("TH1") ) 
       h_name.push_back(obj->GetTitle());
 
   }
@@ -342,41 +238,34 @@ void dataMCplots(std::string outputFolder, std::string pdfName){
     else
       c_up->cd()->SetLogy(0);
     
-    TH1D *h_data = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_data");
-    TH1D *h_bkg  = (TH1D*)(f_data1->Get(h_name[i].data()))->Clone("h_bkg");
+    TH1D *h_data = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_data");
+    TH1D *h_bkg  = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_bkg");
     
-    myPlot(((TH1D*)(f_DY100->Get(h_name[i].data()))),
-	   ((TH1D*)(f_DY200->Get(h_name[i].data()))),
-	   ((TH1D*)(f_DY400->Get(h_name[i].data()))),
-	   ((TH1D*)(f_DY600->Get(h_name[i].data()))),
-	   ((TH1D*)(f_TTbar->Get(h_name[i].data()))),
-	   ((TH1D*)(f_WW->Get(h_name[i].data()))),
-	   ((TH1D*)(f_WZ->Get(h_name[i].data()))),
-	   ((TH1D*)(f_ZZ->Get(h_name[i].data()))),
-	   ((TH1D*)(f_data0->Get(h_name[i].data()))),
-	   ((TH1D*)(f_data1->Get(h_name[i].data()))),
-	   scaleDY100,
-	   scaleDY200,
-	   scaleDY400,
-	   scaleDY600,
-	   scaleTTbar,
-	   scaleWW,
-	   scaleWZ,
-	   scaleZZ,
-	   h_data,
-	   h_bkg);
+    myPlot(dy100.getHist(h_name[i].data()),
+	   dy200.getHist(h_name[i].data()),
+	   dy400.getHist(h_name[i].data()),
+	   dy600.getHist(h_name[i].data()),
+	   tt.getHist(h_name[i].data()),
+	   ww.getHist(h_name[i].data()),
+	   wz.getHist(h_name[i].data()),
+	   zz.getHist(h_name[i].data()),
+	   data1.getHist(h_name[i].data()),
+	   data2.getHist(h_name[i].data()),
+	   h_data, h_bkg);
 
     c_up->RedrawAxis();
-
     c_dw->cd();
 
     myRatio(h_data, h_bkg);
 
     c.Draw();
     
-    if( i == 0 ) c.Print(Form("%s.pdf(", pdfName.data()), "pdf");
-    else if( i == h_name.size()-2 ) c.Print(Form("%s.pdf)", pdfName.data()), "pdf");
-    else c.Print(Form("%s.pdf", pdfName.data()), "pdf");
+    if( i == 0 ) 
+      c.Print(Form("%s.pdf(", pdfName.data()), "pdf");
+    else if( i == h_name.size()-2 ) 
+      c.Print(Form("%s.pdf)", pdfName.data()), "pdf");
+    else 
+      c.Print(Form("%s.pdf", pdfName.data()), "pdf");
     
   }
 

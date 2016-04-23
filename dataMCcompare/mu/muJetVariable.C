@@ -63,10 +63,10 @@ void muJetVariable(std::string inputFile, std::string outputFile){
     
   // begin of event loop
 
-  for( Long64_t ev = 0; ev < data.GetEntriesFast(); ev++ ){
+  for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( ev % 1000000 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", ev + 1, data.GetEntriesFast());
+    if( (unsigned)ev % 500000 == 0 )
+      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
 
     data.GetEntry(ev);
 
@@ -110,7 +110,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
       if( fabs(thisJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
       if( thisJet->DeltaR(*thisMu) < 0.8 || thisJet->DeltaR(*thatMu) < 0.8 ) continue;
-      if( FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 145 ) continue;
+      if( FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 135 ) continue;
 
       goodFATJetID = ij;
       break;
@@ -149,7 +149,7 @@ void muJetVariable(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_jetmumuVariable.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_muJetVariable.root",outputFile.c_str()), "recreate");
   
   h_nVtx            ->Write("nVtx");
   h_FATjetPt        ->Write("FATjetPt");

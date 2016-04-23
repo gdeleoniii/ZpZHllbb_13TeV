@@ -40,7 +40,7 @@ void skimTree::Loop(string channel, TF1* fewk_z){
 
     fChain->GetEntry(jentry);
 
-    if( jentry % 10000 == 0 ) fprintf(stdout, "Still left events %lli of %lli\n", jentry, nentries);
+    if( (unsigned)jentry % 10000 == 0 ) fprintf(stdout, "Still left events %lli of %lli\n", jentry, nentries);
     
     // Apply MC weight, pile-up weight (Correct the pile-up shape of MC), and k factor weight for MC
     
@@ -50,7 +50,7 @@ void skimTree::Loop(string channel, TF1* fewk_z){
 
     // Remove event which is no hard interaction (noise)
     
-    if( nVtx < 1 ) continue;
+    if( nVtx <= 0 ) continue;
 
     // Data filter (to filter non-collision bkg (ECAL/HCAL noise)) and trigger cut
       
@@ -77,6 +77,6 @@ void skimTree::Loop(string channel, TF1* fewk_z){
 
   cout << "nentries = " << nentries << endl;
   cout << "Number of passed events = " << nPassEv << endl;
-  cout << "Reduction rate = " << (double)nPassEv/(double)nentries << endl;
+  cout << "Reduction rate = " << (float)nPassEv/(float)nentries << endl;
 
 }

@@ -12,87 +12,84 @@ cd $pwd
 
 ## generate the necessary text file (contain event numbers) and root file (contain hist of ZH mass) ##
 
-mkdir outputmZHSig/catOne; cp outputmZHSig/*catOne.root outputmZHSig/catOne
-mkdir outputmZHSig/catTwo; cp outputmZHSig/*catTwo.root outputmZHSig/catTwo
+# catEle #
 
-# catOne #
-
-catOnetextfile=nEventZHcatOne.txt
-catOnerootfile=mZHmuSetLimitcatOne.root
+catEletextfile=nEventZHcatEle.txt
+catElerootfile=mZHmuSetLimitcatEle.root
 
 echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l ZHeventplots.C++\(\"outputmZHSig/catOne\"\,\"$catOnerootfile\"\,\"$catOnetextfile\"\)
+root -q -b -l nZHplots.C++\(\"Electron\"\,\"ele\"\,\"$catElerootfile\"\,\"$catEletextfile\"\)
 
-# catTwo #
+# catMu #
 
-catTwotextfile=nEventZHcatTwo.txt
-catTworootfile=mZHmuSetLimitcatTwo.root
+catMutextfile=nEventZHcatMu.txt
+catMurootfile=mZHmuSetLimitcatMu.root
 
 echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l ZHeventplots.C++\(\"outputmZHSig/catTwo\"\,\"$catTworootfile\"\,\"$catTwotextfile\"\)
+root -q -b -l nZHplots.C++\(\"Muon\"\,\"mu\"\,\"$catMurootfile\"\,\"$catMutextfile\"\)
 
 ## check are the necessary files exist ##
 
-if [ -e $catOnetextfile ] && [ -e $catTwotextfile ] && [ -e $catOnerootfile ] && [ -e $catTworootfile ]
+if [ -e $catEletextfile ] && [ -e $catMutextfile ] && [ -e $catElerootfile ] && [ -e $catMurootfile ]
 then
-    echo -e "*** The necessary text file " $catOnetextfile " and " $catTwotextfile " are exist! ***"
-    echo -e "*** The necessary root file " $catOnerootfile " and " $catTworootfile " are exist! ***"
+    echo -e "*** The necessary text file " $catEletextfile " and " $catMutextfile " are exist! ***"
+    echo -e "*** The necessary root file " $catElerootfile " and " $catMurootfile " are exist! ***"
 else
-    echo -e "*** The necessary text file " $catOnetextfile " and " $catTwotextfile " doesn't exist! ***"
-    echo -e "*** The necessary root file " $catOnerootfile " and " $catTworootfile " doesn't exist! ***"
+    echo -e "*** The necessary text file " $catEletextfile " and " $catMutextfile " doesn't exist! ***"
+    echo -e "*** The necessary root file " $catElerootfile " and " $catMurootfile " doesn't exist! ***"
     exit 0
 fi
 
 ## make data cards for the combine tool ##
 
-# catOne cards #
+# catEle cards #
 
-catOnecarddr=catOnedataCards
+catEleCarddr=catEledataCards
 
-if [ -d $catOnecarddr ]
+if [ -d $catEleCarddr ]
 then
-    echo -e "*** Data card directory is " $catOnecarddr " ***"
+    echo -e "*** Data card directory is " $catEleCarddr " ***"
 else
-    echo -e "*** Generate data card directory: " $catOnecarddr " ***"
-    mkdir $catOnecarddr
+    echo -e "*** Generate data card directory: " $catEleCarddr " ***"
+    mkdir $catEleCarddr
 fi
 
-echo -e "*** Make data cards for the combine tool by using: " $catOnetextfile " ***"
-echo -e "*** Data cards move to: " $catOnecarddr " ***"
+echo -e "*** Make data cards for the combine tool by using: " $catEletextfile " ***"
+echo -e "*** Data cards move to: " $catEleCarddr " ***"
 
-python MakeDataCards.py $catOnetextfile $catOnerootfile ./$catOnecarddr
+python MakeDataCards.py $catEletextfile $catElerootfile ./$catEleCarddr
 rm -f DataCard_MXXXGeV.txt
-mv $catOnerootfile $catOnecarddr
+mv $catElerootfile $catEleCarddr
 
-# catTwo cards #
+# catMu cards #
 
-catTwocarddr=catTwodataCards
+catMuCarddr=catMudataCards
 
-if [ -d $catTwocarddr ]
+if [ -d $catMuCarddr ]
 then
-    echo -e "Data card directory is " $catTwocarddr
+    echo -e "Data card directory is " $catMuCarddr
 else
-    echo -e "Generate data card directory: " $catTwocarddr
-    mkdir $catTwocarddr
+    echo -e "Generate data card directory: " $catMuCarddr
+    mkdir $catMuCarddr
 fi
 
-echo -e "*** Make data cards for the combine tool by using: " $catTwotextfile " ***"
-echo -e "*** Data cards move to: " $catTwocarddr " ***"
+echo -e "*** Make data cards for the combine tool by using: " $catMutextfile " ***"
+echo -e "*** Data cards move to: " $catMuCarddr " ***"
 
-python MakeDataCards.py $catTwotextfile $catTworootfile ./$catTwocarddr
+python MakeDataCards.py $catMutextfile $catMurootfile ./$catMuCarddr
 rm -f DataCard_MXXXGeV.txt
-mv $catTworootfile $catTwocarddr
+mv $catMurootfile $catMuCarddr
 
 ## combine data cards ##
 
-datacarddr=dataCards
+dataCarddr=dataCards
 
-if [ -d $datacarddr ]
+if [ -d $dataCarddr ]
 then
-    echo -e "Combine data card directory is " $datacarddr
+    echo -e "Combine data card directory is " $dataCarddr
 else
-    echo -e "Generate data card directory: " $datacarddr
-    mkdir $datacarddr
+    echo -e "Generate data card directory: " $dataCarddr
+    mkdir $dataCarddr
 fi
 
 massPoints=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
@@ -102,13 +99,13 @@ for ((i=0; i<${#massPoints[@]}; i++)); do
     dataCard=DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
     combineCard=combine_DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
 
-    echo -e "*** Combine cards: " $catTwocarddr"/"$dataCard " and " $catOnecarddr"/"$dataCard " ***"
+    echo -e "*** Combine cards: " $catMuCarddr"/"$dataCard " and " $catEleCarddr"/"$dataCard " ***"
 
-    combineCards.py Name1=$pwd/$catTwocarddr/$dataCard Name2=$pwd/$catOnecarddr/$dataCard > $combineCard
+    combineCards.py Name1=$pwd/$catMuCarddr/$dataCard Name2=$pwd/$catEleCarddr/$dataCard > $combineCard
 
-    echo -e "*** Output card: " $combineCard " move to " $datacarddr " ***"
+    echo -e "*** Output card: " $combineCard " move to " $dataCarddr " ***"
 
-    mv $combineCard $datacarddr
+    mv $combineCard $dataCarddr
 
 done
 
@@ -123,7 +120,7 @@ for ((i=0; i<${#massPoints[@]}; i++)); do
 
     echo -e "*** Using data card: " $dataCard " to calculate limits ***"
 
-    combine -M Asymptotic $pwd/$datacarddr/$dataCard
+    combine -M Asymptotic $pwd/$dataCarddr/$dataCard
     mv higgsCombineTest.Asymptotic.mH120.root $pwd/$rootFile
 
 done
@@ -139,8 +136,7 @@ root -q -b -l plotAsymptotic.C++\(\)
 
 mv *pdf /afs/cern.ch/user/h/htong/www
 rm -f *.d *.so *.pcm 
-rm -rf outputmZHSig/catOne outputmZHSig/catTwo
-rm -rf $catOnecarddr $catTwocarddr
+rm -rf $catEleCarddr $catMuCarddr
 rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"

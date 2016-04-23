@@ -1648,8 +1648,6 @@ Bool_t skimTree::Notify()
 
 Float_t skimTree::puWeight(Int_t puntrueint){
 
-  if( puntrueint < 0 ) return 1.;
-
   Float_t puweight[200]= {1.};
 
   puweight[0]   =  1.;
@@ -1712,22 +1710,18 @@ Float_t skimTree::puWeight(Int_t puntrueint){
 Float_t skimTree::kWeight(TF1* fewk_z)
 {
 
+  // for DYJetsToLL only
   // LO->NLO correction
 
-  const Double_t varBins[] = {0,200,400,600,1e10};
+  const Float_t varBins[] = {0,200,400,600,1e10};
 
   TH1D h("h","", 4, varBins);
 
-  // for DYJetsToLL only
-
-  Double_t kfactor[4] = {1.588,
-			 1.438,
-			 1.494,
-			 1.139};
+  Float_t kfactor[4] = {1.588, 1.438, 1.494, 1.139};
 
   // HT: The scalar sum pt of the outgoing parton ( product of hard collisions, not including those from pileups)
 
-  Double_t k1 = kfactor[h.FindBin(HT)-1];
+  Float_t k = kfactor[h.FindBin(HT)-1];
 
   h.Clear();  
 
@@ -1735,7 +1729,7 @@ Float_t skimTree::kWeight(TF1* fewk_z)
 
   vector<Int_t> goodLepID;
 
-  for(Int_t ig = 0; ig < nGenPar; ++ig){
+  for(Int_t ig = nGenPar-1; ig >= 0; --ig){
 
     if( abs((*genParId)[ig]) != 11 && 
 	abs((*genParId)[ig]) != 13 && 
@@ -1755,23 +1749,21 @@ Float_t skimTree::kWeight(TF1* fewk_z)
 
   TLorentzVector l4_z = (*l4_thisLep+*l4_thatLep);
 
-  Double_t k2 = fewk_z->Eval(l4_z.Pt());
-
-  return k1*k2;
+  return k*fewk_z->Eval(l4_z.Pt());
 
 }
 
-bool skimTree::TriggerStatus(std::string TRIGGERNAME)
+bool skimTree::TriggerStatus(string TRIGGERNAME)
 {
 
   bool triggerStat = false;
 
   for(unsigned int it = 0; it < (*hlt_trigName).size(); ++it){
 
-    std::string thisTrig = (*hlt_trigName)[it];
+    string thisTrig = (*hlt_trigName)[it];
     bool results = (*hlt_trigResult)[it];
 
-    if( thisTrig.find(TRIGGERNAME) != std::string::npos && results ){
+    if( thisTrig.find(TRIGGERNAME) != string::npos && results ){
 
       triggerStat = true;
       break;
@@ -1784,17 +1776,17 @@ bool skimTree::TriggerStatus(std::string TRIGGERNAME)
 
 }
 
-bool skimTree::FilterStatus(std::string FILTERNAME)
+bool skimTree::FilterStatus(string FILTERNAME)
 {
 
   bool filterStat = false;
     
   for(unsigned int it = 0; it < (*hlt_filterName).size(); ++it){
     
-    std::string thisFilter = (*hlt_filterName)[it];
+    string thisFilter = (*hlt_filterName)[it];
     bool results = (*hlt_filterResult)[it];
       
-    if( thisFilter.find(FILTERNAME) != std::string::npos && results ){
+    if( thisFilter.find(FILTERNAME) != string::npos && results ){
 
       filterStat = true;
       break;

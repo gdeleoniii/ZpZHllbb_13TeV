@@ -6,43 +6,31 @@
 #include "../setNCUStyle.h"
 #include "../readHists.h"
 
-void nZHplots(std::string channel, std::string rootfilename, std::string textfilename){
+void nZHplots(std::string channel, std::string path, std::string rootfilename, std::string textfilename){
 
   setNCUStyle();
 
-  std::string data1name, data2name;
- 
-  if( channel == "mu" ){
-    data1name = "output/SingleElectron-Run2015D-V120151117_mZHmuSignal.root";
-    data2name = "output/SingleElectron-Run2015D-V420151117_mZHmuSignal.root";
-  }
- 
-  else if( channel == "ele" ){
-    data1name = "output/SingleMuon-Run2015D-V120151117_mZHmuSignal.root";
-    data2name = "output/SingleMuon-Run2015D-V420151117_mZHmuSignal.root";
-  }
- 
-  readHist data1(data1name.data());
-  readHist data2(data2name.data());
-  readHist dy100("output/DYJetsToLL_M-50_HT-100to200_13TeV_mZHmuSignal.root");
-  readHist dy200("output/DYJetsToLL_M-50_HT-200to400_13TeV_mZHmuSignal.root");
-  readHist dy400("output/DYJetsToLL_M-50_HT-400to600_13TeV_mZHmuSignal.root");
-  readHist dy600("output/DYJetsToLL_M-50_HT-600toInf_13TeV_mZHmuSignal.root");
-  readHist tt   ("output/TT_TuneCUETP8M1_13TeV_mZHmuSignal.root");
-  readHist ww   ("output/WW_TuneCUETP8M1_13TeV_mZHmuSignal.root");
-  readHist wz   ("output/WZ_TuneCUETP8M1_13TeV_mZHmuSignal.root");
-  readHist zz   ("output/ZZ_TuneCUETP8M1_13TeV_mZHmuSignal.root");
-  readHist m800 ("output/ZprimeToZhToZlephbb_M-800_13TeV_mZHmuSignal.root");
-  readHist m1000("output/ZprimeToZhToZlephbb_M-1000_13TeV_mZHmuSignal.root");
-  readHist m1200("output/ZprimeToZhToZlephbb_M-1200_13TeV_mZHmuSignal.root");
-  readHist m1400("output/ZprimeToZhToZlephbb_M-1400_13TeV_mZHmuSignal.root");
-  readHist m1600("output/ZprimeToZhToZlephbb_M-1600_13TeV_mZHmuSignal.root");
-  readHist m1800("output/ZprimeToZhToZlephbb_M-1800_13TeV_mZHmuSignal.root");
-  readHist m2000("output/ZprimeToZhToZlephbb_M-2000_13TeV_mZHmuSignal.root");
-  readHist m2500("output/ZprimeToZhToZlephbb_M-2500_13TeV_mZHmuSignal.root");
-  readHist m3000("output/ZprimeToZhToZlephbb_M-3000_13TeV_mZHmuSignal.root");
-  readHist m3500("output/ZprimeToZhToZlephbb_M-3500_13TeV_mZHmuSignal.root");
-  readHist m4000("output/ZprimeToZhToZlephbb_M-4000_13TeV_mZHmuSignal.root");
+  readHist data1(Form("%s/output/Single%s-Run2015D-V120151117_mZHmuLimit.root",      path.data(), channel.data()));
+  readHist data2(Form("%s/output/Single%s-Run2015D-V420151117_mZHmuLimit.root",      path.data(), channel.data()));
+  readHist dy100(Form("%s/output/DYJetsToLL_M-50_HT-100to200_13TeV_mZHmuLimit.root", path.data()));
+  readHist dy200(Form("%s/output/DYJetsToLL_M-50_HT-200to400_13TeV_mZHmuLimit.root", path.data()));
+  readHist dy400(Form("%s/output/DYJetsToLL_M-50_HT-400to600_13TeV_mZHmuLimit.root", path.data()));
+  readHist dy600(Form("%s/output/DYJetsToLL_M-50_HT-600toInf_13TeV_mZHmuLimit.root", path.data()));
+  readHist tt   (Form("%s/output/TT_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
+  readHist ww   (Form("%s/output/WW_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
+  readHist wz   (Form("%s/output/WZ_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
+  readHist zz   (Form("%s/output/ZZ_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
+  readHist m800 (Form("%s/output/ZprimeToZhToZlephbb_M-800_13TeV_mZHmuLimit.root",   path.data()));
+  readHist m1000(Form("%s/output/ZprimeToZhToZlephbb_M-1000_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m1200(Form("%s/output/ZprimeToZhToZlephbb_M-1200_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m1400(Form("%s/output/ZprimeToZhToZlephbb_M-1400_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m1600(Form("%s/output/ZprimeToZhToZlephbb_M-1600_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m1800(Form("%s/output/ZprimeToZhToZlephbb_M-1800_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m2000(Form("%s/output/ZprimeToZhToZlephbb_M-2000_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m2500(Form("%s/output/ZprimeToZhToZlephbb_M-2500_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m3000(Form("%s/output/ZprimeToZhToZlephbb_M-3000_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m3500(Form("%s/output/ZprimeToZhToZlephbb_M-3500_13TeV_mZHmuLimit.root",  path.data()));
+  readHist m4000(Form("%s/output/ZprimeToZhToZlephbb_M-4000_13TeV_mZHmuLimit.root",  path.data()));
 
   TH1D* h_Data = (TH1D*)(data1.getHist("mZprime"))->Clone("h_Data");
   h_Data->Reset();

@@ -20,7 +20,7 @@ for ((j=0; j<${#processEle[@]}; j++)); do
 
     mv *root output_$thisName
 
-    root -q -b -l $pwd/dataMCplots.C+\(\"output_$thisName\"\,\"$thisName\"\)
+    root -q -b -l $pwd/dataMCplots.C+\(\"Electron\"\,\"output_$thisName\"\,\"$thisName\"\)
 
 done
 
@@ -37,7 +37,7 @@ for ((j=0; j<${#processMu[@]}; j++)); do
 
     mv *root output_$thisName
 
-    root -q -b -l $pwd/dataMCplots.C+\(\"output_$thisName\"\,\"$thisName\"\)
+    root -q -b -l $pwd/dataMCplots.C+\(\"Muon\"\,\"output_$thisName\"\,\"$thisName\"\)
 
 done
 
