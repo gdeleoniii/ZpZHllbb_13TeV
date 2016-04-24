@@ -6,7 +6,7 @@
 #include "../untuplizer.h"
 #include "../isPassZmumu.h"
 
-float geMuEfficiency(string inputFile, int cat){
+float geMuEfficiency(string inputFile, int cat, int scale){
 
   // read the ntuples (in pcncu)
 
@@ -24,6 +24,8 @@ float geMuEfficiency(string inputFile, int cat){
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
+    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -46,6 +48,9 @@ float geMuEfficiency(string inputFile, int cat){
     for( int ij = 0; ij < FATnJet; ++ij ){
 
       thisJet = (TLorentzVector*)FATjetP4->At(ij);
+
+      if( scale != 0 )
+	*thisJet *= (scale == 1) ? FATjetCorrUncUp[ij] : FATjetCorrUncDown[ij];
 
       if( thisJet->Pt() < 200 ) continue;
       if( fabs(thisJet->Eta()) > 2.4 ) continue;
