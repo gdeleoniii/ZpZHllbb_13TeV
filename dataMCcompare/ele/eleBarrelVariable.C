@@ -128,7 +128,7 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
       }
     }
 
-    if(!findEPair ) continue;
+    if( !findEPair ) continue;
     
     // electron selections and cuts
 

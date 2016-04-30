@@ -48,10 +48,12 @@ void muZVariable(std::string inputFile, std::string outputFile){
     
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
+    if( (unsigned)ev % 10000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
@@ -66,12 +68,10 @@ void muZVariable(std::string inputFile, std::string outputFile){
     TLorentzVector* thisMu = (TLorentzVector*)muP4->At(goodMuID[0]);
     TLorentzVector* thatMu = (TLorentzVector*)muP4->At(goodMuID[1]);
 
-    TLorentzVector l4_Z = (*thisMu+*thatMu);
-
-    h_Zmass    ->Fill(l4_Z.M(),eventWeight);
-    h_Zpt      ->Fill(l4_Z.Pt(),eventWeight);
-    h_Zeta     ->Fill(l4_Z.Eta(),eventWeight);
-    h_ZRapidity->Fill(l4_Z.Rapidity(),eventWeight);
+    h_Zmass    ->Fill((*thisMu+*thatMu).M(),eventWeight);
+    h_Zpt      ->Fill((*thisMu+*thatMu).Pt(),eventWeight);
+    h_Zeta     ->Fill((*thisMu+*thatMu).Eta(),eventWeight);
+    h_ZRapidity->Fill((*thisMu+*thatMu).Rapidity(),eventWeight);
 
     if( thisMu->Pt() > thatMu->Pt() ){
 
@@ -91,7 +91,7 @@ void muZVariable(std::string inputFile, std::string outputFile){
 
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
 
   TFile* outFile = new TFile(Form("%s_ZmumuVariable.root",outputFile.c_str()), "recreate");
       

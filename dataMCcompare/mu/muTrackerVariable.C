@@ -48,10 +48,12 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
+    if( (unsigned)ev % 10000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
@@ -72,66 +74,61 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 
     // choosing muon pair
 
-    Int_t muId[2] = {-1,-1};
+    vector<Int_t> muId;
 
-    for(Int_t ie = 0; ie < nMu; ie++){
+    bool findMPair = false;
 
-      TLorentzVector* thisMu = (TLorentzVector*)muP4->At(ie);
+    for(Int_t im = 0; im < nMu; ++im){
+      for(Int_t jm = 0; jm < im; ++jm){
 
-      if( !isGlobalMuon[ie] || !isTrackerMuon[ie] ) continue;
-      if( thisMu->Pt() <= 50 ) continue;
-      if( fabs(thisMu->Eta()) >= 2.1 ) continue;    
-
-      for(Int_t je = 0; je < ie; je++){
-
-	TLorentzVector* thatMu = (TLorentzVector*)muP4->At(je);
+	TLorentzVector* thisMu = (TLorentzVector*)muP4->At(im);
+	TLorentzVector* thatMu = (TLorentzVector*)muP4->At(jm);
 	
-	if( !isGlobalMuon[je] || !isTrackerMuon[je] ) continue;
-	if( thatMu->Pt() <= 50 ) continue;
-	if( fabs(thatMu->Eta()) >= 2.1 ) continue;
-		
-	Float_t mll  = (*thisMu+*thatMu).M();
-	Float_t ptll = (*thisMu+*thatMu).Pt();
+	if( !isGlobalMuon[im] || !isTrackerMuon[im] ) continue;
+	if( !isGlobalMuon[jm] || !isTrackerMuon[jm] ) continue;
+	if( thisMu->Pt() < 50 || thatMu->Pt() < 50  ) continue;
+	if( fabs(thisMu->Eta()) > 2.1  || fabs(thatMu->Eta()) > 2.1   ) continue;
+	if( (*thisMu+*thatMu).M() < 60 || (*thisMu+*thatMu).M() > 120 ) continue;
+	if( (*thisMu+*thatMu).Pt() < 150 ) continue;
 
-	if( mll < 60 || mll > 120 ) continue;		
-	if( ptll < 150 ) continue;
-
-	muId[0] = ie;
-	muId[1] = je;
+	if( !findMPair ){
+	  muId.push_back(im);
+	  muId.push_back(jm);
+	} 
 
 	break;
 	
       }
     }
 
-    if(	muId[0] < 0 || muId[1] < 0 ) continue;
+    if( !findMPair ) continue;
 
     // muon selections and cuts
 
-    for(Int_t ie = 0; ie < 2; ie++){
+    for(Int_t im = 0; im < 2; ++im){
 
-      if( isTrackerMuon[muId[ie]] ){ // customizeTrackerMuon selections and cuts
+      if( isTrackerMuon[muId[im]] ){ // customizeTrackerMuon selections and cuts
 
-	for(Int_t flag = 0; flag <= 7; flag++){
+	for(Int_t flag = 0; flag <= 7; ++flag){
 
-	  if( muMatches[muId[ie]]   <  2   && flag != 0 ) continue;
-	  if( muTrkLayers[muId[ie]] <  6   && flag != 1 ) continue;
-	  if( muPixelHits[muId[ie]] <  1   && flag != 2 ) continue;
-	  if( muTrkPtErr[muId[ie]]/muTrkPt[muId[ie]] > 0.3 && flag != 3 ) continue;
-	  if( fabs(mudxy[muId[ie]]) >  0.2 && flag != 4 ) continue;
-	  if( fabs(mudz[muId[ie]])  >  0.5 && flag != 5 ) continue;
-	  if( muMiniIsoEA[muId[ie]] >  0.2 && flag != 6 ) continue;
+	  if( muMatches[muId[im]]   <  2   && flag != 0 ) continue;
+	  if( muTrkLayers[muId[im]] <  6   && flag != 1 ) continue;
+	  if( muPixelHits[muId[im]] <  1   && flag != 2 ) continue;
+	  if( muTrkPtErr[muId[im]]/muTrkPt[muId[im]] > 0.3 && flag != 3 ) continue;
+	  if( fabs(mudxy[muId[im]]) >  0.2 && flag != 4 ) continue;
+	  if( fabs(mudz[muId[im]])  >  0.5 && flag != 5 ) continue;
+	  if( muMiniIsoEA[muId[im]] >  0.2 && flag != 6 ) continue;
 
 	  switch(flag){
 
-	  case 0: h_muMatches   ->Fill(muMatches[muId[ie]],eventWeight);   break;
-	  case 1: h_muTrkLayers ->Fill(muTrkLayers[muId[ie]],eventWeight); break;
-	  case 2: h_muPixelHits ->Fill(muPixelHits[muId[ie]],eventWeight); break;
-	  case 3: h_muTrkPtErrdvTrkPt ->Fill(muTrkPtErr[muId[ie]]/muTrkPt[muId[ie]],eventWeight); break;
-	  case 4: h_mudxy       ->Fill(mudxy[muId[ie]],eventWeight);       break;
-	  case 5: h_mudz        ->Fill(mudz[muId[ie]],eventWeight);        break;
-	  case 6: h_muMiniIsoEA ->Fill(muMiniIsoEA[muId[ie]],eventWeight); break;
-	  case 7: h_muHits      ->Fill(muHits[muId[ie]],eventWeight);      break;
+	  case 0: h_muMatches   ->Fill(muMatches[muId[im]],eventWeight);   break;
+	  case 1: h_muTrkLayers ->Fill(muTrkLayers[muId[im]],eventWeight); break;
+	  case 2: h_muPixelHits ->Fill(muPixelHits[muId[im]],eventWeight); break;
+	  case 3: h_muTrkPtErrdvTrkPt ->Fill(muTrkPtErr[muId[im]]/muTrkPt[muId[im]],eventWeight); break;
+	  case 4: h_mudxy       ->Fill(mudxy[muId[im]],eventWeight);       break;
+	  case 5: h_mudz        ->Fill(mudz[muId[im]],eventWeight);        break;
+	  case 6: h_muMiniIsoEA ->Fill(muMiniIsoEA[muId[im]],eventWeight); break;
+	  case 7: h_muHits      ->Fill(muHits[muId[im]],eventWeight);      break;
     
 	  } // end of switch
 	
@@ -143,7 +140,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
       
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
     
   TFile* outFile = new TFile(Form("%s_muTrackerVariable.root",outputFile.c_str()), "recreate");
       
