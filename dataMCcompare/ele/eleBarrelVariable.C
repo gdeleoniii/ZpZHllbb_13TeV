@@ -8,6 +8,22 @@
 #include <TLorentzVector.h>
 #include "../../untuplizer.h"
 
+float EA(float eta){
+
+  float ea = 0.0;
+
+  if     ( eta > 0.000 && eta < 1.000 ) ea = 0.1752;
+  else if( eta > 1.000 && eta < 1.479 ) ea = 0.1862;
+  else if( eta > 1.479 && eta < 2.000 ) ea = 0.1411;
+  else if( eta > 2.000 && eta < 2.200 ) ea = 0.1534;
+  else if( eta > 2.200 && eta < 2.300 ) ea = 0.1903;
+  else if( eta > 2.300 && eta < 2.400 ) ea = 0.2243;
+  else if( eta > 2.400 && eta < 5.000 ) ea = 0.2687;
+
+  return ea;
+
+}
+
 void eleBarrelVariable(std::string inputFile, std::string outputFile){
 
   // read the ntuples (in pcncu)
@@ -19,62 +35,67 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
   TFile* f = new TFile(inputFile.data());
   TH1D* h_totalEvents             = (TH1D*)f->Get("h_totalEv");
 
+  TH1D* h_eleSigmaIEtaIEtaFull5x5 = new TH1D("h_eleSigmaIEtaIEtaFull5x5", "eleSigmaIEtaIEtaFull5x5", 40,      0,  0.06);
   TH1D* h_eleEtaseedAtVtx         = new TH1D("h_eleEtaseedAtVtx",         "eleEtaseedAtVtx",         20,  -0.01,  0.01);
   TH1D* h_eledPhiAtVtx            = new TH1D("h_eledPhiAtVtx",            "eledPhiAtVtx",            20,  -0.03,  0.03);
   TH1D* h_eleHoverE               = new TH1D("h_eleHoverE",               "eleHoverE",               20,      0,  0.05);
-  TH1D* h_eleSigmaIEtaIEtaFull5x5 = new TH1D("h_eleSigmaIEtaIEtaFull5x5", "eleSigmaIEtaIEtaFull5x5", 40,      0,  0.06);
-  TH1D* h_eleFull5x5E2x5dvE5x5    = new TH1D("h_eleFull5x5E2x5dvE5x5",    "eleFull5x5E2x5dvE5x5",    20,      0,     1);
-  TH1D* h_eleFull5x5E1x5dvE5x5    = new TH1D("h_eleFull5x5E1x5dvE5x5",    "eleFull5x5E1x5dvE5x5",    20,      0,     1);
+  TH1D* h_eleRelIsoWithEA         = new TH1D("h_eleRelIsoWithEA",         "eleRelIsoWithEA",         20,      0,  0.12);
+  TH1D* h_eleEoverPInv            = new TH1D("h_eleEoverPInv",            "eleEoverPInv",            20,      0,  0.12);
+  TH1D* h_eleD0                   = new TH1D("h_eleD0",                   "eleD0",                   20, -0.015, 0.015);
+  TH1D* h_eleDz                   = new TH1D("h_eleDz",                   "eleDz",                   20, -0.015, 0.015);
   TH1D* h_eleMissHits             = new TH1D("h_eleMissHits",             "eleMissHits",              6,   -0.5,   5.5);
-  TH1D* h_eleD0                   = new TH1D("h_eleD0",                   "eleD0",                   20, -0.015, 0.015);  
-  TH1D* h_eleMiniIsoEA            = new TH1D("h_eleMiniIsoEA",            "eleMiniIsoEA",            20,      0,  0.12);
 
+  h_eleSigmaIEtaIEtaFull5x5->Sumw2();
   h_eleEtaseedAtVtx        ->Sumw2();
   h_eledPhiAtVtx           ->Sumw2();
   h_eleHoverE              ->Sumw2();
-  h_eleSigmaIEtaIEtaFull5x5->Sumw2();
-  h_eleFull5x5E2x5dvE5x5   ->Sumw2();
-  h_eleFull5x5E1x5dvE5x5   ->Sumw2();
-  h_eleMissHits            ->Sumw2(); 
+  h_eleRelIsoWithEA        ->Sumw2();
+  h_eleEoverPInv           ->Sumw2();
   h_eleD0                  ->Sumw2();
-  h_eleMiniIsoEA           ->Sumw2();
+  h_eleDz                  ->Sumw2();
+  h_eleMissHits            ->Sumw2(); 
 
+  h_eleSigmaIEtaIEtaFull5x5->GetXaxis()->SetTitle("eleSigmaIEtaIEtaFull5x5");
   h_eleEtaseedAtVtx        ->GetXaxis()->SetTitle("eleEtaseedAtVtx"); 
   h_eledPhiAtVtx           ->GetXaxis()->SetTitle("eledPhiAtVtx");   
   h_eleHoverE              ->GetXaxis()->SetTitle("eleHoverE");    
-  h_eleSigmaIEtaIEtaFull5x5->GetXaxis()->SetTitle("eleSigmaIEtaIEtaFull5x5");  
-  h_eleFull5x5E2x5dvE5x5   ->GetXaxis()->SetTitle("eleFull5x5E2x5dvE5x5");
-  h_eleFull5x5E1x5dvE5x5   ->GetXaxis()->SetTitle("eleFull5x5E1x5dvE5x5");   
+  h_eleRelIsoWithEA        ->GetXaxis()->SetTitle("eleRelIsoWithEA");
+  h_eleEoverPInv           ->GetXaxis()->SetTitle("eleEoverPInv");
+  h_eleD0                  ->GetXaxis()->SetTitle("eleD0");
+  h_eleDz                  ->GetXaxis()->SetTitle("eleDz");
   h_eleMissHits            ->GetXaxis()->SetTitle("eleMissHits"); 
-  h_eleD0                  ->GetXaxis()->SetTitle("eleD0");      
-  h_eleMiniIsoEA           ->GetXaxis()->SetTitle("eleMiniIsoEA"); 
 
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
+    if( (unsigned)ev % 10000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
     Int_t    nEle                    = data.GetInt("nEle");
     Int_t*   eleMissHits             = data.GetPtrInt("eleMissHits");
     Float_t  eventWeight             = data.GetFloat("ev_weight");
-    Float_t* eleScEn                 = data.GetPtrFloat("eleScEn");
+    Float_t  eleRho                  = data.GetFloat("eleRho");
+    Float_t* eleChHadIso             = data.GetPtrFloat("eleChHadIso");
+    Float_t* eleNeHadIso             = data.GetPtrFloat("eleNeHadIso");
+    Float_t* eleGamIso               = data.GetPtrFloat("eleGamIso");
     Float_t* eleScEt                 = data.GetPtrFloat("eleScEt");
     Float_t* eleScEta                = data.GetPtrFloat("eleScEta");
     Float_t* eleEtaseedAtVtx         = data.GetPtrFloat("eleEtaseedAtVtx");	
     Float_t* eledPhiAtVtx            = data.GetPtrFloat("eledPhiAtVtx");
     Float_t* eleHoverE               = data.GetPtrFloat("eleHoverE");
     Float_t* eleSigmaIEtaIEtaFull5x5 = data.GetPtrFloat("eleSigmaIEtaIEtaFull5x5");
-    Float_t* eleE1x5Full5x5          = data.GetPtrFloat("eleE1x5Full5x5");
-    Float_t* eleE2x5Full5x5          = data.GetPtrFloat("eleE2x5Full5x5");
-    Float_t* eleE5x5Full5x5          = data.GetPtrFloat("eleE5x5Full5x5");   
+    Float_t* eleEoverPInv            = data.GetPtrFloat("eleEoverPInv");
     Float_t* eleD0                   = data.GetPtrFloat("eleD0");
-    Float_t* eleMiniIsoEA            = data.GetPtrFloat("eleMiniIsoEA");
+    Float_t* eleDz                   = data.GetPtrFloat("eleDz");
     TClonesArray* eleP4              = (TClonesArray*) data.GetPtrTObject("eleP4");
-    vector<bool>& eleEcalDrivenSeed  = *((vector<bool>*) data.GetPtr("eleEcalDrivenSeed"));
+    vector<bool>& eleConvVeto        = *((vector<bool>*) data.GetPtr("eleConvVeto"));
+    vector<bool>& eleInBarrel        = *((vector<bool>*) data.GetPtr("eleInBarrel"));
+    vector<bool>& eleInEndcap        = *((vector<bool>*) data.GetPtr("eleInEndcap"));
 
     // choosing electron
 
@@ -82,33 +103,23 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
 
     bool findEPair = false;
     
-    for(Int_t ie = 0; ie < nEle; ie++){
+    for(Int_t ie = 0; ie < nEle; ++ie){
+      for(Int_t je = 0; je < ie; ++je){
 
-      if( !(fabs(eleScEta[ie]) < 1.442 || fabs(eleScEta[ie]) > 1.566) ) continue;
-      if( fabs(eleScEta[ie]) > 2.5 ) continue;
-
-      TLorentzVector* thisEle = (TLorentzVector*)eleP4->At(ie);
-      
-      for(Int_t je = 0; je < ie; je++){
-
-	if( eleScEt[ie] <= 35 || eleScEt[je] <= 35 ) continue;
-	if( !eleEcalDrivenSeed[ie] || !eleEcalDrivenSeed[je] ) continue;
-	if( !(fabs(eleScEta[je]) < 1.442 || fabs(eleScEta[je]) > 1.566) ) continue;
-	if( fabs(eleScEta[je]) > 2.5 ) continue;
-
+	TLorentzVector* thisEle = (TLorentzVector*)eleP4->At(ie);
 	TLorentzVector* thatEle = (TLorentzVector*)eleP4->At(je);
-	
-	Float_t mll  = (*thisEle+*thatEle).M();
-	Float_t ptll = (*thisEle+*thatEle).Pt();
 
-	if( mll < 60 || mll > 120 ) continue;		
-	if( ptll < 150 ) continue;
+	if( !eleInBarrel[ie] && !eleInEndcap[ie] ) continue;
+	if( !eleInBarrel[je] && !eleInEndcap[je] ) continue;
+	if( !eleConvVeto[ie] || !eleConvVeto[je] ) continue;
+	if( eleScEt[ie] < 35 || eleScEt[je] < 35 ) continue;
+	if( (*thisEle+*thatEle).M()  < 60  ) continue;
+	if( (*thisEle+*thatEle).M()  > 120 ) continue;
+	if( (*thisEle+*thatEle).Pt() < 150 ) continue;
 
 	if( !findEPair ){
-
 	  eleId.push_back(ie);
 	  eleId.push_back(je);
-
 	} 
 
 	findEPair = true;
@@ -117,41 +128,39 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
       }
     }
 
-    if(	!findEPair ) continue;
+    if(!findEPair ) continue;
     
     // electron selections and cuts
 
-    for(Int_t ie = 0; ie < 2; ie++){
+    for(Int_t ie = 0; ie < 2; ++ie){
 
-      Float_t E = eleScEn[eleId[ie]];
+      Float_t eleRelIsoWithEA = eleChHadIso[eleId[ie]] + TMath::Max(0.0f, eleNeHadIso[eleId[ie]]+eleGamIso[eleId[ie]]-eleRho*EA(eleScEta[eleId[ie]]));
 
-      if( fabs(eleScEta[eleId[ie]]) < 1.4442 ){ // barrel selections and cuts
+      if( eleInBarrel[eleId[ie]] ){ // barrel selections and cuts
 
-	for(Int_t flag = 0; flag <= 7; flag++){
+	for(Int_t flag = 0; flag <= 8; ++flag){
 
-	  if( fabs(eleEtaseedAtVtx[eleId[ie]])   >= 0.004     && flag != 0 ) continue;
-	  if( fabs(eledPhiAtVtx[eleId[ie]])      >= 0.06      && flag != 1 ) continue;
-	  if( eleHoverE[eleId[ie]]               >= 1/E+0.05  && flag != 2 ) continue;
-	  if( eleMissHits[eleId[ie]]             >  1         && flag != 3 ) continue;
-	  if( fabs(eleD0[eleId[ie]])             >= 0.02      && flag != 4 ) continue;
-	  if( eleMiniIsoEA[eleId[ie]]            >= 0.1       && flag != 5 ) continue;
-	  if( (eleE2x5Full5x5[eleId[ie]]/eleE5x5Full5x5[eleId[ie]] <= 0.94  &&
-	       eleE1x5Full5x5[eleId[ie]]/eleE5x5Full5x5[eleId[ie]] <= 0.83) && flag != 6 )
-	    continue;
+	  if( eleSigmaIEtaIEtaFull5x5[eleId[ie]] >= 0.0103 && flag != 0 ) continue;
+	  if( fabs(eleEtaseedAtVtx[eleId[ie]])   >= 0.0105 && flag != 1 ) continue;
+	  if( fabs(eledPhiAtVtx[eleId[ie]])      >= 0.115  && flag != 2 ) continue;
+	  if( eleHoverE[eleId[ie]]               >= 0.104  && flag != 3 ) continue;
+	  if( eleRelIsoWithEA                    >= 0.0893 && flag != 4 ) continue;
+	  if( eleEoverPInv[eleId[ie]]            >= 0.102  && flag != 5 ) continue;
+	  if( fabs(eleD0[eleId[ie]])             >= 0.0261 && flag != 6 ) continue;
+	  if( fabs(eleDz[eleId[ie]])             >= 0.41   && flag != 7 ) continue;
+	  if( eleMissHits[eleId[ie]]             >  2      && flag != 8 ) continue;
 	  	    
 	  switch(flag){
 
-	  case 0: h_eleEtaseedAtVtx ->Fill(eleEtaseedAtVtx[eleId[ie]],eventWeight); break;
-	  case 1: h_eledPhiAtVtx    ->Fill(eledPhiAtVtx[eleId[ie]],eventWeight);    break;
-	  case 2: h_eleHoverE       ->Fill(eleHoverE[eleId[ie]],eventWeight);       break;
-	  case 3: h_eleMissHits     ->Fill(eleMissHits[eleId[ie]],eventWeight);     break;
-	  case 4: h_eleD0           ->Fill(eleD0[eleId[ie]],eventWeight);           break;
-	  case 5: h_eleMiniIsoEA    ->Fill(eleMiniIsoEA[eleId[ie]],eventWeight);    break;	 
-	  case 6:
-	    h_eleFull5x5E2x5dvE5x5  ->Fill(eleE2x5Full5x5[eleId[ie]]/eleE5x5Full5x5[eleId[ie]],eventWeight);
-	    h_eleFull5x5E1x5dvE5x5  ->Fill(eleE1x5Full5x5[eleId[ie]]/eleE5x5Full5x5[eleId[ie]],eventWeight);
-	    break;
-	  case 7: h_eleSigmaIEtaIEtaFull5x5 ->Fill(eleSigmaIEtaIEtaFull5x5[eleId[ie]],eventWeight); break;
+	  case 0: h_eleSigmaIEtaIEtaFull5x5 ->Fill(eleSigmaIEtaIEtaFull5x5[eleId[ie]], eventWeight); break;
+	  case 1: h_eleEtaseedAtVtx         ->Fill(eleEtaseedAtVtx[eleId[ie]],         eventWeight); break;
+	  case 2: h_eledPhiAtVtx            ->Fill(eledPhiAtVtx[eleId[ie]],            eventWeight); break;
+	  case 3: h_eleHoverE               ->Fill(eleHoverE[eleId[ie]],               eventWeight); break;
+	  case 4: h_eleRelIsoWithEA         ->Fill(eleRelIsoWithEA,                    eventWeight); break;
+	  case 5: h_eleEoverPInv            ->Fill(eleEoverPInv[eleId[ie]],            eventWeight); break;
+	  case 6: h_eleD0                   ->Fill(eleD0[eleId[ie]],                   eventWeight); break;
+	  case 7: h_eleDz                   ->Fill(eleDz[eleId[ie]],                   eventWeight); break;
+	  case 8: h_eleMissHits             ->Fill(eleMissHits[eleId[ie]],             eventWeight); break;
 	    
 	  } // end of switch
     
@@ -163,19 +172,19 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
       
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
     
   TFile* outFile = new TFile(Form("%s_eleBarrelVariable.root",outputFile.c_str()), "recreate");
       
+  h_eleSigmaIEtaIEtaFull5x5->Write("eleSigmaIEtaIEtaFull5x5");
   h_eleEtaseedAtVtx        ->Write("eleEtaseedAtVtx");
   h_eledPhiAtVtx           ->Write("eledPhiAtVtx");
   h_eleHoverE              ->Write("eleHoverE");
-  h_eleSigmaIEtaIEtaFull5x5->Write("eleSigmaIEtaIEtaFull5x5");
-  h_eleFull5x5E2x5dvE5x5   ->Write("eleFull5x5E2x5dvE5x5");
-  h_eleFull5x5E1x5dvE5x5   ->Write("eleFull5x5E1x5dvE5x5");
-  h_eleMissHits            ->Write("eleMissHits");
+  h_eleRelIsoWithEA        ->Write("eleRelIsoWithEA");
+  h_eleEoverPInv           ->Write("eleEoverPInv");
   h_eleD0                  ->Write("eleD0");
-  h_eleMiniIsoEA           ->Write("eleMiniIsoEA");
+  h_eleDz                  ->Write("eleDz");
+  h_eleMissHits            ->Write("eleMissHits");
   h_totalEvents            ->Write("totalEvents");
 
   outFile->Write();

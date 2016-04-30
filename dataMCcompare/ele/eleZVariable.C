@@ -49,10 +49,12 @@ void eleZVariable(std::string inputFile, std::string outputFile){
     
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
+    if( (unsigned)ev % 10000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
@@ -67,12 +69,10 @@ void eleZVariable(std::string inputFile, std::string outputFile){
     TLorentzVector* thisEle = (TLorentzVector*)eleP4->At(goodEleID[0]);
     TLorentzVector* thatEle = (TLorentzVector*)eleP4->At(goodEleID[1]);
 
-    TLorentzVector l4_Z = (*thisEle+*thatEle);
-
-    h_Zmass    ->Fill(l4_Z.M(),eventWeight);
-    h_Zpt      ->Fill(l4_Z.Pt(),eventWeight);
-    h_Zeta     ->Fill(l4_Z.Eta(),eventWeight);
-    h_ZRapidity->Fill(l4_Z.Rapidity(),eventWeight);
+    h_Zmass    ->Fill((*thisEle+*thatEle).M(),eventWeight);
+    h_Zpt      ->Fill((*thisEle+*thatEle).Pt(),eventWeight);
+    h_Zeta     ->Fill((*thisEle+*thatEle).Eta(),eventWeight);
+    h_ZRapidity->Fill((*thisEle+*thatEle).Rapidity(),eventWeight);
 
     if( thisEle->Pt() > thatEle->Pt() ){
 
@@ -92,7 +92,7 @@ void eleZVariable(std::string inputFile, std::string outputFile){
 
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
 
   TFile* outFile = new TFile(Form("%s_eleZVariable.root",outputFile.c_str()), "recreate");
       

@@ -63,10 +63,12 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
     
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 500000 == 0 )
-      fprintf(stdout, "Still left events %lli of %lli\n", ev, data.GetEntriesFast());
+    if( (unsigned)ev % 10000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
@@ -102,7 +104,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
     Int_t goodFATJetID = -1;
     TLorentzVector* thisJet = NULL;
 
-    for(Int_t ij = 0; ij < FATnJet; ij++){
+    for(Int_t ij = 0; ij < FATnJet; ++ij){
 
       thisJet = (TLorentzVector*)FATjetP4->At(ij);
 
@@ -130,7 +132,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
     h_FATjetTau2      ->Fill(FATjetTau2[goodFATJetID],eventWeight);
     h_FATjetTau2dvTau1->Fill(FATjetTau2[goodFATJetID]/FATjetTau1[goodFATJetID],eventWeight);
 
-    for(Int_t is = 0; is < FATnSubSDJet[goodFATJetID]; is++){
+    for(Int_t is = 0; is < FATnSubSDJet[goodFATJetID]; ++is){
 
       TLorentzVector l4_subjet(0,0,0,0);
 
@@ -147,7 +149,7 @@ void eleJetVariable(std::string inputFile, std::string outputFile){
 
   } // end of event loop
 
-  fprintf(stderr, "Processed all events\n");
+  fprintf(stdout, "Processed all events\n");
 
   TFile* outFile = new TFile(Form("%s_eleJetVariable.root",outputFile.c_str()), "recreate");
 
