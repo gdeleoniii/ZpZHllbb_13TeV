@@ -43,19 +43,19 @@ float getEleEfficiency(string inputFile, int cat, int scale){
     // select good FATjet
 
     int goodFATJetID = -1;
-    TLorentzVector* thisJet = NULL;
+    TLorentzVector thisJet(0,0,0,0);
 
     for( int ij = 0; ij < FATnJet; ++ij ){
 
-      thisJet = (TLorentzVector*)FATjetP4->At(ij);
+      TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
       if( scale != 0 )
-	*thisJet *= (scale == 1) ? FATjetCorrUncUp[ij] : FATjetCorrUncDown[ij];
+	*myJet *= (scale == 1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]);
 
-      if( thisJet->Pt() < 200 ) continue;
-      if( fabs(thisJet->Eta()) > 2.4 ) continue;
+      if( myJet->Pt() < 200 ) continue;
+      if( fabs(myJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
-      if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
+      if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
 
       int nsubBjet = 0;
@@ -72,6 +72,7 @@ float getEleEfficiency(string inputFile, int cat, int scale){
       if( cat == 2 && nsubBjet != 2 ) continue;
        
       goodFATJetID = ij;
+      thisJet = *myJet;
 
       break;
  
@@ -79,11 +80,11 @@ float getEleEfficiency(string inputFile, int cat, int scale){
  
     if( goodFATJetID < 0 ) continue;
 
-    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
+    if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
     // Noise cleaning?
 
-    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+*thisJet).Eta()) > 5.0 ) continue;
+    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+thisJet).Eta()) > 5.0 ) continue;
 
     ++passEvent;
 
