@@ -8,53 +8,48 @@ class readHist{
     
  public:
   
-  readHist(std::string);
-  TH1D* getHist(std::string);
+  readHist(string);
+  TH1D* getHist(string);
 
  private:
 
   TFile* thisFile;
-  std::string thisFileName;
-  float crossSection(std::string);
+  string thisFileName;
+  float crossSection(string);
    
 };
 
-readHist::readHist(std::string rootFile){
+readHist::readHist(string rootFile){
 
-  std::string tmpStr = rootFile.erase(rootFile.find_last_not_of("/")+1);
+  string tmpStr = rootFile.erase(rootFile.find_last_not_of("/")+1);
   thisFileName = tmpStr.substr(tmpStr.find_last_of("/")+1);
   thisFile = TFile::Open(rootFile.data());
 
 }
 
-float readHist::crossSection(std::string token){
+float readHist::crossSection(string thisPath){
 
-  std::ifstream textFile("textFile.txt");
-  std::string thisPath;
+  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/dataMCcompare/textFile.txt");
+  string token;
+  float crosssection = 0., thisNum = 0.;
 
-  float crosssection = 0.;
-  float thisNum = 0.;
+  while( textFile >> token >> thisNum ){
 
-  while( textFile >> thisPath >> thisNum ){
-
-    if( thisPath.find(token) != std::string::npos )
+    if( thisPath.find(token) != string::npos )
       crosssection = thisNum;
 
   }
-
-  return crosssection;
   
+  return crosssection;
+
 }
 
-TH1D* readHist::getHist(std::string hname){
-
-  float totalEvents      = ((TH1D*)(thisFile->Get("totalEvents")))->Integral();
-  float thisCrossSection = crossSection(thisFileName.data());
-  float thisScale        = 2080./(totalEvents/thisCrossSection); // dataLumi = 2080/pb
+TH1D* readHist::getHist(string hname){
 
   TH1D* thisHist = (TH1D*)(thisFile->Get(Form("%s", hname.c_str())));  
-  thisHist->Scale(thisScale);
-  cout << thisScale << endl;  
+
+  thisHist->Scale(thisFileName.find("Run2015") != string::npos ? 1 : 2080.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
+
   return thisHist;
 
 }

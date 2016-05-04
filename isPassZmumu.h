@@ -1,6 +1,5 @@
 #include <vector>
 #include <iostream>
-#include <TMath.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "untuplizer.h"
@@ -29,7 +28,7 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
     if( !isHighPtMuon[im] && !isCustomTrackerMuon[im] ) continue;
     if( fabs(myMu->Eta()) > 2.4 ) continue;
     if( myMu->Pt() < 20 ) continue;
-    if( myMu->Pt() > 50 && fabs(myMu->Eta()) < 2.1 ) hasTrigMuon = true;
+    if( myMu->Pt() > 55 && fabs(myMu->Eta()) < 2.4 ) hasTrigMuon = true;
 
     goodMuons.push_back(im);
 
@@ -62,10 +61,10 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
       if( thisMu->DeltaR(*thatMu) < 0.3 && (muTrkIso[im]-muInnerTrkPt[jm])/thisMu->Pt() > 0.1 ) continue;
       if( thisMu->DeltaR(*thatMu) < 0.3 && (muTrkIso[jm]-muInnerTrkPt[im])/thatMu->Pt() > 0.1 ) continue;
 
+      if( !isHighPtMuon[im] && !isHighPtMuon[jm] ) continue;
       if( muCharge[im]*muCharge[jm] > 0 ) continue;
       if( (*thisMu+*thatMu).M() < 70 || (*thisMu+*thatMu).M() > 110 ) continue;
       if( (*thisMu+*thatMu).Pt() < 200 ) continue;
-      if( !( (isHighPtMuon[im] && isCustomTrackerMuon[jm]) || (isHighPtMuon[jm] && isCustomTrackerMuon[im]) ) ) continue;
 
       if( !findMPair ){
 
