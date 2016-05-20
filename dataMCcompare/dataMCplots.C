@@ -15,7 +15,7 @@
 #include "../setNCUStyle.h"
 #include "../readHists.h"
 
-void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600, 
+void myPlot(TH1D* h_Zjets100, TH1D* h_Zjets200, TH1D* h_Zjets400, TH1D* h_Zjets600, 
 	    TH1D* h_TT, TH1D* h_WW, TH1D* h_WZ, TH1D* h_ZZ, TH1D* h_ZH,
             TH1D* h_data0, TH1D* h_data1,
 	    TH1D* h_data, TH1D* h_bkg){
@@ -24,33 +24,33 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   h_data->Add(h_data0);
   h_data->Add(h_data1);
 
-  TH1D* h_DY = (TH1D*)h_DY100->Clone("h_DY");
+  TH1D* h_Zjets = (TH1D*)h_Zjets100->Clone("h_Zjets");
 
-  h_DY->Reset();
-  h_DY->Add(h_DY100);
-  h_DY->Add(h_DY200);
-  h_DY->Add(h_DY400);
-  h_DY->Add(h_DY600);
-  h_DY->SetFillColor(kCyan+4);
-  h_DY->SetLineColor(kBlack);
+  h_Zjets->Reset();
+  h_Zjets->Add(h_Zjets100);
+  h_Zjets->Add(h_Zjets200);
+  h_Zjets->Add(h_Zjets400);
+  h_Zjets->Add(h_Zjets600);
+  h_Zjets->SetFillColor(kCyan+3);
+  h_Zjets->SetLineColor(kBlack);
 
-  h_TT->SetFillColor(kCyan+3);
+  h_TT->SetFillColor(kCyan+2);
   h_TT->SetLineColor(kBlack);
 
-  h_WW->SetFillColor(kCyan+2);
+  h_WW->SetFillColor(kCyan+1);
   h_WW->SetLineColor(kBlack);
 
-  h_WZ->SetFillColor(kCyan+1);
+  h_WZ->SetFillColor(kCyan);
   h_WZ->SetLineColor(kBlack);
 
-  h_ZZ->SetFillColor(kCyan);
+  h_ZZ->SetFillColor(kCyan-7);
   h_ZZ->SetLineColor(kBlack);
 
-  h_ZH->SetFillColor(kCyan-9);
+  h_ZH->SetFillColor(kCyan-10);
   h_ZH->SetLineColor(kBlack);
 
   h_bkg->Reset();
-  h_bkg->Add(h_DY);
+  h_bkg->Add(h_Zjets);
   h_bkg->Add(h_TT);
   h_bkg->Add(h_WW);
   h_bkg->Add(h_WZ);
@@ -59,7 +59,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
 
   THStack *h_stack = new THStack("h_stack", "");
 
-  h_stack->Add(h_DY);
+  h_stack->Add(h_Zjets);
   h_stack->Add(h_TT);
   h_stack->Add(h_WW);
   h_stack->Add(h_WZ);
@@ -103,7 +103,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   leg->SetFillStyle(0);
   leg->SetTextSize(0.04);
     
-  leg->AddEntry(h_DY, "DY+Jets", "f");
+  leg->AddEntry(h_Zjets, "Z+Jets", "f");
   leg->AddEntry(h_TT, "t#bar{t}", "f");
   leg->AddEntry(h_WW, "WW", "f");
   leg->AddEntry(h_WZ, "WZ", "f");
@@ -117,8 +117,8 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   lar->SetNDC(kTRUE);
   lar->SetTextSize(0.04);
   lar->SetLineWidth(5);
-  lar->DrawLatex(0.14, 0.94, "CMS preliminary 2015");
-  lar->DrawLatex(0.60, 0.94, "L = 2.246 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
+  lar->DrawLatex(0.60, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
 
 }
 
@@ -158,7 +158,7 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   h_ratio->SetMarkerStyle(8);
   h_ratio->SetMarkerSize(1.5);
   h_ratio->SetTitle("");
-  h_ratio->GetYaxis()->SetTitle("data/MC");
+  h_ratio->GetYaxis()->SetTitle("Data/MC");
   h_ratio->GetYaxis()->SetTitleOffset(0.45);
   h_ratio->GetXaxis()->SetLabelSize(0.1);
   h_ratio->GetXaxis()->SetLabelOffset(0.005);
@@ -190,17 +190,17 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
 
   setNCUStyle(true);
  
-  readHist data1(Form("%s/Single%s-Run2015D-v1_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
-  readHist data2(Form("%s/Single%s-Run2015D-v4_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
-  readHist dy100(Form("%s/DYJetsToLL_M-50_HT-100to200_13TeV_%s.root", outputFolder.data(), pdfName.data()));
-  readHist dy200(Form("%s/DYJetsToLL_M-50_HT-200to400_13TeV_%s.root", outputFolder.data(), pdfName.data()));
-  readHist dy400(Form("%s/DYJetsToLL_M-50_HT-400to600_13TeV_%s.root", outputFolder.data(), pdfName.data()));
-  readHist dy600(Form("%s/DYJetsToLL_M-50_HT-600toInf_13TeV_%s.root", outputFolder.data(), pdfName.data()));
-  readHist tt   (Form("%s/TT_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
-  readHist ww   (Form("%s/WW_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
-  readHist wz   (Form("%s/WZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
-  readHist zz   (Form("%s/ZZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
-  readHist zh   (Form("%s/ZH_HToBB_ZToLL_M125_13TeV_%s.root",         outputFolder.data(), pdfName.data()));
+  readHist data1   (Form("%s/Single%s-Run2015D-v1_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
+  readHist data2   (Form("%s/Single%s-Run2015D-v4_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
+  readHist zjets100(Form("%s/DYJetsToLL_M-50_HT-100to200_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist zjets200(Form("%s/DYJetsToLL_M-50_HT-200to400_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist zjets400(Form("%s/DYJetsToLL_M-50_HT-400to600_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist zjets600(Form("%s/DYJetsToLL_M-50_HT-600toInf_13TeV_%s.root", outputFolder.data(), pdfName.data()));
+  readHist tt      (Form("%s/TT_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist ww      (Form("%s/WW_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist wz      (Form("%s/WZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist zz      (Form("%s/ZZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist zh      (Form("%s/ZH_HToBB_ZToLL_M125_13TeV_%s.root",         outputFolder.data(), pdfName.data()));
 
   Float_t up_height     = 0.8;
   Float_t dw_correction = 1.455;
@@ -248,10 +248,10 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
     TH1D *h_data = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_data");
     TH1D *h_bkg  = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_bkg");
 
-    myPlot(dy100.getHist(h_name[i].data()),
-	   dy200.getHist(h_name[i].data()),
-	   dy400.getHist(h_name[i].data()),
-	   dy600.getHist(h_name[i].data()),
+    myPlot(zjets100.getHist(h_name[i].data()),
+	   zjets200.getHist(h_name[i].data()),
+	   zjets400.getHist(h_name[i].data()),
+	   zjets600.getHist(h_name[i].data()),
 	   tt.getHist(h_name[i].data()),
 	   ww.getHist(h_name[i].data()),
 	   wz.getHist(h_name[i].data()),

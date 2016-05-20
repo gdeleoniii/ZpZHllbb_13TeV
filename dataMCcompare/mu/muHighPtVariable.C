@@ -52,7 +52,7 @@ void muHighPtVariable(std::string inputFile, std::string outputFile){
 
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 10000 == 0 )
+    if( (unsigned)ev % 100000 == 0 )
       fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
@@ -84,12 +84,12 @@ void muHighPtVariable(std::string inputFile, std::string outputFile){
 	TLorentzVector* thisMu = (TLorentzVector*)muP4->At(im);
 	TLorentzVector* thatMu = (TLorentzVector*)muP4->At(jm);
 	
-	if( !isGlobalMuon[im] || !isTrackerMuon[im] ) continue;
-	if( !isGlobalMuon[jm] || !isTrackerMuon[jm] ) continue;
-	if( thisMu->Pt() < 50 || thatMu->Pt() < 50  ) continue;
-	if( fabs(thisMu->Eta()) > 2.1  || fabs(thatMu->Eta()) > 2.1   ) continue;
-	if( (*thisMu+*thatMu).M() < 60 || (*thisMu+*thatMu).M() > 120 ) continue;		
-	if( (*thisMu+*thatMu).Pt() < 150 ) continue;
+	if( !isGlobalMuon[im] && !isTrackerMuon[im] ) continue;
+	if( !isGlobalMuon[jm] && !isTrackerMuon[jm] ) continue;
+	if( thisMu->Pt() < 20 || thatMu->Pt() < 20  ) continue;
+	if( fabs(thisMu->Eta()) > 2.4  || fabs(thatMu->Eta()) > 2.4   ) continue;
+	if( (*thisMu+*thatMu).M() < 70 || (*thisMu+*thatMu).M() > 110 ) continue;		
+	if( (*thisMu+*thatMu).Pt() < 200 ) continue;
 
 	if( !findMPair ){
 	  muId.push_back(im);

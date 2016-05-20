@@ -53,7 +53,7 @@ void eleZVariable(std::string inputFile, std::string outputFile){
 
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
 
-    if( (unsigned)ev % 10000 == 0 )
+    if( (unsigned)ev % 100000 == 0 )
       fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
