@@ -1,38 +1,19 @@
-#include <TSystem.h>
 #include "skimTree.C"
 
-void runSkimTree(std::string channel){
-
-  std::fstream samplePath("samplePath.txt");
-
-  if( !samplePath.is_open() ){
-
-    std::cout << "Text file does not exist!" << std::endl; 
-    return;
-
-  }
+void runSkimTree(string channel, string thisPath){
 
   TFile* f = TFile::Open("scalefactors_v4.root");
   TF1* fewk_z = (TF1*)(f->Get("z_ewkcorr/z_ewkcorr_func"));
+  string keyWord = (channel == "muon") ? "SingleElectron" : "SingleMuon";
 
-  std::string thisPath, keyWord;
+  if( thisPath.find(keyWord.data()) == string::npos ){
 
-  while( samplePath >> thisPath ){
+    cout << "Now skim sample: " << thisPath << endl;
+    skimTree skimthis(thisPath.data());
+    skimthis.Loop(channel.data(),fewk_z);
 
-    if     ( channel == "muon"     ) keyWord = "SingleEle";
-    else if( channel == "electron" ) keyWord = "SingleMuon";
+  }
 
-    if( thisPath.find(keyWord.data()) == std::string::npos ){
-
-      std::cout << "Now skim sample: " << thisPath << std::endl;
-
-      skimTree skimthis(thisPath.data());
-      skimthis.Loop(channel.data(),fewk_z);
-
-    }
-
-  } // end of while
-
-  std::cout << "All jobs are done!" << std::endl;
+  cout << "Done!" << endl;
 
 }
