@@ -16,7 +16,7 @@
 #include "../readHists.h"
 
 void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600, 
-	    TH1D* h_TT, TH1D* h_WW, TH1D* h_WZ, TH1D* h_ZZ,
+	    TH1D* h_TT, TH1D* h_WW, TH1D* h_WZ, TH1D* h_ZZ, TH1D* h_ZH,
             TH1D* h_data0, TH1D* h_data1,
 	    TH1D* h_data, TH1D* h_bkg){
 
@@ -31,20 +31,23 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   h_DY->Add(h_DY200);
   h_DY->Add(h_DY400);
   h_DY->Add(h_DY600);
-  h_DY->SetFillColor(kOrange-3);
+  h_DY->SetFillColor(kCyan+4);
   h_DY->SetLineColor(kBlack);
 
-  h_TT->SetFillColor(kGreen);
+  h_TT->SetFillColor(kCyan+3);
   h_TT->SetLineColor(kBlack);
 
-  h_WW->SetFillColor(kYellow);
+  h_WW->SetFillColor(kCyan+2);
   h_WW->SetLineColor(kBlack);
 
-  h_WZ->SetFillColor(kCyan);
+  h_WZ->SetFillColor(kCyan+1);
   h_WZ->SetLineColor(kBlack);
 
-  h_ZZ->SetFillColor(kPink);
+  h_ZZ->SetFillColor(kCyan);
   h_ZZ->SetLineColor(kBlack);
+
+  h_ZH->SetFillColor(kCyan-9);
+  h_ZH->SetLineColor(kBlack);
 
   h_bkg->Reset();
   h_bkg->Add(h_DY);
@@ -52,6 +55,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   h_bkg->Add(h_WW);
   h_bkg->Add(h_WZ);
   h_bkg->Add(h_ZZ);
+  h_bkg->Add(h_ZH);
 
   THStack *h_stack = new THStack("h_stack", "");
 
@@ -60,6 +64,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   h_stack->Add(h_WW);
   h_stack->Add(h_WZ);
   h_stack->Add(h_ZZ);
+  h_stack->Add(h_ZH);
 
   h_data->SetLineColor(kBlack);
   h_data->SetMarkerStyle(8);
@@ -103,6 +108,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   leg->AddEntry(h_WW, "WW", "f");
   leg->AddEntry(h_WZ, "WZ", "f");
   leg->AddEntry(h_ZZ, "ZZ", "f");
+  leg->AddEntry(h_ZH, "ZH", "f");
   leg->AddEntry(h_data, "Data", "lp");
   leg->Draw();
 
@@ -112,7 +118,7 @@ void myPlot(TH1D* h_DY100, TH1D* h_DY200, TH1D* h_DY400, TH1D* h_DY600,
   lar->SetTextSize(0.04);
   lar->SetLineWidth(5);
   lar->DrawLatex(0.14, 0.94, "CMS preliminary 2015");
-  lar->DrawLatex(0.63, 0.94, "L = 2.08 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatex(0.60, 0.94, "L = 2.246 fb^{-1} at #sqrt{s} = 13 TeV");
 
 }
 
@@ -123,12 +129,12 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   h_ratio->Reset();
 
   Int_t nbin = h_ratio->GetNbinsX();
-  Double_t ratio[nbin];
-  Double_t error[nbin];
-  Double_t numer_nbincontent[nbin];
-  Double_t denom_nbincontent[nbin];
-  Double_t numer_binerror[nbin];
-  Double_t denom_binerror[nbin];
+  Float_t ratio[nbin];
+  Float_t error[nbin];
+  Float_t numer_nbincontent[nbin];
+  Float_t denom_nbincontent[nbin];
+  Float_t numer_binerror[nbin];
+  Float_t denom_binerror[nbin];
 
   for(Int_t i = 1; i <= nbin; i++){
 
@@ -140,7 +146,7 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
     if( denom_nbincontent[i] <= 0 || numer_nbincontent[i] <= 0 ) continue;
     if( denom_binerror[i] <= 0 || numer_binerror[i] <= 0 ) continue;
 
-    ratio[i] = (Double_t)numer_nbincontent[i]/denom_nbincontent[i];
+    ratio[i] = (Float_t)numer_nbincontent[i]/denom_nbincontent[i];
     error[i] = (ratio[i])*sqrt(pow(numer_binerror[i]/numer_nbincontent[i],2)+pow(denom_binerror[i]/denom_nbincontent[i],2));
 
     h_ratio->SetBinContent(i,ratio[i]);
@@ -164,10 +170,10 @@ void myRatio(TH1D* h_data, TH1D *h_bkg){
   h_ratio->GetYaxis()->SetRangeUser(0,2);
   h_ratio->Draw();
 
-  Double_t x0 = h_bkg->GetXaxis()->GetXmin();
-  Double_t x1 = h_bkg->GetXaxis()->GetXmax();
-  Double_t y0 = 1.;
-  Double_t y1 = 1.;
+  Float_t x0 = h_bkg->GetXaxis()->GetXmin();
+  Float_t x1 = h_bkg->GetXaxis()->GetXmax();
+  Float_t y0 = 1.;
+  Float_t y1 = 1.;
 
   TLine* one = new TLine(x0,y0,x1,y1);
 
@@ -184,8 +190,8 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
 
   setNCUStyle(true);
  
-  readHist data1(Form("%s/Single%s-Run2015D-V120151117_%s.root",      outputFolder.data(), channel.data(), pdfName.data()));
-  readHist data2(Form("%s/Single%s-Run2015D-V120151117_%s.root",      outputFolder.data(), channel.data(), pdfName.data()));
+  readHist data1(Form("%s/Single%s-Run2015D-v1_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
+  readHist data2(Form("%s/Single%s-Run2015D-v4_%s.root",              outputFolder.data(), channel.data(), pdfName.data()));
   readHist dy100(Form("%s/DYJetsToLL_M-50_HT-100to200_13TeV_%s.root", outputFolder.data(), pdfName.data()));
   readHist dy200(Form("%s/DYJetsToLL_M-50_HT-200to400_13TeV_%s.root", outputFolder.data(), pdfName.data()));
   readHist dy400(Form("%s/DYJetsToLL_M-50_HT-400to600_13TeV_%s.root", outputFolder.data(), pdfName.data()));
@@ -194,10 +200,11 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
   readHist ww   (Form("%s/WW_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
   readHist wz   (Form("%s/WZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
   readHist zz   (Form("%s/ZZ_TuneCUETP8M1_13TeV_%s.root",             outputFolder.data(), pdfName.data()));
+  readHist zh   (Form("%s/ZH_HToBB_ZToLL_M125_13TeV_%s.root",         outputFolder.data(), pdfName.data()));
 
-  Double_t up_height     = 0.8;
-  Double_t dw_correction = 1.455;
-  Double_t dw_height     = (1-up_height)*dw_correction;
+  Float_t up_height     = 0.8;
+  Float_t dw_correction = 1.455;
+  Float_t dw_height     = (1-up_height)*dw_correction;
 
   TCanvas c("c","",0,0,1000,900);
   c.Divide(1,2);
@@ -211,7 +218,7 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
 
   // To get the name of histograms
   
-  TFile *f_ = TFile::Open(Form("%s/Single%s-Run2015D-V120151117_%s.root", outputFolder.data(), channel.data(), pdfName.data()));
+  TFile *f_ = TFile::Open(Form("%s/Single%s-Run2015D-v1_%s.root", outputFolder.data(), channel.data(), pdfName.data()));
   f_->cd();
   
   TDirectory *current_sourcedir = gDirectory;
@@ -231,16 +238,16 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
 
   // Draw and output
   
-  for(unsigned int i = 0; i < h_name.size()-1; i++){
+  for(unsigned int i = 0; i < h_name.size()-1; ++i){
 
-    if( h_name[i]=="eleHoverE" || h_name[i]=="eleMiniIsoEA" || h_name[i]=="muMiniIsoEA" )
+    if( h_name[i]=="eleHoverE")
       c_up->cd()->SetLogy(1);
     else
       c_up->cd()->SetLogy(0);
     
     TH1D *h_data = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_data");
     TH1D *h_bkg  = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_bkg");
-    
+
     myPlot(dy100.getHist(h_name[i].data()),
 	   dy200.getHist(h_name[i].data()),
 	   dy400.getHist(h_name[i].data()),
@@ -249,6 +256,7 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
 	   ww.getHist(h_name[i].data()),
 	   wz.getHist(h_name[i].data()),
 	   zz.getHist(h_name[i].data()),
+	   zh.getHist(h_name[i].data()),
 	   data1.getHist(h_name[i].data()),
 	   data2.getHist(h_name[i].data()),
 	   h_data, h_bkg);

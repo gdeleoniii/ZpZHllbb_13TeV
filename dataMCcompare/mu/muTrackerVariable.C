@@ -26,7 +26,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
   TH1D* h_muTrkPtErrdvTrkPt = new TH1D("h_muTrkPtErrdvTrkPt", "muTrkPtErrdvTrkPt",  20,     0, 0.15);
   TH1D* h_mudxy             = new TH1D("h_mudxy",             "mudxy",              20, -0.01, 0.01);
   TH1D* h_mudz              = new TH1D("h_mudz",              "mudz",               20, -0.05, 0.05);  
-  TH1D* h_muMiniIsoEA       = new TH1D("h_muMiniIsoEA",       "muMiniIsoEA",        20,     0, 0.15);
+  TH1D* h_muTrkIso          = new TH1D("h_muTrkIso",          "muTrkIso",           20,     0, 0.15);
 
   h_muHits           ->Sumw2();
   h_muMatches        ->Sumw2();
@@ -35,7 +35,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
   h_muTrkPtErrdvTrkPt->Sumw2();
   h_mudxy            ->Sumw2();
   h_mudz             ->Sumw2();
-  h_muMiniIsoEA      ->Sumw2();
+  h_muTrkIso         ->Sumw2();
 
   h_muHits           ->GetXaxis()->SetTitle("muHits");
   h_muMatches        ->GetXaxis()->SetTitle("muMatches");
@@ -44,7 +44,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
   h_muTrkPtErrdvTrkPt->GetXaxis()->SetTitle("muTrkPtErrdvTrkPt");
   h_mudxy            ->GetXaxis()->SetTitle("mudxy");
   h_mudz             ->GetXaxis()->SetTitle("mudz");
-  h_muMiniIsoEA      ->GetXaxis()->SetTitle("muMiniIsoEA");
+  h_muTrkIso         ->GetXaxis()->SetTitle("muTrkIso");
 
   // begin of event loop
 
@@ -57,18 +57,18 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 
     data.GetEntry(ev);
 
-    Float_t  eventWeight = data.GetFloat("ev_weight");
-    Int_t    nMu         = data.GetInt("nMu");
-    Int_t*   muHits      = data.GetPtrInt("muHits");
-    Int_t*   muMatches   = data.GetPtrInt("muMatches");
-    Int_t*   muTrkLayers = data.GetPtrInt("muTrkLayers");
-    Int_t*   muPixelHits = data.GetPtrInt("muPixelHits");
-    Float_t* muTrkPtErr  = data.GetPtrFloat("muTrkPtErr");	
-    Float_t* muTrkPt     = data.GetPtrFloat("muTrkPt");
-    Float_t* mudxy       = data.GetPtrFloat("mudxy");
-    Float_t* mudz        = data.GetPtrFloat("mudz");
-    Float_t* muMiniIsoEA = data.GetPtrFloat("muMiniIsoEA");
-    TClonesArray* muP4   = (TClonesArray*) data.GetPtrTObject("muP4");
+    Float_t  eventWeight  = data.GetFloat("ev_weight");
+    Int_t    nMu          = data.GetInt("nMu");
+    Int_t*   muHits       = data.GetPtrInt("muHits");
+    Int_t*   muMatches    = data.GetPtrInt("muMatches");
+    Int_t*   muTrkLayers  = data.GetPtrInt("muTrkLayers");
+    Int_t*   muPixelHits  = data.GetPtrInt("muPixelHits");
+    Float_t* muTrkPtErr   = data.GetPtrFloat("muTrkPtErr");	
+    Float_t* muTrkPt      = data.GetPtrFloat("muTrkPt");
+    Float_t* mudxy        = data.GetPtrFloat("mudxy");
+    Float_t* mudz         = data.GetPtrFloat("mudz");
+    Float_t* muTrkIso     = data.GetPtrFloat("muTrkIso");
+    TClonesArray* muP4    = (TClonesArray*) data.GetPtrTObject("muP4");
     vector<bool>& isGlobalMuon  = *((vector<bool>*) data.GetPtr("isGlobalMuon"));
     vector<bool>& isTrackerMuon = *((vector<bool>*) data.GetPtr("isTrackerMuon"));
 
@@ -117,7 +117,6 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 	  if( muTrkPtErr[muId[im]]/muTrkPt[muId[im]] > 0.3 && flag != 3 ) continue;
 	  if( fabs(mudxy[muId[im]]) >  0.2 && flag != 4 ) continue;
 	  if( fabs(mudz[muId[im]])  >  0.5 && flag != 5 ) continue;
-	  if( muMiniIsoEA[muId[im]] >  0.2 && flag != 6 ) continue;
 
 	  switch(flag){
 
@@ -127,9 +126,9 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 	  case 3: h_muTrkPtErrdvTrkPt ->Fill(muTrkPtErr[muId[im]]/muTrkPt[muId[im]],eventWeight); break;
 	  case 4: h_mudxy       ->Fill(mudxy[muId[im]],eventWeight);       break;
 	  case 5: h_mudz        ->Fill(mudz[muId[im]],eventWeight);        break;
-	  case 6: h_muMiniIsoEA ->Fill(muMiniIsoEA[muId[im]],eventWeight); break;
-	  case 7: h_muHits      ->Fill(muHits[muId[im]],eventWeight);      break;
-    
+	  case 6: h_muHits      ->Fill(muHits[muId[im]],eventWeight);      break;
+	  case 7: h_muTrkIso    ->Fill(muTrkIso[muId[im]],eventWeight);    break;    
+
 	  } // end of switch
 	
 	} // end of flag loop
@@ -150,7 +149,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
   h_muTrkPtErrdvTrkPt->Write("muTrkPtErrdvTrkPt");
   h_mudxy            ->Write("mudxy");
   h_mudz             ->Write("mudz");
-  h_muMiniIsoEA      ->Write("muMiniIsoEA");
+  h_muTrkIso         ->Write("muTrkIso");
   h_muHits           ->Write("muHits");
   h_totalEvents      ->Write("totalEvents");
 

@@ -93,7 +93,7 @@ void muZVariable(std::string inputFile, std::string outputFile){
 
   fprintf(stdout, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_ZmumuVariable.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_muZVariable.root",outputFile.c_str()), "recreate");
       
   h_Zmass       ->Write("Zmass");
   h_Zpt         ->Write("Zpt");
