@@ -2,11 +2,11 @@ R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitData(string channel, bool removeMinor=true){
+void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
 
   // Input files and sum all backgrounds
 
@@ -15,38 +15,40 @@ void rooFitData(string channel, bool removeMinor=true){
 
   if( channel == "ele" ){
 
-    treeData->Add(Form("%s/data/SingleElectron-Run2015D-05Oct2015-v1_toyMCnew.root",  channel.data()));
-    treeData->Add(Form("%s/data/SingleElectron-Run2015D-PromptReco-V4_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v1_toyMC.root",  channel.data()));
+    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v4_toyMC.root", channel.data()));
 
   }
 
   else if( channel == "mu" ){
 
-    treeData->Add(Form("%s/data/SingleMuon-Run2015D-05Oct2015-v1_toyMCnew.root",  channel.data()));
-    treeData->Add(Form("%s/data/SingleMuon-Run2015D-PromptReco-V4_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v1_toyMC.root",  channel.data()));
+    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v4_toyMC.root", channel.data()));
 
   }
 
   else return;
 
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMCnew.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMCnew.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMCnew.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMCnew.root", channel.data()));
+  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMC.root", channel.data()));
+  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMC.root", channel.data()));
+  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
+  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
 
   // To remove minor background contribution in data set (weight is -1)
 
   if( removeMinor ){
 
-    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
-    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMCnew.root", channel.data()));
+    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("%s/ZH/ZH_HToBB_ZToLL_M125_13TeV_toyMC.root", channel.data()));
 
   }
 
   // Define all the variables from the trees
 
+  RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "M_{jet}",  30.,  300., "GeV");
   RooRealVar mZH ("mllbb",   "M_{ZH}", 900., 3000., "GeV");
   RooRealVar evWeight("evweight", "", -1.e3, 1.e3);
@@ -66,18 +68,19 @@ void rooFitData(string channel, bool removeMinor=true){
 
   RooBinning binsmJet(54, 30, 300);
 
-  RooArgSet variables(mJet, mZH, evWeight);
+  RooArgSet variables(cat, mJet, mZH, evWeight);
 
+  TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
-  RooDataSet dataSetData   ("dataSetData",    "dataSetData",    variables,              WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(sbCut),  WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables,              WeightVar(evWeight), Import(*treeZjets));
-  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(sbCut),  WeightVar(evWeight), Import(*treeZjets));  
-  RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(sigCut), WeightVar(evWeight), Import(*treeZjets));
+  RooDataSet dataSetData   ("dataSetData",    "dataSetData",    variables, Cut(catCut),           WeightVar(evWeight), Import(*treeData));
+  RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
+  RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables, Cut(catCut),           WeightVar(evWeight), Import(*treeZjets));
+  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
+  RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
   // Total events number
 
@@ -86,10 +89,10 @@ void rooFitData(string channel, bool removeMinor=true){
   float totalSGMcEv = dataSetZjetsSG.sumEntries();
   float totalDataEv = dataSetData.sumEntries();
 
-  RooRealVar nMcEvents  ("nMcEvents",   "nMcEvents",   0., 99999.);
-  RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 99999.);
-  RooRealVar nSGMcEvents("nSGMcEvents", "nSGMcEvents", 0., 99999.);
-  RooRealVar nDataEvents("nDataEvents", "nDataEvents", 0., 99999.);
+  RooRealVar nMcEvents  ("nMcEvents",   "nMcEvents",   0., 9999999.);
+  RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 9999999.);
+  RooRealVar nSGMcEvents("nSGMcEvents", "nSGMcEvents", 0., 9999999.);
+  RooRealVar nDataEvents("nDataEvents", "nDataEvents", 0., 9999999.);
 
   nMcEvents.setVal(totalMcEv);
   nMcEvents.setConstant(true);
@@ -218,14 +221,14 @@ void rooFitData(string channel, bool removeMinor=true){
 
   c->cd();
   mZHFrameMC->Draw();
-  c->Print(Form("rooFit_forData_%s.pdf(", channel.data()));
+  c->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
   c->cd();
   mZHFrame->Draw();
-  c->Print(Form("rooFit_forData_%s.pdf", channel.data()));
+  c->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   c->cd();
   mJetFrame->Draw();
-  c->Print(Form("rooFit_forData_%s.pdf)", channel.data()));
+  c->Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

@@ -1,9 +1,8 @@
 R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
-using namespace std;
 
-void rooFitTest(string channel, bool pullTest=true){
+void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   // Suppress all the INFO message
 
@@ -15,13 +14,14 @@ void rooFitTest(string channel, bool pullTest=true){
 
   if( channel != "ele" && channel != "mu" ) return;
   
-  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMCnew.root", channel.data()));
-  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMCnew.root", channel.data()));
-  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMCnew.root", channel.data()));
-  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMCnew.root", channel.data()));
+  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMC.root", channel.data()));
+  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMC.root", channel.data()));
+  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
+  tree->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
 
   // Define all the variables from the trees
 
+  RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "M_{jet}", 30.,  300., "GeV");
   RooRealVar mZH ("mllbb",   "M_{ZH}",  0., 2000., "GeV");
   RooRealVar evWeight("evweight", "", 0, 1.e3);
@@ -35,8 +35,9 @@ void rooFitTest(string channel, bool pullTest=true){
 
   RooBinning binsmJet(54, 30, 300);
 
-  RooArgSet variables(mJet, mZH, evWeight);
+  RooArgSet variables(cat, mJet, mZH, evWeight);
 
+  TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
@@ -49,6 +50,7 @@ void rooFitTest(string channel, bool pullTest=true){
   RooDataSet dataSet("dataSet", 
 		     "dataSet",
 		     variables,
+		     Cut(catCut),
 		     WeightVar(evWeight), 
 		     Import(*tree));
 
@@ -98,7 +100,7 @@ void rooFitTest(string channel, bool pullTest=true){
   RooDataSet dataSetSB("dataSetSB",
 		       "dataSetSB",
 		       variables,
-		       Cut(sbCut), 
+		       Cut(catCut && sbCut), 
 		       WeightVar(evWeight),
 		       Import(*tree));
 
@@ -161,7 +163,7 @@ void rooFitTest(string channel, bool pullTest=true){
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries()*20);
+    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries());
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
 
     RooRealVar constant_toyMC("constant_toyMC",  "slope of the exp", -0.02,  -1.,   0.);
@@ -228,18 +230,18 @@ void rooFitTest(string channel, bool pullTest=true){
 
   c->cd();
   mJetFrame->Draw();
-  c->Print(Form("rooFit_toyMC_%s.pdf(", channel.data()));
+  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
   c->cd();
   mJetFrameSB->Draw();
-  c->Print(Form("rooFit_toyMC_%s.pdf",  channel.data()));
+  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
   
   c->cd();
   biasFrame->Draw();
-  c->Print(Form("rooFit_toyMC_%s.pdf",  channel.data()));
+  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
   c->cd();
   pullFrame->Draw();
-  c->Print(Form("rooFit_toyMC_%s.pdf)", channel.data()));
+  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
