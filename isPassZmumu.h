@@ -52,7 +52,7 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
       thatMu = (TLorentzVector*)muP4->At(jm);
 
       // if the two muons are far away, use regular isolation
-
+  
       if( thisMu->DeltaR(*thatMu) > 0.3 && muTrkIso[im]/thisMu->Pt() > 0.1 ) continue;
       if( thisMu->DeltaR(*thatMu) > 0.3 && muTrkIso[jm]/thatMu->Pt() > 0.1 ) continue;
 
@@ -65,7 +65,7 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
       if( muCharge[im]*muCharge[jm] > 0 ) continue;
       if( (*thisMu+*thatMu).M() < 70 || (*thisMu+*thatMu).M() > 110 ) continue;
       if( (*thisMu+*thatMu).Pt() < 200 ) continue;
-
+  
       if( !findMPair ){
 
 	goodMuID.push_back( (thisMu->Pt() > thatMu->Pt()) ? im : jm );

@@ -29,7 +29,7 @@ readHist::readHist(string rootFile){
 
 float readHist::crossSection(string thisPath){
 
-  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/dataMCcompare/textFile.txt");
+  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/xSec.txt");
   string token;
   float crosssection = 0., thisNum = 0.;
 
@@ -48,7 +48,13 @@ TH1D* readHist::getHist(string hname){
 
   TH1D* thisHist = (TH1D*)(thisFile->Get(Form("%s", hname.c_str())));  
 
-  thisHist->Scale(thisFileName.find("Run2015") != string::npos ? 1 : 2080.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
+  thisHist->Scale(thisFileName.find("Run2015") != string::npos ? 1 : 2512.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
+
+  cout << thisFileName.data() << "    " << crossSection(thisFileName.data()) << endl;
+  cout << ((TH1D*)(thisFile->Get("totalEvents")))->Integral() << endl;
+  float sc = (thisFileName.find("Run2015") != string::npos) ? 1 : (2512.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
+
+  cout << sc << endl;
 
   return thisHist;
 
