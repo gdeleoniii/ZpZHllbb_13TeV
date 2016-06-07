@@ -93,6 +93,15 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   model.plotOn(mJetFrame, 
 	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
 
+  TLegend* leg1 = new TLegend(0.60,0.67,0.85,0.80);
+
+  leg1->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(0)), "MC with statistical errors", "lep");
+  leg1->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
+  leg1->Draw();
+  
+  mJetFrame->addObject(leg1);
+  mJetFrame->SetTitle("");
+
   /*******************************************/
   /*                SIDE BAND                */
   /*******************************************/
@@ -143,6 +152,16 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 	       Range("allRange"),
 	       LineStyle(7),
 	       LineColor(kRed));
+
+  TLegend* leg2 = new TLegend(0.60,0.62,0.85,0.80);
+ 
+  leg2->AddEntry(mJetFrameSB->findObject(mJetFrameSB->nameOf(0)), "MC with statistical errors", "lep");
+  leg2->AddEntry(mJetFrameSB->findObject(mJetFrameSB->nameOf(3)), "Fit curve with errors", "l");
+  leg2->AddEntry(mJetFrameSB->findObject(mJetFrameSB->nameOf(4)), "Fit curve of all range", "l");
+  leg2->Draw();
+  
+  mJetFrameSB->addObject(leg2);
+  mJetFrameSB->SetTitle("");
 
   /*******************************************/
   /*            BIAS AND PULL                */
@@ -202,46 +221,69 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   RooMsgService::instance().setSilentMode(false);
 
-  RooRealVar bias("bias", "bias", -2, 2);
-  RooRealVar pull("pull", "pull", -5, 5);
+  RooRealVar bias("bias", "Bias", -2, 2);
+  RooRealVar pull("pull", "Pull", -5, 5);
 
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
 
   RooRealVar  m("m",  "mean", 0, -10, 10);
   RooRealVar  s("s", "sigma", 3, 0.1, 10);
-  RooGaussian g("g", "gauss", pull, m, s);
+  RooGaussian gb("gb", "gauss", bias, m, s);
+  RooGaussian gp("gp", "gauss", pull, m, s);
 
-  g.fitTo(hpull);
+  gb.fitTo(hbias);
 
   RooPlot* biasFrame = bias.frame();
   hbias.plotOn(biasFrame);
+  gb.plotOn(biasFrame);
+  biasFrame->SetTitle("");
+
+  gp.fitTo(hpull);
 
   RooPlot* pullFrame = pull.frame();
   hpull.plotOn(pullFrame);
-  g.plotOn(pullFrame);
-  g.paramOn(pullFrame);
+  gp.plotOn(pullFrame);
+  pullFrame->SetTitle("");
 
   /*******************************************/
   /*                 OUTPUT                  */
   /*******************************************/
 
+  TLatex* lar = new TLatex();
+
+  lar->SetTextSize(0.035);
+  lar->SetLineWidth(5);
+  
   TCanvas* c = new TCanvas("c","",0,0,1000,800);
 
   c->cd();
   mJetFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
   c->cd();
   mJetFrameSB->Draw();
+
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
   
   c->cd();
   biasFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
   c->cd();
   pullFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

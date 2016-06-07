@@ -31,22 +31,22 @@ void myPlot(TH1D* h_Zjets100, TH1D* h_Zjets200, TH1D* h_Zjets400, TH1D* h_Zjets6
   h_Zjets->Add(h_Zjets200);
   h_Zjets->Add(h_Zjets400);
   h_Zjets->Add(h_Zjets600);
-  h_Zjets->SetFillColor(kCyan+3);
+  h_Zjets->SetFillColor(97);
   h_Zjets->SetLineColor(kBlack);
 
-  h_TT->SetFillColor(kCyan+2);
+  h_TT->SetFillColor(94);
   h_TT->SetLineColor(kBlack);
 
-  h_WW->SetFillColor(kCyan+1);
+  h_WW->SetFillColor(91);
   h_WW->SetLineColor(kBlack);
 
-  h_WZ->SetFillColor(kCyan);
+  h_WZ->SetFillColor(88);
   h_WZ->SetLineColor(kBlack);
 
-  h_ZZ->SetFillColor(kCyan-7);
+  h_ZZ->SetFillColor(85);
   h_ZZ->SetLineColor(kBlack);
 
-  h_ZH->SetFillColor(kCyan-10);
+  h_ZH->SetFillColor(79);
   h_ZH->SetLineColor(kBlack);
 
   h_bkg->Reset();

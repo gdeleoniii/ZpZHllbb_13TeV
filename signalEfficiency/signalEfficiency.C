@@ -21,21 +21,21 @@ void signalEfficiency(){
 
   for( int i = 0; i < N; ++i ){
 
-    y_eff_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
-    y_eyh_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_elc1[i];
-    y_eyl_elc1[i] = -getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_elc1[i];
+    y_eff_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
+    y_eyh_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_elc1[i];
+    y_eyl_elc1[i] = -getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_elc1[i];
 
-    y_eff_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
-    y_eyh_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_elc2[i];
-    y_eyl_elc2[i] = -getEleEfficiency(Form("/data7/htong/skim_samples/ele/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_elc2[i];
+    y_eff_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
+    y_eyh_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_elc2[i];
+    y_eyl_elc2[i] = -getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_elc2[i];
 
-    y_eff_muc1[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
-    y_eyh_muc1[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_muc1[i];
-    y_eyl_muc1[i] = -getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_muc1[i];
+    y_eff_muc1[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
+    y_eyh_muc1[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_muc1[i];
+    y_eyl_muc1[i] = -getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_muc1[i];
 
-    y_eff_muc2[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
-    y_eyh_muc2[i] =  getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_muc2[i];
-    y_eyl_muc2[i] = -getEleEfficiency(Form("/data7/htong/skim_samples/mu/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_muc2[i];
+    y_eff_muc2[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
+    y_eyh_muc2[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_muc2[i];
+    y_eyl_muc2[i] = -getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_muc2[i];
 
   }
 

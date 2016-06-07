@@ -9,22 +9,21 @@
 #include "../../untuplizer.h"
 #include "../../isPassZmumu.h"
 
-Float_t CrossSection(string token){
+float crossSection(string thisPath){
 
   ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/xSec.txt");
-  string thisSample;
+  string token;
+  float crosssection = 0., thisNum = 0.;
 
-  Float_t crosssection = 0., thisNum = 0.;
+  while( textFile >> token >> thisNum ){
 
-  while( textFile >> thisSample >> thisNum ){
-
-    if( token.find(thisSample) != string::npos )
+    if( thisPath.find(token) != string::npos )
       crosssection = thisNum;
 
   }
-
-  return crosssection;
   
+  return crosssection;
+
 }
 
 void toyMC_mu(string inputFile, string outputFile){
@@ -51,7 +50,7 @@ void toyMC_mu(string inputFile, string outputFile){
 
   // Calculate the scale correspond to inputFile
 
-  Float_t scale = 2512./(h_totalEvents->Integral()/CrossSection(inputFile.data()));
+  Float_t scale = 2512.*crossSection(outputFile.data())/h_totalEvents->Integral();
 
   // Mark minor backgounds
 

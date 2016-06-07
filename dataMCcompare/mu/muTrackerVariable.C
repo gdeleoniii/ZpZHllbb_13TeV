@@ -96,6 +96,7 @@ void muTrackerVariable(std::string inputFile, std::string outputFile){
 	  muId.push_back(jm);
 	} 
 
+	findMPair = true;
 	break;
 	
       }

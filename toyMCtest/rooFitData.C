@@ -78,6 +78,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   RooDataSet dataSetData   ("dataSetData",    "dataSetData",    variables, Cut(catCut),           WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
+  RooDataSet dataSetDataSG ("dataSetDataSG",  "dataSetDataSG",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables, Cut(catCut),           WeightVar(evWeight), Import(*treeZjets));
   RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
   RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
@@ -108,13 +109,17 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Side band jet mass in data
 
+  RooRealVar lamda("lamda", "lamda", -0.02,  -5.,   5.);
+
   RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
   RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
   RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
 
   offsetSB.setConstant(true);
 
-  RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
+  //RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
+  RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
+
   RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBMcEvents);
 
   RooFitResult* mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -134,7 +139,16 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
   dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));  
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"));
-  mJetFrame->SetTitle("M_{jet} distribution in data");
+
+  TLegend* leg = new TLegend(0.60,0.72,0.85,0.85);
+  
+  leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(2)), "Data side band", "lep");
+  leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
+  leg->Draw();
+
+  mJetFrame->addObject(leg);
+  mJetFrame->SetMinimum(0);
+  mJetFrame->SetTitle("");
 
   // Alpha ratio part
 
@@ -183,22 +197,25 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   dataSetZjetsSB.plotOn(mZHFrameMC, Binning(binsmZH));
   ext_model_ZHSB.plotOn(mZHFrameMC, VisualizeError(*mZHSB_result), FillColor(kYellow));
-  dataSetZjetsSB.plotOn(mZHFrameMC, Binning(binsmZH));
+  dataSetZjetsSB.plotOn(mZHFrameMC, Binning(binsmZH), LineColor(kBlue+3), MarkerColor(kBlue+3));
   ext_model_ZHSB.plotOn(mZHFrameMC, LineStyle(7), LineColor(kBlue));
 
   dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH));
   ext_model_ZHSG.plotOn(mZHFrameMC, VisualizeError(*mZHSG_result), FillColor(kYellow));
-  dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH));
+  dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH), LineColor(kRed+3), MarkerColor(kRed+3));
   ext_model_ZHSG.plotOn(mZHFrameMC, LineStyle(7), LineColor(kRed));
 
-  TLegend* leg = new TLegend(0.65,0.77,0.85,0.85);
+  TLegend* leg0 = new TLegend(0.60,0.67,0.85,0.85);
 
-  leg->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(3)), "side band",     "l");
-  leg->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(7)), "signal region", "l");
-  leg->Draw();
+  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(2)), "MC side band", "lep");
+  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(6)), "MC signal region", "lep");
+  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(3)), "Fit curve of side band", "l");
+  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(7)), "Fit curve of signal region", "l");
+  leg0->Draw();
 
-  mZHFrameMC->addObject(leg);
-  mZHFrameMC->SetTitle("M_{ZH} distribution in MC");
+  mZHFrameMC->addObject(leg0);
+  mZHFrameMC->SetMinimum(0);
+  mZHFrameMC->SetTitle("");
 
   RooPlot* mZHFrame = mZH.frame();
 
@@ -206,29 +223,65 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   ext_model_ZH .plotOn(mZHFrame, VisualizeError(*mZH_result), FillColor(kYellow));
   dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
   ext_model_ZH .plotOn(mZHFrame, LineStyle(7), LineColor(kBlue));
-  model_sigData.plotOn(mZHFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
 
-  TLegend* leg1 = new TLegend(0.65,0.77,0.85,0.85);
+  TLegend* leg1 = new TLegend(0.60,0.72,0.85,0.85);
 
-  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(3)), "side band",     "l");
-  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(4)), "signal region", "l");
+  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(2)), "Data side band", "lep");
+  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(3)), "Fit curve with errors", "l");
   leg1->Draw();
   
   mZHFrame->addObject(leg1);
-  mZHFrame->SetTitle("M_{ZH} distribution in Data");
+  mZHFrame->SetMinimum(0);
+  mZHFrame->SetTitle("");
 
+  RooPlot* predictFrame = mZH.frame();
+
+  dataSetDataSG.plotOn(predictFrame, Binning(binsmZH));
+  model_sigData.plotOn(predictFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
+  
+  TLegend* leg2 = new TLegend(0.60,0.72,0.85,0.85);
+
+  leg2->AddEntry(predictFrame->findObject(predictFrame->nameOf(0)), "Data signal region", "lep");
+  leg2->AddEntry(predictFrame->findObject(predictFrame->nameOf(1)), "Predicted backgrounds", "l");
+  leg2->Draw();
+  
+  predictFrame->addObject(leg2);
+  predictFrame->SetMinimum(0);
+  predictFrame->SetTitle("");
+
+  TLatex* lar = new TLatex();
+
+  lar->SetTextSize(0.035);
+  lar->SetLineWidth(5);
+  
   TCanvas* c = new TCanvas("c","",0,0,1000,800);
 
   c->cd();
   mZHFrameMC->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.60, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
   c->cd();
   mZHFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   c->cd();
+  predictFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
+  c->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  
+  c->cd();
   mJetFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

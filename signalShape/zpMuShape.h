@@ -1,18 +1,32 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <TH1F.h>
+#include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
 #include "../untuplizer.h"
 #include "../isPassZmumu.h"
 
-float getMuEfficiency(string inputFile, int cat, int scale){
+TH1F* zpMuShape(string inputFile, int cat){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
-  
-  int passEvent = 0;
+
+  TFile* f = new TFile(inputFile.data());
+  TH1F* h_totalEvents = (TH1F*)f->Get("h_totalEv");
+
+  // Declare the histogram
+     
+  TH1F* h_mZprime = new TH1F("h_mZprime", "mZprime", 100, 400, 5000);
+
+  h_mZprime->Sumw2();
+  h_mZprime->GetXaxis()->SetTitle("mZprime");
+
+  // Calculate the scale correspond to inputFile
+
+  Float_t scale = 2512./(h_totalEvents->Integral()/CrossSection(inputFile.data()));
 
   // begin of event loop
 
@@ -20,12 +34,11 @@ float getMuEfficiency(string inputFile, int cat, int scale){
 
     data.GetEntry(ev);
 
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
     TClonesArray*  muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
-    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -49,9 +62,6 @@ float getMuEfficiency(string inputFile, int cat, int scale){
 
       TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
-      if( scale != 0 )
-	*myJet *= (scale == 1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]);
-    
       if( myJet->Pt() < 200 ) continue;
       if( fabs(myJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
@@ -82,14 +92,12 @@ float getMuEfficiency(string inputFile, int cat, int scale){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
-    // Noise cleaning?
-
-    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+thisJet).Eta()) > 5.0 ) continue;
-
-    ++passEvent;
+    h_mZprime->Fill((*thisLep+*thatLep+thisJet).M(),eventWeight*scale);
 
   } // end of event loop
   
-  return (float)passEvent/(float)data.GetEntriesFast();
+  return h_mZprime;
+
+  delete f;
 
 }

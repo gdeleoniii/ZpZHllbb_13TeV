@@ -9,7 +9,7 @@
 #include "../untuplizer.h"
 #include "../isPassZmumu.h"
 
-void mZHmuLimit(std::string inputFile, std::string outputFile){
+void mZHmuLimit(string inputFile, string outputFile, Int_t btag=1){
 
   // read the ntuples (in pcncu)
   
@@ -27,15 +27,17 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
   // begin of event loop
 
-  for( Long64_t ev = 0; ev < data.GetEntriesFast(); ev++){
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
 
-    if( ev % 1000000 == 0 )
-      fprintf(stderr, "Processing event %lli of %lli\n", ev + 1, data.GetEntriesFast());
+  for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
+
+    if( (unsigned)ev % 100000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
     Float_t        eventWeight       = data.GetFloat("ev_weight");
-    TClonesArray*  muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
@@ -46,21 +48,17 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
     // select good leptons
       
     vector<Int_t> goodLepID;
-
-    TLorentzVector* thisLep = NULL;
-    TLorentzVector* thatLep = NULL;
-
     if( !isPassZmumu(data, goodLepID) ) continue;
 
-    thisLep = (TLorentzVector*)muP4->At(goodLepID[0]);
-    thatLep = (TLorentzVector*)muP4->At(goodLepID[1]);
+    TLorentzVector* thisLep = (TLorentzVector*)muP4->At(goodLepID[0]);
+    TLorentzVector* thatLep = (TLorentzVector*)muP4->At(goodLepID[1]);
 
     // select good FATjet
 
     Int_t goodFATJetID = -1;
     TLorentzVector* thisJet = NULL;
 
-    for(Int_t ij = 0; ij < FATnJet; ij++){
+    for(Int_t ij = FATnJet-1; ij >= 0; --ij){
 
       thisJet = (TLorentzVector*)FATjetP4->At(ij);
 
@@ -72,15 +70,15 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
       Int_t nsubBjet = 0;
 
-      for(Int_t is = 0; is < FATnSubSDJet[ij]; is++){
+      for(Int_t is = FATnSubSDJet[ij]-1; is >= 0; --is){
 
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
+	if( FATsubjetSDCSV[ij][is] > 0.605 ) ++nsubBjet;
 
       }
 
-      // require at least 1 b-tag jet
+      // b-tag cut
 
-      if( nsubBjet < 1 ) continue;
+      if( nsubBjet != btag ) continue;
 
       goodFATJetID = ij;
       break;
@@ -99,7 +97,7 @@ void mZHmuLimit(std::string inputFile, std::string outputFile){
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_mZHmuSignal.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_mZHLimit.root",outputFile.c_str()), "recreate");
 
   h_mZprime    ->Write("mZprime");
   h_totalEvents->Write("totalEvents");

@@ -6,31 +6,34 @@
 #include "../setNCUStyle.h"
 #include "../readHists.h"
 
-void nZHplots(std::string channel, std::string path, std::string rootfilename, std::string textfilename){
+void nZHplots(string chan, string btag, string rootfilename, string textfilename){
 
   setNCUStyle();
 
-  readHist data1(Form("%s/output/Single%s-Run2015D-V120151117_mZHmuLimit.root",      path.data(), channel.data()));
-  readHist data2(Form("%s/output/Single%s-Run2015D-V420151117_mZHmuLimit.root",      path.data(), channel.data()));
-  readHist dy100(Form("%s/output/DYJetsToLL_M-50_HT-100to200_13TeV_mZHmuLimit.root", path.data()));
-  readHist dy200(Form("%s/output/DYJetsToLL_M-50_HT-200to400_13TeV_mZHmuLimit.root", path.data()));
-  readHist dy400(Form("%s/output/DYJetsToLL_M-50_HT-400to600_13TeV_mZHmuLimit.root", path.data()));
-  readHist dy600(Form("%s/output/DYJetsToLL_M-50_HT-600toInf_13TeV_mZHmuLimit.root", path.data()));
-  readHist tt   (Form("%s/output/TT_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
-  readHist ww   (Form("%s/output/WW_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
-  readHist wz   (Form("%s/output/WZ_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
-  readHist zz   (Form("%s/output/ZZ_TuneCUETP8M1_13TeV_mZHmuLimit.root",             path.data()));
-  readHist m800 (Form("%s/output/ZprimeToZhToZlephbb_M-800_13TeV_mZHmuLimit.root",   path.data()));
-  readHist m1000(Form("%s/output/ZprimeToZhToZlephbb_M-1000_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m1200(Form("%s/output/ZprimeToZhToZlephbb_M-1200_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m1400(Form("%s/output/ZprimeToZhToZlephbb_M-1400_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m1600(Form("%s/output/ZprimeToZhToZlephbb_M-1600_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m1800(Form("%s/output/ZprimeToZhToZlephbb_M-1800_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m2000(Form("%s/output/ZprimeToZhToZlephbb_M-2000_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m2500(Form("%s/output/ZprimeToZhToZlephbb_M-2500_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m3000(Form("%s/output/ZprimeToZhToZlephbb_M-3000_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m3500(Form("%s/output/ZprimeToZhToZlephbb_M-3500_13TeV_mZHmuLimit.root",  path.data()));
-  readHist m4000(Form("%s/output/ZprimeToZhToZlephbb_M-4000_13TeV_mZHmuLimit.root",  path.data()));
+  string Chan = (chan=="ele") ? "Electron" : "Muon";
+
+  readHist data1(Form("output_%s_%sbtag/Single%s-Run2015D-v1_mZHLimit.root",              chan.data(),btag.data(),Chan.data()));
+  readHist data2(Form("output_%s_%sbtag/Single%s-Run2015D-v4_mZHLimit.root",              chan.data(),btag.data(),Chan.data()));
+  readHist dy100(Form("output_%s_%sbtag/DYJetsToLL_M-50_HT-100to200_13TeV_mZHLimit.root", chan.data(),btag.data()));
+  readHist dy200(Form("output_%s_%sbtag/DYJetsToLL_M-50_HT-200to400_13TeV_mZHLimit.root", chan.data(),btag.data()));
+  readHist dy400(Form("output_%s_%sbtag/DYJetsToLL_M-50_HT-400to600_13TeV_mZHLimit.root", chan.data(),btag.data()));
+  readHist dy600(Form("output_%s_%sbtag/DYJetsToLL_M-50_HT-600toInf_13TeV_mZHLimit.root", chan.data(),btag.data()));
+  readHist tt   (Form("output_%s_%sbtag/TT_TuneCUETP8M1_13TeV_mZHLimit.root",             chan.data(),btag.data()));
+  readHist ww   (Form("output_%s_%sbtag/WW_TuneCUETP8M1_13TeV_mZHLimit.root",             chan.data(),btag.data()));
+  readHist wz   (Form("output_%s_%sbtag/WZ_TuneCUETP8M1_13TeV_mZHLimit.root",             chan.data(),btag.data()));
+  readHist zz   (Form("output_%s_%sbtag/ZZ_TuneCUETP8M1_13TeV_mZHLimit.root",             chan.data(),btag.data()));
+  readHist zh   (Form("output_%s_%sbtag/ZH_HToBB_ZToLL_M125_13TeV_mZHLimit.root",         chan.data(),btag.data()));
+  readHist m800 (Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-800_13TeV_mZHLimit.root",   chan.data(),btag.data()));
+  readHist m1000(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-1000_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m1200(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-1200_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m1400(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-1400_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m1600(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-1600_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m1800(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-1800_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m2000(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-2000_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m2500(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-2500_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m3000(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-3000_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m3500(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-3500_13TeV_mZHLimit.root",  chan.data(),btag.data()));
+  readHist m4000(Form("output_%s_%sbtag/ZprimeToZhToZlephbb_M-4000_13TeV_mZHLimit.root",  chan.data(),btag.data()));
 
   TH1D* h_Data = (TH1D*)(data1.getHist("mZprime"))->Clone("h_Data");
   h_Data->Reset();
@@ -48,6 +51,7 @@ void nZHplots(std::string channel, std::string path, std::string rootfilename, s
   TH1D* h_WW    = (TH1D*)(ww   .getHist("mZprime"));
   TH1D* h_WZ    = (TH1D*)(wz   .getHist("mZprime"));
   TH1D* h_ZZ    = (TH1D*)(zz   .getHist("mZprime"));
+  TH1D* h_ZH    = (TH1D*)(zh   .getHist("mZprime"));
   TH1D* h_M800  = (TH1D*)(m800 .getHist("mZprime"));
   TH1D* h_M1000 = (TH1D*)(m1000.getHist("mZprime"));
   TH1D* h_M1200 = (TH1D*)(m1200.getHist("mZprime"));
@@ -64,10 +68,11 @@ void nZHplots(std::string channel, std::string path, std::string rootfilename, s
 
   h_Data ->Write("data_obs");		 
   h_DY   ->Write("DYJETS");
-  h_TT   ->Write("TT");
+  h_TT   ->Write("TTBAR");
   h_WW   ->Write("WW");
   h_WZ   ->Write("WZ");
   h_ZZ   ->Write("ZZ");
+  h_ZH   ->Write("ZH");
   h_M800 ->Write("SIGM800");
   h_M1000->Write("SIGM1000");
   h_M1200->Write("SIGM1200");
@@ -91,6 +96,7 @@ void nZHplots(std::string channel, std::string path, std::string rootfilename, s
   ftext << "WW\t"     << h_WW   ->Integral() << "\n";
   ftext << "WZ\t"     << h_WZ   ->Integral() << "\n";
   ftext << "ZZ\t"     << h_ZZ   ->Integral() << "\n";
+  ftext << "ZH\t"     << h_ZH   ->Integral() << "\n";
   ftext << "M800\t"   << h_M800 ->Integral() << "\n";
   ftext << "M1000\t"  << h_M1000->Integral() << "\n";
   ftext << "M1200\t"  << h_M1200->Integral() << "\n";

@@ -50,12 +50,6 @@ TH1D* readHist::getHist(string hname){
 
   thisHist->Scale(thisFileName.find("Run2015") != string::npos ? 1 : 2512.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
 
-  cout << thisFileName.data() << "    " << crossSection(thisFileName.data()) << endl;
-  cout << ((TH1D*)(thisFile->Get("totalEvents")))->Integral() << endl;
-  float sc = (thisFileName.find("Run2015") != string::npos) ? 1 : (2512.*crossSection(thisFileName.data())/((TH1D*)(thisFile->Get("totalEvents")))->Integral());
-
-  cout << sc << endl;
-
   return thisHist;
 
 }

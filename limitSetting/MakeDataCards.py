@@ -9,7 +9,7 @@ if len(sys.argv) < 4 :
     exit (1)
 
 if len(sys.argv) == 4 :
-    print ('You are makeing datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[3])
+    print ('You are making datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[3])
 
 inputtextfilename=sys.argv[1]
 inputrootfilename=sys.argv[2]
@@ -26,44 +26,36 @@ imax    1        number of channels
 jmax    *        number of backgrounds
 kmax    *        number of nuisance parameters (sources of systematical uncertainties)
 
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 
 shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
 
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 
 bin              ZPTOZHMM
 observation      DATARATE
 
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 
-bin              ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM   
-process          SIGNAL      DYJETS      TTBAR       WW          WZ          ZZ
+bin              ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM   ZPTOZHMM
+process          SIGNAL      DYJETS      TTBAR       WW          WZ          ZZ         ZH
 
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 
-process          0            1            2           3        4        5
-rate             SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE   WZRATE   ZZRATE
+process          0            1            2           3        4        5        6
+rate             SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE   WZRATE   ZZRATE   ZHRATE
 
--------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------
 
-lumi_13TeV       lnN          1.1    1.1    1.1    1.1    1.1    1.1 
-
-CMS_xs_Sig       lnN          1.20   -      -      -      -      -
-CMS_xs_DYJets    lnN          -      1.10   -      -      -      -
-CMS_xs_TT        lnN          -      -      1.10   -      -      -
-CMS_xs_WW        lnN          -      -      -      1.10   -      -
-CMS_xs_WZ        lnN          -      -      -      -      1.10   -
-CMS_xs_ZZ        lnN          -      -      -      -      -      1.10
-
-CMS_trigg        lnN          1.05   1.05   1.05   1.05   1.05   1.05 
-CMS_JES          lnN          1.05   1.05   1.05   1.05   1.05   1.05
-CMS_Sig          lnN          1.10   -      -      -      -      -
-CMS_DYJets       lnN          -      1.10   -      -      -      -
-CMS_TT           lnN          -      -      1.10   -      -      -
-CMS_WW           lnN          -      -      -      1.10   -      -
-CMS_WZ           lnN          -      -      -      -      1.10   -
-CMS_ZZ           lnN          -      -      -      -      -      1.10
+lumi_13TeV       lnN          1.1        1.1        1.1        1.1        1.1        1.1        1.1
+bgnorm           lnN          1.00       1.07       1.07       1.07       1.07       1.07       1.07
+jec              lnN          1.08       1.08       1.08       1.08       1.08       1.08       1.08
+CSV              lnN          1.1        1.1        1.1        1.1        1.1        1.1        1.1
+pu               lnN          1.02       1.02       1.02       1.02       1.02       1.02       1.02
+lepIDsf          lnN          1.0008     1.001      1.0005     1.0006     1.0007     1.0006     1.006
+bjetRatio        lnN          -          1.002      -          -          -          -          -
+dibXsec          lnN          -          -          -          1.055      -          -          -
+PDF              lnN          1.15       -          -          -          -          -          -
 
 '''
 
@@ -81,7 +73,8 @@ def Normalize(n,xs,tot):
 
 ## map of placeholder used in the Template datacard.
 ## This is analysis specific.
-nameinnumber=['ZZ',
+nameinnumber=['ZH',
+              'ZZ',
               'WZ',
               'WW',
               'TTBAR',

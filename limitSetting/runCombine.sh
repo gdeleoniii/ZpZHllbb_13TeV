@@ -10,117 +10,101 @@ export SCRAM_ARCH=slc6_amd64_gcc481
 eval `scramv1 runtime -sh`
 cd $pwd
 
+CHAN=(ele mu)
+BTAG=(1 2)
+
 ## generate the necessary text file (contain event numbers) and root file (contain hist of ZH mass) ##
 
-# catEle #
+mass=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
 
-catEletextfile=nEventZHcatEle.txt
-catElerootfile=mZHmuSetLimitcatEle.root
+for ((i=0; i<${#CHAN[@]}; i++)); do
+    for ((j=0; j<${#BTAG[@]}; j++)); do
 
-echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l nZHplots.C++\(\"Electron\"\,\"ele\"\,\"$catElerootfile\"\,\"$catEletextfile\"\)
+	echo -e "*** Now running samples for "${CHAN[$i]}" channel," ${BTAG[$j]}" btag"
 
-# catMu #
+#	/bin/bash globalRunLimit.sh ${CHAN[$i]} ${BTAG[$j]}
 
-catMutextfile=nEventZHcatMu.txt
-catMurootfile=mZHmuSetLimitcatMu.root
+	echo -e "*** Generate the necessary text file and root file ***"
+	
+	rootfile=mZH${CHAN[$i]}btag${BTAG[$j]}.root
+	textfile=nEv${CHAN[$i]}btag${BTAG[$j]}.txt
 
-echo -e "*** Generate the necessary text file and root file ***"
-root -q -b -l nZHplots.C++\(\"Muon\"\,\"mu\"\,\"$catMurootfile\"\,\"$catMutextfile\"\)
+	root -q -b -l nZHplots.C+\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\,\"$rootfile\"\,\"$textfile\"\)
+	
+        ## make data cards for the combine tool ##
+	
+	dataCarddr=dataCards${CHAN[$i]}btag${BTAG[$j]}
+	
+	mkdir $dataCarddr
+	
+	echo -e "*** Make data cards for the combine tool by using: " $textfile " ***"
+	echo -e "*** Data cards move to: " $dataCarddr " ***"
+	
+	python MakeDataCards.py $textfile $rootfile ./$dataCarddr
+	
+	rm -f DataCard_MXXXGeV.txt
+	mv $rootfile $dataCarddr
 
-## check are the necessary files exist ##
+        ## use the combine tool ##
+	
+	cd $cmsswdr/HiggsAnalysis/CombinedLimit/src
+	
+	for ((k=0; k<${#mass[@]}; k++)); do
+	    
+            dataCard=DataCard_M${mass[$k]}GeV_MonoHbb_13TeV.txt
+            rootFile=higgsCombineCounting.Asymptotic.mZH${mass[$k]}.root
+	    
+            echo -e "*** Using data card: " $dataCard " to calculate limits ***"
+	    
+            combine -M Asymptotic $pwd/$dataCarddr/$dataCard
+            mv higgsCombineTest.Asymptotic.mH120.root $pwd/$rootFile
+	    
+	done
+	
+        ## plot the results from the root files generate from combine tool ##
+	
+	cd $pwd
+	echo -e "*** Plot the results using plotAsymptotic.C ***"
+	
+	root -q -b -l plotAsymptotic.C+\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\)
 
-if [ -e $catEletextfile ] && [ -e $catMutextfile ] && [ -e $catElerootfile ] && [ -e $catMurootfile ]
-then
-    echo -e "*** The necessary text file " $catEletextfile " and " $catMutextfile " are exist! ***"
-    echo -e "*** The necessary root file " $catElerootfile " and " $catMurootfile " are exist! ***"
-else
-    echo -e "*** The necessary text file " $catEletextfile " and " $catMutextfile " doesn't exist! ***"
-    echo -e "*** The necessary root file " $catElerootfile " and " $catMurootfile " doesn't exist! ***"
-    exit 0
-fi
-
-## make data cards for the combine tool ##
-
-# catEle cards #
-
-catEleCarddr=catEledataCards
-
-if [ -d $catEleCarddr ]
-then
-    echo -e "*** Data card directory is " $catEleCarddr " ***"
-else
-    echo -e "*** Generate data card directory: " $catEleCarddr " ***"
-    mkdir $catEleCarddr
-fi
-
-echo -e "*** Make data cards for the combine tool by using: " $catEletextfile " ***"
-echo -e "*** Data cards move to: " $catEleCarddr " ***"
-
-python MakeDataCards.py $catEletextfile $catElerootfile ./$catEleCarddr
-rm -f DataCard_MXXXGeV.txt
-mv $catElerootfile $catEleCarddr
-
-# catMu cards #
-
-catMuCarddr=catMudataCards
-
-if [ -d $catMuCarddr ]
-then
-    echo -e "Data card directory is " $catMuCarddr
-else
-    echo -e "Generate data card directory: " $catMuCarddr
-    mkdir $catMuCarddr
-fi
-
-echo -e "*** Make data cards for the combine tool by using: " $catMutextfile " ***"
-echo -e "*** Data cards move to: " $catMuCarddr " ***"
-
-python MakeDataCards.py $catMutextfile $catMurootfile ./$catMuCarddr
-rm -f DataCard_MXXXGeV.txt
-mv $catMurootfile $catMuCarddr
+	echo -e ""
+	echo -e ""
+	
+    done
+done
 
 ## combine data cards ##
 
-dataCarddr=dataCards
+combineCarddr=combineCards
+mkdir $combineCarddr
 
-if [ -d $dataCarddr ]
-then
-    echo -e "Combine data card directory is " $dataCarddr
-else
-    echo -e "Generate data card directory: " $dataCarddr
-    mkdir $dataCarddr
-fi
+eachCarddr=($(ls -d dataCards*/))
 
-massPoints=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
+for ((i=0; i<${#mass[@]}; i++)); do
 
-for ((i=0; i<${#massPoints[@]}; i++)); do
+    cd $pwd
 
-    dataCard=DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
-    combineCard=combine_DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
+    dataCard=DataCard_M${mass[$i]}GeV_MonoHbb_13TeV.txt
+    combineCard=combine_DataCard_M${mass[$i]}GeV_MonoHbb_13TeV.txt
 
-    echo -e "*** Combine cards: " $catMuCarddr"/"$dataCard " and " $catEleCarddr"/"$dataCard " ***"
+    echo -e "*** Combine data cards in " ${eachCarddr[0]} " " ${eachCarddr[1]} " " ${eachCarddr[2]} " " ${eachCarddr[3]} " ***"
 
-    combineCards.py Name1=$pwd/$catMuCarddr/$dataCard Name2=$pwd/$catEleCarddr/$dataCard > $combineCard
+    combineCards.py Name1=$pwd/${eachCarddr[0]}/$dataCard Name2=$pwd/${eachCarddr[1]}/$dataCard Name3=$pwd/${eachCarddr[2]}/$dataCard Name4=$pwd/${eachCarddr[3]}/$dataCard > $combineCard
 
-    echo -e "*** Output card: " $combineCard " move to " $dataCarddr " ***"
+    echo -e "*** Output card: " $combineCard " move to " $combineCarddr " ***"
 
-    mv $combineCard $dataCarddr
+    mv $combineCard $combineCarddr
 
-done
+    ## use the combine tool ##
 
-## use the combine tool ##
+    cd $cmsswdr/HiggsAnalysis/CombinedLimit/src
 
-cd $cmsswdr/HiggsAnalysis/CombinedLimit/src
+    rootFile=higgsCombineCounting.Asymptotic.combine.mZH${mass[$i]}.root
 
-for ((i=0; i<${#massPoints[@]}; i++)); do
+    echo -e "*** Using data card: " $combineCard " to calculate limits ***"
 
-    dataCard=combine_DataCard_M${massPoints[$i]}GeV_MonoHbb_13TeV.txt
-    rootFile=higgsCombineCounting.Asymptotic.mZH${massPoints[$i]}.root
-
-    echo -e "*** Using data card: " $dataCard " to calculate limits ***"
-
-    combine -M Asymptotic $pwd/$dataCarddr/$dataCard
+    combine -M Asymptotic $pwd/$combineCarddr/$combineCard
     mv higgsCombineTest.Asymptotic.mH120.root $pwd/$rootFile
 
 done
@@ -128,17 +112,17 @@ done
 ## plot the results from the root files generate from combine tool ##
 
 cd $pwd
-echo -e "*** Plot the results using plotAsymptotic.C ***"
+echo -e "*** Plot the combine results using plotAsymptotic.C ***"
 
-root -q -b -l plotAsymptotic.C++\(\)
+root -q -b -l plotAsymptotic.C++\(\"ele+mu\"\,\"1+2\"\)
 
 ## all jobs are completed ##
 
 mv *pdf /afs/cern.ch/user/h/htong/www
 rm -f *.d *.so *.pcm 
-rm -rf $catEleCarddr $catMuCarddr
 rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"
+echo -e ""
 
 exit

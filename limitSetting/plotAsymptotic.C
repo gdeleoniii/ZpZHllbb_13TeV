@@ -13,13 +13,13 @@
 #include <TGraphAsymmErrors.h>
 #include "../setNCUStyle.h"
 
-void plotAsymptotic(){
+void plotAsymptotic(string chan="", string btag=""){
 
   setNCUStyle();  
   gStyle->SetTitleSize(0.04,"XYZ");
   gStyle->SetLabelSize(0.03,"XYZ");
 
-  ifstream xsect_file("13TeV_xsec_Zh.txt", ios::in);
+  ifstream xsect_file("13TeV_xsec_Zhllbb.txt", ios::in);
 
   float mH, CS;
   vector<int> v_mhxs;
@@ -47,29 +47,29 @@ void plotAsymptotic(){
   }
 
   /// END THEORY INPUT PART ///
-
+  
   int nmZH = v_mhxs.size();
-  vector<double> v_mh, v_median, v_68l, v_68h, v_95l, v_95h, v_obs;
+  vector<float> v_mh, v_median, v_68l, v_68h, v_95l, v_95h, v_obs;
   TFile *fFREQ[nmZH];
   TTree *t[nmZH];
- 
-  for(int n = 0; n < nmZH; n++){
+  
+  for(int n = 0; n < nmZH; ++n){
 
     char limitfile[100];
 
     sprintf(limitfile,"higgsCombineCounting.Asymptotic.mZH%d.root",v_mhxs[n]);
-    
+      
     fFREQ[n] = new TFile(limitfile, "READ");
     t[n] = (TTree*)fFREQ[n]->Get("limit");
-  
+    
     double mh, limit;
     float quant;
     
     t[n]->SetBranchAddress("mh", &mh);
     t[n]->SetBranchAddress("limit", &limit);
     t[n]->SetBranchAddress("quantileExpected", &quant);
-  
-    for(int i = 0; i < t[n]->GetEntries(); i++){
+    
+    for(int i = 0; i < t[n]->GetEntries(); ++i){
 
       t[n]->GetEntry(i);
 
@@ -98,21 +98,21 @@ void plotAsymptotic(){
         cout << "Error! Quantile =  " << quant << endl;
       
     }
-
+    
   } //file loop
-
+  
   /// Here we multiply the limits in terms of signal strength by the cross-section.
   /// There are also some hooks to exclude sick mass points.
 
-  double mass[nmZH], obs_lim_cls[nmZH];
-  double medianD[nmZH];
-  double up68err[nmZH], down68err[nmZH], up95err[nmZH], down95err[nmZH];
-  double xs[nmZH];
+  float mass[nmZH], obs_lim_cls[nmZH];
+  float medianD[nmZH];
+  float up68err[nmZH], down68err[nmZH], up95err[nmZH], down95err[nmZH];
+  float xs[nmZH];
   int nMassEff = 0;
   
-  for(int im = 0; im < nmZH; im++){
+  for(int im = 0; im < nmZH; ++im){
 
-    double fl_xs = double(v_xs.at(im));
+    float fl_xs = float(v_xs.at(im));
     fl_xs = (fl_xs);
 
     mass[nMassEff] = v_mhxs[im];
@@ -133,7 +133,7 @@ void plotAsymptotic(){
     
     cout << "fl_xs:" << fl_xs << "\tv_obs" << v_obs.at(im) << "\tobs_lim_cls: " << obs_lim_cls[nMassEff] << "\t" << medianD[nMassEff] << "\tmass: " << mass[nMassEff] <<endl;
  
-    nMassEff++;
+    ++nMassEff;
     
   } //end loop over im (mass points)
 
@@ -156,12 +156,12 @@ void plotAsymptotic(){
 
   // draw a frame to define the range
 
-  double fr_left = 0.0, fr_down = 1E-4, fr_right = 4500.0, fr_up = 10;
+  float fr_left = 0.0, fr_down = 5E-6, fr_right = 4500.0, fr_up = 1;
 
   TH1F *hr = cMCMC->DrawFrame(fr_left, fr_down, fr_right, fr_up, "");
 
   hr->SetXTitle("M_{ZH} [GeV]");
-  hr->SetYTitle("#sigma_{95%} #times BR(Z'#rightarrow ZH) [pb]"); // #rightarrow 2l2q
+  hr->SetYTitle("#sigma_{95%}#times B(Z'#rightarrow ZH)#times B(H#rightarrow b#bar{b})#times B(Z#rightarrow ll) [pb]");
   hr->GetYaxis()->SetTitleSize(0.03);
   hr->GetYaxis()->SetTitleOffset(1.6);
 
@@ -199,7 +199,7 @@ void plotAsymptotic(){
   gr68_cls->Draw("3same");
   grthSM->Draw("L3");
   grmedian_cls->Draw("L");
-  //grobslim_cls->Draw("LP");
+  grobslim_cls->Draw("LP");
 
   //draw grid on top of limits
 
@@ -214,22 +214,23 @@ void plotAsymptotic(){
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
   leg->SetTextSize(0.035);
-  //leg->AddEntry(grobslim_cls, "CL_{S} Observed", "LP");
-  leg->AddEntry(gr68_cls, "CL_{S}  Expected #pm 1#sigma", "LF");
-  leg->AddEntry(gr95_cls, "CL_{S}  Expected #pm 2#sigma", "LF");
-  leg->AddEntry(grthSM, "#sigma_{TH}", "L");
+  leg->AddEntry(grobslim_cls, "CL_{S} Observed", "LP");
+  leg->AddEntry(gr68_cls, "CL_{S} Expected #pm 1#sigma", "LF");
+  leg->AddEntry(gr95_cls, "CL_{S} Expected #pm 2#sigma", "LF");
+  leg->AddEntry(grthSM, "#sigma_{Theory}", "L");
   leg->Draw();
 
-  TLatex * latex = new TLatex();
+  TLatex *latex = new TLatex();
 
   latex->SetNDC(kTRUE);
-  latex->SetTextSize(0.035);
-  latex->DrawLatex(0.15, 0.94, "CMS preliminary 2015");
-  latex->DrawLatex(0.65, 0.94, "L = 3 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->SetTextSize(0.04);
+  latex->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
+  latex->DrawLatex(0.57, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->DrawLatex(0.65, 0.85, Form("%s  %s btag",chan.data(),btag.data()));
 
   gPad->RedrawAxis("");
   cMCMC->Update();
   gPad->SetLogy();
-  cMCMC->Print("zhllbbCountingAsymptotic.pdf");
-
+  cMCMC->Print(Form("zhllbbCountingAsymptotic_%s_%sbtag.pdf",chan.data(),btag.data()));
+  
 }
