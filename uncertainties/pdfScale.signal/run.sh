@@ -9,13 +9,10 @@ cd $pwd
 
 root -q -b -l pdfScaleUnc.C+\(1\,0\,2\,1\,\"mur1\"\)
 root -q -b -l pdfScaleUnc.C+\(2\,0\,2\,1\,\"mur1\"\)
-root -q -b -l pdfScaleUnc.C+\(1\,0\,6\,2\,\"muf1\"\)
-root -q -b -l pdfScaleUnc.C+\(2\,0\,6\,2\,\"muf1\"\)
 root -q -b -l pdfScaleUnc.C+\(1\,10\,109\,1\,\"pdf\"\)
 root -q -b -l pdfScaleUnc.C+\(2\,10\,109\,1\,\"pdf\"\)
 
 dr=pdfScaleResults
-
 rm -f *.pcm *.d *.so
 rm -rf $HOME/www/$dr
 mkdir $dr

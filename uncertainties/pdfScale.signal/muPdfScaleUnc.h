@@ -12,10 +12,11 @@ float muPdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
 
   TreeReader data(inputFile.data());
 
-  int N = (last-first+1)/iter;
+  int N = 1+(last-first)/iter;
   float* efficiency = new float[N];
   float* passEvent  = new float[N];
   float  totalEvent = 1./data.GetEntriesFast();
+  float  cpass = 0.;
 
   std::fill_n(efficiency,N,0.);
   std::fill_n(passEvent,N,0.);
@@ -83,6 +84,8 @@ float muPdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
+    ++cpass;
+
     int i = 0;
     for( int n = first; n <= last; n += iter ){
       passEvent[i] += pdfscaleSysWeight[n];
@@ -94,7 +97,7 @@ float muPdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
   for( int n = 0; n < N; ++n )
     efficiency[n] = passEvent[n]*totalEvent;
 
-  return TMath::RMS(N, efficiency);
+  return TMath::RMS(N, efficiency)/(cpass*totalEvent);
 
   delete [] passEvent;
   delete [] efficiency;
