@@ -24,7 +24,7 @@
 // For 2015 Data and MC
 //=======================================================
 
-double MC2015[54]={
+double MC2015[52]={
   4.8551E-07,
   1.74806E-06,
   3.30868E-06,
@@ -76,13 +76,10 @@ double MC2015[54]={
   4.8551E-07,
   2.42755E-07,
   1.21378E-07,
-  4.8551E-08,
-  4.8551E-08,
   4.8551E-08
 };
 
-double Data2015[54]={
-  0,
+double Data2015[52]={
   147883,
   666514,
   886596,
@@ -134,12 +131,10 @@ double Data2015[54]={
   4.768e-11,
   0, 
   0, 
-  0,
   0
 };
 
-double Data2015Up[54]={
-  0,
+double Data2015Up[52]={
   124589,
   611524,
   813990,
@@ -191,12 +186,10 @@ double Data2015Up[54]={
   2.94239e-09,
   4.96039e-10,
   9.24658e-11,
-  1.00203e-12,
-  0
+  1.00203e-12
 };
 
-double Data2015Down[54]={
-  0,  
+double Data2015Down[52]={
   173216,
   727332,
   978926,
@@ -248,7 +241,6 @@ double Data2015Down[54]={
   0,
   0,
   0,
-  0,
   0
 };
 
@@ -277,7 +269,7 @@ standalone_LumiReWeighting::standalone_LumiReWeighting(int mode) {
       break;
     } // end of switch
 
-  Int_t NBins = 54;
+  Int_t NBins = 52;
   
   for( int i=0; i< NBins; ++i) {
     switch (mode){
@@ -337,6 +329,7 @@ standalone_LumiReWeighting::standalone_LumiReWeighting(int mode) {
   if(fabs(1.0 - deltaH) > 0.02 ) { //*OOPS*...
     weights_->Scale( 1.0/ weights_->Integral() );
   }
+
   double deltaMC = den->Integral();
   if(fabs(1.0 - deltaMC) > 0.02 ) {
     den->Scale(1.0/ den->Integral());
@@ -346,7 +339,6 @@ standalone_LumiReWeighting::standalone_LumiReWeighting(int mode) {
 
   std::cout << "Reweighting: Computed Weights per In-Time Nint " << std::endl;
 
-
   for(int ibin = 1; ibin<NBins+1; ++ibin){
     std::cout << "   " << ibin-1 << " " << weights_->GetBinContent(ibin) << std::endl;
   }
@@ -355,9 +347,7 @@ standalone_LumiReWeighting::standalone_LumiReWeighting(int mode) {
 
 }
 
-standalone_LumiReWeighting::~standalone_LumiReWeighting()
-{
-}
+standalone_LumiReWeighting::~standalone_LumiReWeighting(){}
 
 double standalone_LumiReWeighting::weight( double npv ){
   int bin = weights_->GetXaxis()->FindBin( npv );
