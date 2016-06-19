@@ -42,12 +42,14 @@ void toyMC_ele(string inputFile, string outputFile){
 
   Int_t   cat;
   Float_t mllbb, prmass;
-  Float_t evweight[999] = {0};
+  Float_t evweight[110] = {0};
 
   tree->Branch("cat",      &cat,     "cat/I");
   tree->Branch("mllbb",    &mllbb,   "mllbb/F");
   tree->Branch("prmass",   &prmass,  "prmass/F");
-  tree->Branch("evweight", evweight, "evweight[999]/F");
+
+  for(int i = 0; i < 110; ++i)
+    tree->Branch(Form("evweight%02i",i), &(evweight[i]), Form("evweight%02i/F",i));
 
   // Calculate the scale correspond to inputFile
 
@@ -123,7 +125,7 @@ void toyMC_ele(string inputFile, string outputFile){
 
     prmass = corrPRmass[goodFATJetID];
 
-    for( int i = 10; i < 110; ++i ){
+    for( int i = 0; i < 110; ++i ){
       evweight[i] = eventWeight * scale * pdfscaleSysWeight[i];
     }
 
