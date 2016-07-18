@@ -7,6 +7,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
 
@@ -51,7 +52,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "M_{jet}",  30.,  300., "GeV");
   RooRealVar mZH ("mllbb",   "M_{ZH}", 900., 3000., "GeV");
-  RooRealVar evWeight("evweight", "", -1.e3, 1.e3);
+  RooRealVar evWeight("evweight", "", 0., 1.e3);
 
   // Set the range in zh mass 
 
@@ -109,15 +110,15 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Side band jet mass in data
 
-  RooRealVar lamda("lamda", "lamda", -0.02,  -5.,   5.);
-
+  /*
   RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
   RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
   RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
-
   offsetSB.setConstant(true);
+  RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
+  */
 
-  //RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
+  RooRealVar lamda("lamda", "lamda", -0.02,  -5.,   5.);
   RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
 
   RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBMcEvents);
@@ -130,7 +131,9 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooAbsReal* nSBFit  = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
 
   float normFactor = dataSetDataSB.sumEntries()*(nSIGFit->getVal()/nSBFit->getVal());
-  
+ 
+  fprintf(stdout, ">>>> The normalization factor is %g <<<<\n\n", normFactor);
+ 
   // Plot the results on a frame
 
   RooPlot* mJetFrame = mJet.frame();
@@ -151,19 +154,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mJetFrame->SetTitle("");
 
   // Alpha ratio part
-
-  RooRealVar a("a", "a",  0., -1.,    1.);
-  RooRealVar b("b", "b", 1000,  0., 4000.);
   
-  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
-  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
-  RooGenericPdf model_ZH  ("model_ZH",   "model_ZH",   "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
-
-  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-  RooExtendPdf ext_model_ZH  ("ext_model_ZH",   "ext_model_ZH",   model_ZH,   nDataEvents);
-
   // Fit ZH mass in side band  
+
+  RooRealVar a("a", "a", -0.002, -1., 1.);
+  RooRealVar b("b", "b", 1200, 0., 5000.);
+
+  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
+  RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
   RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
@@ -174,14 +172,26 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Fit ZH mass in signal region
 
+  RooRealVar c("c", "c", -0.002, -1., 1.);
+  RooRealVar d("d", "d", 1200, 0., 5000.);
+
+  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
+  RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+
   RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
 
-  float p2 = a.getVal();
-  float p3 = b.getVal();
+  float p2 = c.getVal();
+  float p3 = d.getVal();
 
   // Fit ZH mass in side band region (data)
+
+  RooRealVar e("e", "e", -0.002, -1., 1.);
+  RooRealVar f("f", "f", 1200, 0., 5000.);
+
+  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,e,f));
+  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
 
   RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
@@ -254,34 +264,34 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar->SetTextSize(0.035);
   lar->SetLineWidth(5);
   
-  TCanvas* c = new TCanvas("c","",0,0,1000,800);
+  TCanvas* cv = new TCanvas("cv","",0,0,1000,800);
 
-  c->cd();
+  cv->cd();
   mZHFrameMC->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.65, 0.60, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
+  cv->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
-  c->cd();
+  cv->cd();
   mZHFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
-  c->cd();
+  cv->cd();
   predictFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
   
-  c->cd();
+  cv->cd();
   mJetFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
+  cv->Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

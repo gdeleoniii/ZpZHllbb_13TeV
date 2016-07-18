@@ -41,11 +41,14 @@ void toyMC_ele(string inputFile, string outputFile){
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
-  Float_t mllbb, prmass, evweight;
+  Float_t prmass, evweight;
+  Float_t mllbb[3] = {0};
 
-  tree->Branch("cat",      &cat,      "cat/I");
-  tree->Branch("mllbb",    &mllbb,    "mllbb/F");
-  tree->Branch("prmass",   &prmass,   "prmass/F");
+  for(int i = 0; i < 3; ++i)
+    tree->Branch(Form("mllbb%i",i),  &(mllbb[i]),  Form("mllbb%i/F",i));
+
+  tree->Branch("cat", &cat, "cat/I");
+  tree->Branch("prmass", &prmass, "prmass/F");
   tree->Branch("evweight", &evweight, "evweight/F");
 
   // Calculate the scale correspond to inputFile
@@ -86,47 +89,53 @@ void toyMC_ele(string inputFile, string outputFile){
 
     Int_t goodFATJetID = -1;
     TLorentzVector thisJet(0,0,0,0);
+    
+    for( int js = 0; js < 3; ++js ){
 
-    for( Int_t ij = 0; ij < FATnJet; ++ij ){
+      for( Int_t ij = 0; ij < FATnJet; ++ij ){
 
-      TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
+	TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
-      if( jetScale != 0 )
-	*myJet *= (jetScale == 1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]);
+	*myJet *= (js==0) ? 1 : ( (js==1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]) );
 
-      if( thisJet->Pt() < 200 ) continue;
-      if( fabs(thisJet->Eta()) > 2.4 ) continue;
-      if( !FATjetPassIDLoose[ij] ) continue;
-      if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
+	if( myJet->Pt() < 200 ) continue;
+	if( fabs(myJet->Eta()) > 2.4 ) continue;
+	if( !FATjetPassIDLoose[ij] ) continue;
+	if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       
-      Int_t nsubBjet = 0;
+	Int_t nsubBjet = 0;
 
-      for( Int_t is = 0; is < FATnSubSDJet[ij]; ++is ){
+	for( Int_t is = 0; is < FATnSubSDJet[ij]; ++is ){
 
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
+	  if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
 
-      }
+	}
 
-      // b-tag cut
+	// b-tag cut
 
-      if     ( nsubBjet == 1 ) cat = 1;
-      else if( nsubBjet == 2 ) cat = 2;      
-      else                     cat = 0;
+	if     ( nsubBjet == 1 ) cat = 1;
+	else if( nsubBjet == 2 ) cat = 2;      
+	else                     cat = 0;
 
-      goodFATJetID = ij;
-      thisJet = *myJet;
+	if( js == 0 )
+	  goodFATJetID = ij;
 
-      break;
+	thisJet = *myJet;
 
-    } // end of FatnJet loop
+	break;
+
+      } // end of FatnJet loop
+
+      mllbb[js] = (*thisLep+*thatLep+thisJet).M();
+      
+    }
+
+    prmass = FATjetPRmassCorr[goodFATJetID];
+    evweight = eventWeight * scale;
 
     if( goodFATJetID < 0 ) continue;
-    if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
+    if( mllbb[0] < 750 ) continue;
 
-    mllbb    = (*thisLep+*thatLep+thisJet).M();
-    prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = eventWeight*scale;
-    
     tree->Fill();
 
   } // end of event loop

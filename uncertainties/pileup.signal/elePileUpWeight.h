@@ -6,13 +6,13 @@
 #include "../../untuplizer.h"
 #include "../../isPassZee.h"
 
-float getEleEfficiency(string inputFile, int cat){
+float elePileUpWeight(string inputFile, int cat){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
   
-  int passEvent = 0;
+  float passEvent = 0;
 
   // begin of event loop
 
@@ -20,6 +20,7 @@ float getEleEfficiency(string inputFile, int cat){
 
     data.GetEntry(ev);
 
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
@@ -77,10 +78,10 @@ float getEleEfficiency(string inputFile, int cat){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
-    ++passEvent;
+    passEvent += eventWeight;
 
   } // end of event loop
   
-  return (float)passEvent/(float)data.GetEntriesFast();
+  return passEvent/(float)data.GetEntriesFast();
 
 }

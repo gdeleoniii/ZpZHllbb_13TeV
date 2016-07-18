@@ -6,13 +6,13 @@
 #include "../../untuplizer.h"
 #include "../../isPassZmumu.h"
 
-float getMuEfficiency(string inputFile, int cat){
+float muPileUpWeight(string inputFile, int cat){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
   
-  int passEvent = 0;
+  float passEvent = 0;
 
   // begin of event loop
 
@@ -20,7 +20,8 @@ float getMuEfficiency(string inputFile, int cat){
 
     data.GetEntry(ev);
 
-    TClonesArray*  muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
+    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
@@ -77,10 +78,10 @@ float getMuEfficiency(string inputFile, int cat){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
-    ++passEvent;
+    passEvent += eventWeight;
 
   } // end of event loop
   
-  return (float)passEvent/(float)data.GetEntriesFast();
+  return passEvent/(float)data.GetEntriesFast();
 
 }

@@ -1,7 +1,7 @@
 #define skimTree_cxx
 #include "skimTree.h"
 
-void skimTree::Loop(string channel, TF1* fewk_z){
+void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
 
   if( fChain == 0 ) return;
   if( channel != "muon" && channel != "electron" ) return;
@@ -40,13 +40,13 @@ void skimTree::Loop(string channel, TF1* fewk_z){
 
     fChain->GetEntry(jentry);
 
-    if( (unsigned)jentry % 100000 == 0 ) fprintf(stdout, "Still left events %lli\n", jentry);
+    // if( (unsigned)jentry % 100000 == 0 ) fprintf(stdout, "Still left events %lli\n", jentry);
     
     // Apply MC weight, pile-up weight (Correct the pile-up shape of MC), and k factor weight for MC
     
-    ev_weight = !isData ? ((mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt))*(infix.find("DYJets") != string::npos ? kWeight(fewk_z) : 1)) : 1;
+    ev_weight = !isData ? ((mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt,puScale))*(infix.find("DYJets") != string::npos ? kWeight(fewk_z) : 1)) : 1;
 
-    h_totalEv.Fill(0., ev_weight);
+    h_totalEv.Fill(0., (!isData ? ((mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt))) : 1));
 
     // Remove event which is no hard interaction (noise)
     

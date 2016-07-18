@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cmath>
 #include <fstream>
 #include <TTree.h>
 #include <TH1.h>
@@ -19,41 +18,27 @@ void plotAsymptotic(string chan="", string btag=""){
   gStyle->SetTitleSize(0.04,"XYZ");
   gStyle->SetLabelSize(0.03,"XYZ");
 
-  ifstream xsect_file("13TeV_xsec_Zhllbb.txt", ios::in);
-
+  ifstream xsect_file("13TeV_xsec_Zh.txt", ios::in);
   float mH, CS;
   vector<int> v_mhxs;
   vector<float> v_xs, v_toterrh, v_toterrl;
 
-  if( xsect_file.is_open() ){
-
-    while( !xsect_file.eof() ){
-
-      xsect_file >> mH >> CS;
-      v_mhxs.push_back(mH);
-      v_xs.push_back(CS);
-
-    }
+  while( !xsect_file.eof() ){
+    
+    xsect_file >> mH >> CS;
+    v_mhxs.push_back(mH);
+    v_xs.push_back(CS);
+    
+  }
   
-    xsect_file.close();
-
-  }
-
-  else{
-
-    cout << "Failed to open text file: " << xsect_file << endl;
-    return;
-
-  }
-
-  /// END THEORY INPUT PART ///
+  xsect_file.close();
   
   int nmZH = v_mhxs.size();
   vector<float> v_mh, v_median, v_68l, v_68h, v_95l, v_95h, v_obs;
   TFile *fFREQ[nmZH];
   TTree *t[nmZH];
   
-  for(int n = 0; n < nmZH; ++n){
+  for( int n = 0; n < nmZH; ++n ){
 
     char limitfile[100];
 
@@ -69,7 +54,7 @@ void plotAsymptotic(string chan="", string btag=""){
     t[n]->SetBranchAddress("limit", &limit);
     t[n]->SetBranchAddress("quantileExpected", &quant);
     
-    for(int i = 0; i < t[n]->GetEntries(); ++i){
+    for( int i = 0; i < t[n]->GetEntries(); ++i ){
 
       t[n]->GetEntry(i);
 
@@ -99,43 +84,35 @@ void plotAsymptotic(string chan="", string btag=""){
       
     }
     
-  } //file loop
+  } // end of file loop
   
   /// Here we multiply the limits in terms of signal strength by the cross-section.
   /// There are also some hooks to exclude sick mass points.
 
-  float mass[nmZH], obs_lim_cls[nmZH];
-  float medianD[nmZH];
+  float mass[nmZH], obs_lim_cls[nmZH], medianD[nmZH], xs[nmZH];
   float up68err[nmZH], down68err[nmZH], up95err[nmZH], down95err[nmZH];
-  float xs[nmZH];
   int nMassEff = 0;
   
   for(int im = 0; im < nmZH; ++im){
 
     float fl_xs = float(v_xs.at(im));
-    fl_xs = (fl_xs);
 
-    mass[nMassEff] = v_mhxs[im];
+    /// This is the part where we multiply the limits in terms of signal strength by the cross-section, in order to have limits in picobarns.
 
-    /// This is the part where we multiply the limits in terms of signal strength
-    /// by the cross-section, in order to have limits in picobarns.
-
+    mass[nMassEff]        = v_mhxs[im];
+    xs[nMassEff]          = fl_xs;
     obs_lim_cls[nMassEff] = v_obs.at(im) * fl_xs;      
-    medianD[nMassEff] = v_median.at(im) * fl_xs;
-    up68err[nMassEff] = (v_68h.at(im) - v_median.at(im)) * fl_xs;
-    down68err[nMassEff] = (v_median.at(im) - v_68l.at(im)) * fl_xs;
-
-    //scale factor 100 for making the xsect visible
-
-    xs[nMassEff]        = fl_xs; 
-    up95err[nMassEff]   = (v_95h.at(im) - v_median.at(im)) * fl_xs;
-    down95err[nMassEff] = (v_median.at(im) - v_95l.at(im)) * fl_xs;
+    medianD[nMassEff]     = v_median.at(im) * fl_xs;
+    up68err[nMassEff]     = (v_68h.at(im) - v_median.at(im)) * fl_xs;
+    down68err[nMassEff]   = (v_median.at(im) - v_68l.at(im)) * fl_xs;
+    up95err[nMassEff]     = (v_95h.at(im) - v_median.at(im)) * fl_xs;
+    down95err[nMassEff]   = (v_median.at(im) - v_95l.at(im)) * fl_xs;
     
     cout << "fl_xs:" << fl_xs << "\tv_obs" << v_obs.at(im) << "\tobs_lim_cls: " << obs_lim_cls[nMassEff] << "\t" << medianD[nMassEff] << "\tmass: " << mass[nMassEff] <<endl;
  
     ++nMassEff;
     
-  } //end loop over im (mass points)
+  } // end for loop over mass points
 
   TGraphAsymmErrors *grobslim_cls = new TGraphAsymmErrors(nMassEff, mass, obs_lim_cls);
   grobslim_cls->SetName("LimitObservedCLs");
@@ -156,12 +133,12 @@ void plotAsymptotic(string chan="", string btag=""){
 
   // draw a frame to define the range
 
-  float fr_left = 0.0, fr_down = 5E-6, fr_right = 4500.0, fr_up = 1;
+  float fr_left = 500.0, fr_down = 1E-4, fr_right = 4500.0, fr_up = 10;
 
   TH1F *hr = cMCMC->DrawFrame(fr_left, fr_down, fr_right, fr_up, "");
 
-  hr->SetXTitle("M_{ZH} [GeV]");
-  hr->SetYTitle("#sigma_{95%}#times B(Z'#rightarrow ZH)#times B(H#rightarrow b#bar{b})#times B(Z#rightarrow ll) [pb]");
+  hr->SetXTitle("M_{ZH} (GeV)");
+  hr->SetYTitle("#sigma_{95%}#times B(X#rightarrow ZH) (pb)");
   hr->GetYaxis()->SetTitleSize(0.03);
   hr->GetYaxis()->SetTitleOffset(1.6);
 
@@ -208,7 +185,7 @@ void plotAsymptotic(string chan="", string btag=""){
   postGrid->GetYaxis()->SetRangeUser(fr_down, fr_up);
   postGrid->Draw("AXIGSAME");
 
-  TLegend *leg = new TLegend(.21, .20, .70, .35);
+  TLegend *leg = new TLegend(.18, .20, .60, .35);
 
   leg->SetBorderSize(0);
   leg->SetFillColor(0);

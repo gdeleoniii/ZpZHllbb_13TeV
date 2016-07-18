@@ -10,7 +10,7 @@ for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do
 	echo "Now running ==> channel: " ${channel[$i]} " category: " ${cat[$j]}
 	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"mur1\"\,0\,2\,1\)
-	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"pdf\"\,10\,109\,1\)
+	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"pdf\"\,9\,109\,1\)
     done
 done
 

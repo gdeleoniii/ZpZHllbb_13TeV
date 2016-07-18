@@ -118,7 +118,11 @@ root -q -b -l plotAsymptotic.C++\(\"ele+mu\"\,\"1+2\"\)
 
 ## all jobs are completed ##
 
-mv *pdf /afs/cern.ch/user/h/htong/www
+resultsdr=/afs/cern.ch/user/h/htong/www/limitResults
+
+rm -rf $resultsdr
+mkdir $resultsdr
+mv *pdf $resultsdr
 rm -f *.d *.so *.pcm 
 rm -f higgsCombineCounting*root
 

@@ -21,7 +21,7 @@ float crossSection(string thisPath){
       crosssection = thisNum;
 
   }
-  
+
   return crosssection;
 
 }
@@ -41,15 +41,15 @@ void toyMC_mu(string inputFile, string outputFile){
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
-  Float_t mllbb, prmass;
-  Float_t evweight[110] = {0};
+  Float_t prmass, evweight;
+  Float_t mllbb[3] = {0};
 
-  tree->Branch("cat",      &cat,      "cat/I");
-  tree->Branch("mllbb",    &mllbb,    "mllbb/F");
-  tree->Branch("prmass",   &prmass,   "prmass/F");
+  for(int i = 0; i < 3; ++i)
+    tree->Branch(Form("mllbb%i",i),  &(mllbb[i]),  Form("mllbb%i/F",i));
 
-  for(int i = 0; i < 110; ++i)
-    tree->Branch(Form("evweight%02i",i), &(evweight[i]), Form("evweight%02i/F",i));
+  tree->Branch("cat", &cat, "cat/I");
+  tree->Branch("prmass", &prmass, "prmass/F");
+  tree->Branch("evweight", &evweight, "evweight/F");
 
   // Calculate the scale correspond to inputFile
 
@@ -66,12 +66,13 @@ void toyMC_mu(string inputFile, string outputFile){
 
     data.GetEntry(ev);
 
-    Float_t*       pdfscaleSysWeight = data.GetPtrFloat("pdfscaleSysWeights");
     Float_t        eventWeight       = data.GetFloat("ev_weight"); 
     TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
-    Float_t*       corrPRmass        = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
+    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -87,47 +88,53 @@ void toyMC_mu(string inputFile, string outputFile){
     // select good FATjet
 
     Int_t goodFATJetID = -1;
-    TLorentzVector* thisJet = NULL;
+    TLorentzVector thisJet(0,0,0,0);
+    
+    for( int js = 0; js < 3; ++js ){
 
-    for( Int_t ij = 0; ij < FATnJet; ++ij ){
+      for( Int_t ij = 0; ij < FATnJet; ++ij ){
 
-      thisJet = (TLorentzVector*)FATjetP4->At(ij);
+	TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
-      if( thisJet->Pt() < 200 ) continue;
-      if( fabs(thisJet->Eta()) > 2.4 ) continue;
-      if( !FATjetPassIDLoose[ij] ) continue;
-      if( thisJet->DeltaR(*thisLep) < 0.8 || thisJet->DeltaR(*thatLep) < 0.8 ) continue;
+	*myJet *= (js==0) ? 1 : ( (js==1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]) );
+
+	if( myJet->Pt() < 200 ) continue;
+	if( fabs(myJet->Eta()) > 2.4 ) continue;
+	if( !FATjetPassIDLoose[ij] ) continue;
+	if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       
-      Int_t nsubBjet = 0;
+	Int_t nsubBjet = 0;
 
-      for( Int_t is = 0; is < FATnSubSDJet[ij]; ++is ){
+	for( Int_t is = 0; is < FATnSubSDJet[ij]; ++is ){
 
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) ++nsubBjet;
+	  if( FATsubjetSDCSV[ij][is] > 0.605 ) nsubBjet++;
 
-      }
+	}
 
-      // b-tag cut
+	// b-tag cut
 
-      if     ( nsubBjet == 1 ) cat = 1;
-      else if( nsubBjet == 2 ) cat = 2;
-      else                     cat = 0;
+	if     ( nsubBjet == 1 ) cat = 1;
+	else if( nsubBjet == 2 ) cat = 2;      
+	else                     cat = 0;
 
-      goodFATJetID = ij;
-      break;
+	if( js == 0 )
+	  goodFATJetID = ij;
 
-    } // end of FatnJet loop
+	thisJet = *myJet;
+
+	break;
+
+      } // end of FatnJet loop
+
+      mllbb[js] = (*thisLep+*thatLep+thisJet).M();
+      
+    }
+
+    prmass = FATjetPRmassCorr[goodFATJetID];
+    evweight = eventWeight * scale;
 
     if( goodFATJetID < 0 ) continue;
-
-    mllbb = (*thisLep+*thatLep+*thisJet).M();  
-
-    if( mllbb < 750 ) continue;
-
-    prmass = corrPRmass[goodFATJetID];
-
-    for( int i = 0; i < 110; ++i ){
-      evweight[i] = eventWeight * scale * pdfscaleSysWeight[i];
-    }
+    if( mllbb[0] < 750 ) continue;
 
     tree->Fill();
 

@@ -125,13 +125,10 @@ void toyMC_mu(string inputFile, string outputFile){
     } // end of FatnJet loop
 
     if( goodFATJetID < 0 ) continue;
+    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
 
-    mllbb = (*thisLep+*thatLep+*thisJet).M();  
-
-    if( mllbb < 750 ) continue;
-
-    prmass = corrPRmass[goodFATJetID];
-
+    mllbb    = (*thisLep+*thatLep+*thisJet).M();
+    prmass   = corrPRmass[goodFATJetID];
     evweight = isData ? 1 : eventWeight * scale * minor;
 
     tree->Fill();

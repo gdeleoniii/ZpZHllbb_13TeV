@@ -23,8 +23,10 @@ void rooFitDatazh(string channel, string catcut, string type, int first, int las
   RooPlot* alphaFrame = mZH.frame();
  
   const int NN = 1+(last-first)/iter;
-  fprintf(stdout, "%i\n", NN);
-  TH1* h[NN];
+
+  TH1 *hsb[NN];
+  TH1 *hsg[NN];
+
   float binContent[21][NN];
 
   for(int nw = last; nw >= first; nw -= iter){
@@ -49,16 +51,27 @@ void rooFitDatazh(string channel, string catcut, string type, int first, int las
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
 
+    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));
     RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
     RooBinning b(21, 900., 3000.);
 
-    dataSetZjetsSG.plotOn(alphaFrame, Binning(b), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+    //dataSetZjetsSG.plotOn(alphaFrame, Binning(b), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
 
-    h[nw] = dataSetZjetsSG.createHistogram(Form("h%02i",nw), mZH, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets), Binning(b));
+    hsb[nw] = dataSetZjetsSB.createHistogram(Form("hsb%02i",nw), mZH, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets), Binning(b));
+    hsg[nw] = dataSetZjetsSG.createHistogram(Form("hsg%02i",nw), mZH, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets), Binning(b));
 
-    for(int binx = 1; binx <= 21; ++binx)
-      binContent[binx-1][nw] = h[nw]->GetBinContent(binx);
+    TH1F *hal = new TH1F("hal","", 21, 900, 3000);
+    hal->Divide(hsg[nw],hsb[nw],1,1);
+  
+    RooDataHist dh("dh","dh", mZH, Import(*hal)) ;
+    dh.plotOn(alphaFrame, Binning(b), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+
+    for(int binx = 1; binx <= 21; ++binx){
+      binContent[binx-1][nw] = hal->GetBinContent(binx);
+    }
+
+    hal->Delete();
 
   } // end of weight for loop
 
@@ -73,11 +86,11 @@ void rooFitDatazh(string channel, string catcut, string type, int first, int las
     rms[binx] = TMath::RMS(NN, binContent[binx+1]);
     if(rms[binx] > 99) rms[binx] = -1;
     h_rms->SetBinContent(binx+1, rms[binx]);
-    fprintf(stdout, "bin %i : rms = %f\n", binx+1, rms[binx]);
+    //fprintf(stdout, "bin %i : rms = %f\n", binx+1, rms[binx]);
 
   }
 
-  h_rms->GetXaxis()->SetLabelSize(0.06);
+  h_rms->GetXaxis()->SetLabelSize(0.12);
   h_rms->GetXaxis()->SetTitle("m_{ZH} (GeV)");
 
   TLegend* leg = new TLegend(0.15,0.15,0.30,0.25);
@@ -92,9 +105,9 @@ void rooFitDatazh(string channel, string catcut, string type, int first, int las
   alphaFrame->addObject(leg);
   alphaFrame->SetTitle("");
   alphaFrame->GetXaxis()->SetLabelOffset(999);
-  alphaFrame->GetYaxis()->SetTitle("event number");
+  alphaFrame->GetYaxis()->SetTitle("#alpha Ratio");
   alphaFrame->GetYaxis()->SetTitleOffset(1.3);
-  alphaFrame->SetMinimum(0);
+  alphaFrame->SetMinimum(0.00001);
 
   TLatex* lar = new TLatex();
 
@@ -115,7 +128,7 @@ void rooFitDatazh(string channel, string catcut, string type, int first, int las
   c_dw->SetPad(0,0,1,dw_height);
   c_dw->SetBottomMargin(0.25);
 
-  c_up->cd();
+  c_up->cd()->SetLogy(1);
 
   alphaFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");

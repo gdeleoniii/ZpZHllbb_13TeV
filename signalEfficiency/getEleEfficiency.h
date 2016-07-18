@@ -6,7 +6,7 @@
 #include "../untuplizer.h"
 #include "../isPassZee.h"
 
-float getEleEfficiency(string inputFile, int cat, int scale){
+float getEleEfficiency(string inputFile, int cat){
 
   // read the ntuples (in pcncu)
 
@@ -24,8 +24,6 @@ float getEleEfficiency(string inputFile, int cat, int scale){
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
-    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -48,9 +46,6 @@ float getEleEfficiency(string inputFile, int cat, int scale){
     for( int ij = 0; ij < FATnJet; ++ij ){
 
       TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
-
-      if( scale != 0 )
-	*myJet *= (scale == 1) ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]);
 
       if( myJet->Pt() < 200 ) continue;
       if( fabs(myJet->Eta()) > 2.4 ) continue;
@@ -81,10 +76,6 @@ float getEleEfficiency(string inputFile, int cat, int scale){
     if( goodFATJetID < 0 ) continue;
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
-
-    // Noise cleaning?
-
-    if( fabs((*thisLep+*thatLep).Eta()-(*thisLep+*thatLep+thisJet).Eta()) > 5.0 ) continue;
 
     ++passEvent;
 

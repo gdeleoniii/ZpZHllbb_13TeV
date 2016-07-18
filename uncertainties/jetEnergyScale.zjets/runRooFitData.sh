@@ -9,15 +9,14 @@ cat=(1 2)
 for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do
 	echo "Now running ==> channel: " ${channel[$i]} " category: " ${cat[$j]}
-	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"mur1\"\,0\,2\,1\)
-	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"pdf\"\,10\,109\,1\)
+	root -q -b -l rooFitData.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\)
     done
 done
 
-mkdir alphaPdfScaleResults/
-mv *pdf alphaPdfScaleResults/
-rm -rf $HOME/www/alphaPdfScaleResults/
-mv alphaPdfScaleResults/ $HOME/www/
+mkdir alphaJetEnScaleResults/
+mv *pdf alphaJetEnScaleResults/
+rm -rf $HOME/www/alphaJetEnScaleResults/
+mv alphaJetEnScaleResults/ $HOME/www/
 
 echo "All the jobs are finished."
 

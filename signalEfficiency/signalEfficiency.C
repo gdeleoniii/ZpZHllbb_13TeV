@@ -13,37 +13,23 @@ void signalEfficiency(){
 
   Float_t x_mzh[N] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
 
-  Float_t y_eff_elc1[N], y_eyh_elc1[N], y_eyl_elc1[N];
-  Float_t y_eff_elc2[N], y_eyh_elc2[N], y_eyl_elc2[N];
-
-  Float_t y_eff_muc1[N], y_eyh_muc1[N], y_eyl_muc1[N];
-  Float_t y_eff_muc2[N], y_eyh_muc2[N], y_eyl_muc2[N];
+  Float_t y_eff_elc1[N], y_eff_elc2[N];
+  Float_t y_eff_muc1[N], y_eff_muc2[N];
 
   for( int i = 0; i < N; ++i ){
 
-    y_eff_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
-    y_eyh_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_elc1[i];
-    y_eyl_elc1[i] = -getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_elc1[i];
-
-    y_eff_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
-    y_eyh_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_elc2[i];
-    y_eyl_elc2[i] = -getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_elc2[i];
-
-    y_eff_muc1[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,0);
-    y_eyh_muc1[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,1)  - y_eff_muc1[i];
-    y_eyl_muc1[i] = -getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1,-1) + y_eff_muc1[i];
-
-    y_eff_muc2[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,0);
-    y_eyh_muc2[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,1)  - y_eff_muc2[i];
-    y_eyl_muc2[i] = -getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2,-1) + y_eff_muc2[i];
+    y_eff_elc1[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1);
+    y_eff_elc2[i] =  getEleEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2);
+    y_eff_muc1[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),1);
+    y_eff_muc2[i] =  getMuEfficiency(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(Int_t)x_mzh[i]),2);
 
   }
 
   TGraphAsymmErrors *g = new TGraphAsymmErrors(N, x_mzh, y_eff_muc1);
-  TGraphAsymmErrors *g_eff_elc1 = new TGraphAsymmErrors(N, x_mzh, y_eff_elc1, 0, 0, y_eyl_elc1, y_eyh_elc1);
-  TGraphAsymmErrors *g_eff_elc2 = new TGraphAsymmErrors(N, x_mzh, y_eff_elc2, 0, 0, y_eyl_elc2, y_eyh_elc2);
-  TGraphAsymmErrors *g_eff_muc1 = new TGraphAsymmErrors(N, x_mzh, y_eff_muc1, 0, 0, y_eyl_muc1, y_eyh_muc1);
-  TGraphAsymmErrors *g_eff_muc2 = new TGraphAsymmErrors(N, x_mzh, y_eff_muc2, 0, 0, y_eyl_muc2, y_eyh_muc2);
+  TGraphAsymmErrors *g_eff_elc1 = new TGraphAsymmErrors(N, x_mzh, y_eff_elc1, 0, 0, 0, 0);
+  TGraphAsymmErrors *g_eff_elc2 = new TGraphAsymmErrors(N, x_mzh, y_eff_elc2, 0, 0, 0, 0);
+  TGraphAsymmErrors *g_eff_muc1 = new TGraphAsymmErrors(N, x_mzh, y_eff_muc1, 0, 0, 0, 0);
+  TGraphAsymmErrors *g_eff_muc2 = new TGraphAsymmErrors(N, x_mzh, y_eff_muc2, 0, 0, 0, 0);
 
   g->SetMinimum(0);
   g->SetMaximum(0.5);
@@ -88,10 +74,10 @@ void signalEfficiency(){
   leg.SetFillColor(0);
   leg.SetFillStyle(0);
   leg.SetTextSize(0.04);
-  leg.AddEntry(g_eff_elc1, "Z #rightarrow ee, 1 b-tag", "lf");
-  leg.AddEntry(g_eff_elc2, "Z #rightarrow ee, 2 b-tag", "lf");
-  leg.AddEntry(g_eff_muc1, "Z #rightarrow #mu#mu, 1 b-tag", "lf");
-  leg.AddEntry(g_eff_muc2, "Z #rightarrow #mu#mu, 2 b-tag", "lf");
+  leg.AddEntry(g_eff_elc1, "Z #rightarrow ee, 1 b-tag", "lp");
+  leg.AddEntry(g_eff_elc2, "Z #rightarrow ee, 2 b-tag", "lp");
+  leg.AddEntry(g_eff_muc1, "Z #rightarrow #mu#mu, 1 b-tag", "lp");
+  leg.AddEntry(g_eff_muc2, "Z #rightarrow #mu#mu, 2 b-tag", "lp");
 
   TLatex lar;
 

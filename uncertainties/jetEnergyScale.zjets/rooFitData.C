@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut, string type, int first, int last, int iter){
+void rooFitData(string channel, string catcut){
 
   // Suppress all the INFO message
 
@@ -18,20 +18,18 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
 
-  RooRealVar mZH ("mllbb",   "M_{ZH}", 900., 3000., "GeV");
+  RooRealVar mzh("mzh", "M_{ZH}", 900., 3000., "GeV");
+  RooPlot* alphaFrame = mzh.frame();
   
-  RooPlot* alphaFrame = mZH.frame();
-  
-  for(int nw = last; nw >= first; nw -= iter){
-
-    fprintf(stdout, "Using weight %i\n", nw);
+  for(int js = 2; js >= 0; --js){
 
     // Define all the variables from the trees 
 
     RooRealVar cat ("cat", "", 0, 2);
     RooRealVar mJet("prmass", "M_{jet}",  30.,  300., "GeV");
-    RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
-  
+    RooRealVar mZH (Form("mllbb%i",js), "M_{ZH}", 900., 3000., "GeV");
+    RooRealVar evWeight("evweight", "", -1.e10, 1.e10);
+
     // Set the range in zh mass 
 
     mZH.setRange("fullRange", 900., 3000.);
@@ -94,11 +92,11 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
     // Draw the model of alpha ratio
 
-    RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", p2,p3,p0,p1), RooArgSet(mZH));
+    RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", p2,p3,p0,p1), RooArgSet(mzh));
 
     // Plot the results to a frame 
 
-    model_alpha.plotOn(alphaFrame, LineColor((nw==first)?kBlue:kYellow));
+    model_alpha.plotOn(alphaFrame, LineColor((js==0)?kBlue:kYellow));
 
   }
 
@@ -113,6 +111,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
   alphaFrame->addObject(leg);
   alphaFrame->SetTitle("");
+  alphaFrame->SetMaximum(0.03);
   alphaFrame->GetYaxis()->SetTitle("#alpha Ratio");
   alphaFrame->GetYaxis()->SetTitleOffset(1.3);
 
@@ -128,7 +127,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.75, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
-  lar->DrawLatexNDC(0.75, 0.75, Form("%s", (first==0)?"mur = 1":type.data()));
-  c->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
+  lar->DrawLatexNDC(0.75, 0.75, "JES");
+  c->Print(Form("alpha_jetEnScale_%s_cat%s.pdf", channel.data(), catcut.data()));
 
 }

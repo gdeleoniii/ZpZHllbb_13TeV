@@ -808,11 +808,11 @@ class skimTree {
   virtual Int_t    GetEntry(Long64_t entry);
   virtual Long64_t LoadTree(Long64_t entry);
   virtual void     Init(TTree* tree);
-  virtual void     Loop(std::string channel,TF1* fewk_z);
+  virtual void     Loop(std::string channel, TF1* fewk_z, Int_t puScale);
   virtual Bool_t   Notify();
   virtual bool     TriggerStatus(std::string TRIGGERNAME);
   virtual bool     FilterStatus(std::string FILTERNAME);
-  virtual Float_t  puWeight(Int_t puntrueint);
+  virtual Float_t  puWeight(Int_t puntrueint, Int_t puScale);
   virtual Float_t  kWeight(TF1* fewk_z);
   std::string inputFile_;
 
@@ -1635,8 +1635,8 @@ void skimTree::Init(TTree *tree)
   Notify();
 }
 
-Bool_t skimTree::Notify()
-{
+Bool_t skimTree::Notify(){
+
   // The Notify() function is called when a new file is opened. This
   // can be either for a new TTree in a TChain or when when a new TTree
   // is started when using PROOF. It is normally not necessary to make changes
@@ -1646,69 +1646,27 @@ Bool_t skimTree::Notify()
   return kTRUE;
 }
 
-Float_t skimTree::puWeight(Int_t puntrueint){
+Float_t skimTree::puWeight(Int_t puntrueint, Int_t puScale=0){
 
-  Float_t puweight[200]= {1.};
+  Float_t puweight[200]= {0.};
 
-  puweight[0]   =  1.;
-  puweight[1]   =  162.405;
-  puweight[2]   =  123.505;
-  puweight[3]   =  30.4728;
-  puweight[4]   =  17.0003;
-  puweight[5]   =  3.16955;
-  puweight[6]   =  1.67983;
-  puweight[7]   =  2.00222;
-  puweight[8]   =  2.70321;
-  puweight[9]   =  2.72198;
-  puweight[10]  =  2.66497;
-  puweight[11]  =  2.61761;
-  puweight[12]  =  2.3039;
-  puweight[13]  =  1.73163;
-  puweight[14]  =  1.09124;
-  puweight[15]  =  0.572786;
-  puweight[16]  =  0.25889;
-  puweight[17]  =  0.110005;
-  puweight[18]  =  0.0524568;
-  puweight[19]  =  0.0299666;
-  puweight[20]  =  0.0176408;
-  puweight[21]  =  0.00921793;
-  puweight[22]  =  0.00407931;
-  puweight[23]  =  0.00156008;
-  puweight[24]  =  0.000561605;
-  puweight[25]  =  0.000223715;
-  puweight[26]  =  0.000111408;
-  puweight[27]  =  6.9408e-05;
-  puweight[28]  =  5.01042e-05;
-  puweight[29]  =  3.8732e-05;
-  puweight[30]  =  2.89728e-05;
-  puweight[31]  =  1.87439e-05;
-  puweight[32]  =  9.51068e-06;
-  puweight[33]  =  4.2903e-06;
-  puweight[34]  =  1.69486e-06;
-  puweight[35]  =  6.29131e-07;
-  puweight[36]  =  2.21324e-07;
-  puweight[37]  =  7.49491e-08;
-  puweight[38]  =  2.42443e-08;
-  puweight[39]  =  7.36554e-09;
-  puweight[40]  =  2.22336e-09;
-  puweight[41]  =  6.25637e-10;
-  puweight[42]  =  1.77453e-10;
-  puweight[43]  =  4.67515e-11;
-  puweight[44]  =  1.14411e-11;
-  puweight[45]  =  2.96267e-12;
-  puweight[46]  =  2.13236e-12;
-  puweight[47]  =  7.14993e-13;
-  puweight[48]  =  4.02716e-13;
-  puweight[49]  =  3.10075e-13;
+  ifstream pileupFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/LumiWeights.txt");
 
-  if( puntrueint >= 50 ) puweight[puntrueint] = 0;
+  int ip=0, ip_=0; 
+  float c0=0., up=0., dw=0.;
 
-  return puweight[puntrueint];
+  while( pileupFile >> ip_ >> c0 >> up >> dw ){
+
+    puweight[ip] = (puScale == 0) ? c0 : ((puScale == 1) ? up : dw);
+    ++ip;
+
+  }
+
+  return ( puntrueint >= ip ) ? puweight[ip-1] : puweight[puntrueint];
 
 }
 
-Float_t skimTree::kWeight(TF1* fewk_z)
-{
+Float_t skimTree::kWeight(TF1* fewk_z){
 
   // for DYJetsToLL only
   // LO->NLO correction
@@ -1753,8 +1711,7 @@ Float_t skimTree::kWeight(TF1* fewk_z)
 
 }
 
-bool skimTree::TriggerStatus(string TRIGGERNAME)
-{
+bool skimTree::TriggerStatus(string TRIGGERNAME){
 
   bool triggerStat = false;
 
@@ -1776,8 +1733,7 @@ bool skimTree::TriggerStatus(string TRIGGERNAME)
 
 }
 
-bool skimTree::FilterStatus(string FILTERNAME)
-{
+bool skimTree::FilterStatus(string FILTERNAME){
 
   bool filterStat = false;
     
