@@ -3,31 +3,10 @@
 #include <fstream>
 #include <iostream>
 #include <TH1.h>
-#include <TLatex.h>
-#include <TCanvas.h>
-#include <TLegend.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
-#include <TGraphAsymmErrors.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
-
-float crossSection(string thisPath){
-
-  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/xSec.txt");
-  string token;
-  float crosssection = 0., thisNum = 0.;
-
-  while( textFile >> token >> thisNum ){
-
-    if( thisPath.find(token) != string::npos )
-      crosssection = thisNum;
-
-  }
-  
-  return crosssection;
-
-}
 
 void muBtagEff(string inputFile, string outputFile){
   
@@ -35,25 +14,17 @@ void muBtagEff(string inputFile, string outputFile){
   
   TreeReader data(inputFile.data());
 
+  // Declare the histogram
+
   TFile* f = new TFile(inputFile.data());
   TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
-  // Create a tree to store variables
-
-  TFile* outFile = new TFile(Form("%s_MCbtagEff.root",outputFile.c_str()), "recreate");
-  TTree* tree = new TTree("tree", "TreeForBtagEff");
-
-  Int_t cat, jetFlavor;
-  Float_t jetPt, evweight;
-
-  tree->Branch("cat",       &cat,       "cat/I");
-  tree->Branch("jetFlavor", &jetFlavor, "jetFlavor/I");
-  tree->Branch("jetPt",     &jetPt,     "jetPt/F");
-  tree->Branch("evweight",  &evweight,  "evweight/F");
-
-  // Calculate the scale correspond to inputFile
-
-  Float_t scale = 2512.*crossSection(outputFile.data())/h_totalEvents->Integral();
+  TH1F* h_lJetPtnoCSV = new TH1F("h_lJetPtnoCSV", "lJetPtnoCSV", 50, 0, 2000);
+  TH1F* h_lJetPtwtCSV = new TH1F("h_lJetPtwtCSV", "lJetPtwtCSV", 50, 0, 2000);
+  TH1F* h_cJetPtnoCSV = new TH1F("h_cJetPtnoCSV", "cJetPtnoCSV", 50, 0, 2000);
+  TH1F* h_cJetPtwtCSV = new TH1F("h_cJetPtwtCSV", "cJetPtwtCSV", 50, 0, 2000);
+  TH1F* h_bJetPtnoCSV = new TH1F("h_bJetPtnoCSV", "bJetPtnoCSV", 50, 0, 2000);
+  TH1F* h_bJetPtwtCSV = new TH1F("h_bJetPtwtCSV", "bJetPtwtCSV", 50, 0, 2000);
 
   // begin of event loop
 
@@ -74,7 +45,11 @@ void muBtagEff(string inputFile, string outputFile){
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
-    vector<int>*   subjetFlavor      = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
+    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
+    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
+    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
+    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
+    vector<int>*   FATsubjetFlavor   = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
 
     // select good reco level events     
     // select good leptons
@@ -88,7 +63,6 @@ void muBtagEff(string inputFile, string outputFile){
 
     // select good FATjet
 
-    bool bTag = false;
     int goodFATJetID = -1;
     TLorentzVector thisJet(0,0,0,0);
 
@@ -102,49 +76,72 @@ void muBtagEff(string inputFile, string outputFile){
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
 
-      int nsubBjet = 0;
-
-      for( int is = 0; is < FATnSubSDJet[ij]; ++is ){
-
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) ++nsubBjet;
-
-      } // end of subjet for loop
- 
-      // Tag b-tag
- 
-      if     ( nsubBjet == 1 ) cat = 1;
-      else if( nsubBjet == 2 ) cat = 2;
-      else                     cat = 0;
-       
       goodFATJetID = ij;
-
-      // Tag jet flavor (MC only)                                                                                                                                                           
-      /*
-      if     ( subjetFlavor[ij][is] == 1 || subjetFlavor[ij][is] == 2 || subjetFlavor[ij][is] == 3 || subjetFlavor[ij][is] == 21 ) jetFlavor = 1;
-      else if( subjetFlavor[ij][is] == 4 ) jetFlavor = 4;
-      else if( subjetFlavor[ij][is] == 5 ) jetFlavor = 5;
-      else                                 jetFlavor = 0;
-      */
       thisJet = *myJet;
 
       break;
  
-    } // end of fatjet loop
+    } // end of FatnJet loop
  
     if( goodFATJetID < 0 ) continue;
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
-    jetPt = thisJet.Pt();
-    evweight = eventWeight * scale;
+    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
+      
+      TLorentzVector thisSubJet;
 
-    tree->Fill();
+      thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
+			    FATsubjetSDPy[goodFATJetID][is],
+			    FATsubjetSDPz[goodFATJetID][is],
+			    FATsubjetSDE[goodFATJetID][is]);
+
+      if( FATsubjetFlavor[goodFATJetID][is] == 1  ||
+	  FATsubjetFlavor[goodFATJetID][is] == 2  ||
+	  FATsubjetFlavor[goodFATJetID][is] == 3  ||
+	  FATsubjetFlavor[goodFATJetID][is] == 21 ){
+
+	h_lJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+	
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_lJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      }
+
+      else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
+
+	h_cJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_cJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      }
+ 
+      else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
+
+	h_bJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_bJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      } // end of if-else subjet flavor
+ 
+    } // end of subjet loop                           
 
   } // end of event loop
   
   fprintf(stdout, "Processed all events\n");
 
-  tree->Write();  
+  TFile* outFile = new TFile(Form("%s_muMCbtagEff.root",outputFile.c_str()), "recreate");
+
+  h_lJetPtnoCSV->Write("lJetPtnoCSV");
+  h_lJetPtwtCSV->Write("lJetPtwtCSV");
+  h_cJetPtnoCSV->Write("cJetPtnoCSV");
+  h_cJetPtwtCSV->Write("cJetPtwtCSV");
+  h_bJetPtnoCSV->Write("bJetPtnoCSV");
+  h_bJetPtwtCSV->Write("bJetPtwtCSV");
+  h_totalEvents->Write("totalEvents");
+  
   outFile->Write();
 
   delete f;
