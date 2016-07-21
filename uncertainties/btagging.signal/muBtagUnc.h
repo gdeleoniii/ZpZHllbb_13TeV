@@ -3,11 +3,12 @@
 #include <iostream>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
+#include <TGraphAsymmErrors.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "BTagCalibrationStandalone.h"
 
-float muBtagUnc(string inputFile, int cat, int jSF){
+float muBtagUnc(string inputFile, TGraphAsymmErrors* g, int cat, int jSF){
 
   // setup calibration and reader
 
@@ -15,13 +16,15 @@ float muBtagUnc(string inputFile, int cat, int jSF){
 
   BTagCalibration       calib ("csvv1", "CSVV1.csv");
   BTagCalibrationReader reader(BTagEntry::OP_LOOSE, region.data());
-  
+
+  reader.load(calib, BTagEntry::FLAV_B, "mujets");  
+
   // read the ntuples (in pcncu)
   
   TreeReader data(inputFile.data());
   
-  float btagScale = 1.;
-  float passEvent = 0.;
+  int passEvent = 0;
+  float pMC = 1., pData = 1.;
 
   // begin of event loop
 
@@ -36,7 +39,11 @@ float muBtagUnc(string inputFile, int cat, int jSF){
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
-    vector<int>*   FATsubjetSDHadronFlavor = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
+    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
+    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
+    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
+    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
+    vector<int>*   FATsubjetFlavor   = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
 
     // select good reco level events     
     // select good leptons
@@ -63,41 +70,6 @@ float muBtagUnc(string inputFile, int cat, int jSF){
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
 
-      int nsubBjet = 0;
-
-      BTagEntry::JetFlavor jFlavor = BTagEntry::FLAV_B;
-
-      for( int is = 0; is < FATnSubSDJet[ij]; ++is ){
-
-	if     ( FATsubjetSDHadronFlavor[ij][is] == 5 )   jFlavor = BTagEntry::FLAV_B;
-	else if( FATsubjetSDHadronFlavor[ij][is] == 4 )   jFlavor = BTagEntry::FLAV_C;
-	else if( FATsubjetSDHadronFlavor[ij][is] == 1 ||
-		 FATsubjetSDHadronFlavor[ij][is] == 2 ||
-		 FATsubjetSDHadronFlavor[ij][is] == 3 ||
-		 FATsubjetSDHadronFlavor[ij][is] == 21 )  jFlavor = BTagEntry::FLAV_UDSG;
-
-	reader.load(calib, jFlavor, "mujets");
-
-	if( FATsubjetSDCSV[ij][is] > 0.605 ){
-       
-	  btagScale *= reader.eval_auto_bounds(region.data(), jFlavor, myJet->Eta(), myJet->Pt());
-	  ++nsubBjet;
-
-	}
-
-	else{
-
-	  btagScale *= (1 - reader.eval_auto_bounds(region.data(), BTagEntry::FLAV_C, myJet->Eta(), myJet->Pt()) * 3)/(1 - 33);
-
-	}
-
-      } // end of subjet for loop
- 
-      // b-tag cut
- 
-      if( cat == 1 && nsubBjet != 1 ) continue;
-      if( cat == 2 && nsubBjet != 2 ) continue;
-       
       goodFATJetID = ij;
       thisJet = *myJet;
 
@@ -109,10 +81,48 @@ float muBtagUnc(string inputFile, int cat, int jSF){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
+    int nsubBjet = 0;
+
+    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
+      
+      if( FATsubjetFlavor[goodFATJetID][is] != 5 ) continue;
+      
+      TLorentzVector thisSubJet;
+      
+      thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
+			    FATsubjetSDPy[goodFATJetID][is],
+			    FATsubjetSDPz[goodFATJetID][is],
+			    FATsubjetSDE[goodFATJetID][is]);
+      
+      float scaleFactor = reader.eval_auto_bounds(region.data(), BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
+      float btagEff = g->Eval(thisSubJet.Pt());
+
+      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ){
+
+	pMC   *= btagEff;
+	pData *= scaleFactor * btagEff;
+	++nsubBjet;
+	
+      }
+      
+      else{
+	
+	pMC   *= (1 - btagEff);
+	pData *= (1 - scaleFactor * btagEff);
+	
+      }
+      
+    } // end of subjet for loop
+    
+    // b-tag cut
+    
+    if( cat == 1 && nsubBjet != 1 ) continue;
+    if( cat == 2 && nsubBjet != 2 ) continue;
+        
     ++passEvent;
 
   } // end of event loop
   
-  return passEvent*btagScale/(float)data.GetEntriesFast();
+  return (pData/pMC)*(passEvent/(float)data.GetEntriesFast());
 
 }
