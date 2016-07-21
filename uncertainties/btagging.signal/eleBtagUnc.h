@@ -7,11 +7,11 @@ R__LOAD_LIBRARY(BTagCalibrationStandalone_cpp.so)
 #include <TLorentzVector.h>
 #include <TGraphAsymmErrors.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
-#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 #include "BTagCalibrationStandalone.h"
 
-float muBtagUnc(string inputFile, int cat, int jSF,
-		TGraphAsymmErrors* g_l, TGraphAsymmErrors* g_c, TGraphAsymmErrors* g_b){
+float eleBtagUnc(string inputFile, int cat, int jSF,
+		 TGraphAsymmErrors* g_l, TGraphAsymmErrors* g_c, TGraphAsymmErrors* g_b){
 
   // setup calibration and reader
 
@@ -38,7 +38,7 @@ float muBtagUnc(string inputFile, int cat, int jSF,
 
     data.GetEntry(ev);
 
-    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
@@ -56,10 +56,10 @@ float muBtagUnc(string inputFile, int cat, int jSF,
       
     vector<int> goodLepID;
 
-    if( !isPassZmumu(data,goodLepID) ) continue;
+    if( !isPassZee(data,goodLepID) ) continue;
 
-    TLorentzVector* thisLep = (TLorentzVector*)muP4->At(goodLepID[0]);
-    TLorentzVector* thatLep = (TLorentzVector*)muP4->At(goodLepID[1]);
+    TLorentzVector* thisLep = (TLorentzVector*)eleP4->At(goodLepID[0]);
+    TLorentzVector* thatLep = (TLorentzVector*)eleP4->At(goodLepID[1]);
 
     // select good FATjet
 
