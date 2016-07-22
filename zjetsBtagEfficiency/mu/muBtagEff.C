@@ -1,31 +1,45 @@
 #include <vector>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <TH1.h>
-#include <TLatex.h>
-#include <TCanvas.h>
-#include <TLegend.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
-#include <TGraphAsymmErrors.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 
-TGraphAsymmErrors* muBtagEff(string inputFile, string flavor){
+void muBtagEff(string inputFile, string outputFile){
   
   // read the ntuples (in pcncu)
   
   TreeReader data(inputFile.data());
 
-  float varBins[] = {30,50,70,100,140,200,300,670,2000};
-  int   nvarBins  = sizeof(varBins)/sizeof(varBins[0])-1;
+  // Declare the histogram
 
-  TH1F* h_jetPtnoCSV = new TH1F("h_jetPtnoCSV", "", nvarBins, varBins);
-  TH1F* h_jetPtwtCSV = new TH1F("h_jetPtwtCSV", "", nvarBins, varBins);
+  TFile* f = new TFile(inputFile.data());
+  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
+
+  float varBinslight[] = {30,50,70,100,140,200,300,670,1000,2000};
+  float varBins[] = {30,50,70,100,140,200,300,670,2000};
+
+  int nvarBinslight = sizeof(varBinslight)/sizeof(varBinslight[0])-1;
+  int nvarBins = sizeof(varBins)/sizeof(varBins[0])-1;
+
+  TH1F* h_lJetPtnoCSV = new TH1F("h_lJetPtnoCSV", "lJetPtnoCSV", nvarBinslight, varBinslight);
+  TH1F* h_lJetPtwtCSV = new TH1F("h_lJetPtwtCSV", "lJetPtwtCSV", nvarBinslight, varBinslight);
+  TH1F* h_cJetPtnoCSV = new TH1F("h_cJetPtnoCSV", "cJetPtnoCSV", nvarBins, varBins);
+  TH1F* h_cJetPtwtCSV = new TH1F("h_cJetPtwtCSV", "cJetPtwtCSV", nvarBins, varBins);
+  TH1F* h_bJetPtnoCSV = new TH1F("h_bJetPtnoCSV", "bJetPtnoCSV", nvarBins, varBins);
+  TH1F* h_bJetPtwtCSV = new TH1F("h_bJetPtwtCSV", "bJetPtwtCSV", nvarBins, varBins);
 
   // begin of event loop
 
+  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
+
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
+
+    if( (unsigned)ev % 100000 == 0 )
+      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
@@ -67,7 +81,7 @@ TGraphAsymmErrors* muBtagEff(string inputFile, string flavor){
       if( !FATjetPassIDLoose[ij] ) continue;
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
-        
+
       goodFATJetID = ij;
       thisJet = *myJet;
 
@@ -81,40 +95,59 @@ TGraphAsymmErrors* muBtagEff(string inputFile, string flavor){
 
     for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
       
-      if( flavor == "udsg" && (FATsubjetFlavor[goodFATJetID][is] == 4 || FATsubjetFlavor[goodFATJetID][is] == 5) ) continue;
-      if( flavor == "c"    && FATsubjetFlavor[goodFATJetID][is] != 4 ) continue;
-      if( flavor == "b"    && FATsubjetFlavor[goodFATJetID][is] != 5 ) continue;
- 
       TLorentzVector thisSubJet;
 
       thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
 			    FATsubjetSDPy[goodFATJetID][is],
 			    FATsubjetSDPz[goodFATJetID][is],
 			    FATsubjetSDE[goodFATJetID][is]);
+
+      if( FATsubjetFlavor[goodFATJetID][is] != 4 && FATsubjetFlavor[goodFATJetID][is] != 5 ){
+
+	h_lJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+	
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_lJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      }
+
+      else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
+
+	h_cJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_cJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      }
  
-      h_jetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);     
-    
-      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
-	h_jetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+      else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
+
+	h_bJetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+	if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	  h_bJetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
+
+      } // end of if-else subjet flavor
  
     } // end of subjet loop                           
 
   } // end of event loop
   
-  // Divide two histograms to get the efficiency
+  fprintf(stdout, "Processed all events\n");
 
-  TGraphAsymmErrors* g_bTagEff = new TGraphAsymmErrors();
+  TFile* outFile = new TFile(Form("%s_muMCbtagEff.root",outputFile.c_str()), "recreate");
 
-  g_bTagEff->BayesDivide(h_jetPtwtCSV, h_jetPtnoCSV, "B");
-  g_bTagEff->SetMarkerStyle(8);
-  g_bTagEff->SetMinimum(0);
-  g_bTagEff->SetMaximum(1.3);
-  g_bTagEff->GetYaxis()->SetTitle("Efficiency");  
-  g_bTagEff->GetXaxis()->SetTitle("p_{T SubJet} [GeV]");
+  h_lJetPtnoCSV->Write("lJetPtnoCSV");
+  h_lJetPtwtCSV->Write("lJetPtwtCSV");
+  h_cJetPtnoCSV->Write("cJetPtnoCSV");
+  h_cJetPtwtCSV->Write("cJetPtwtCSV");
+  h_bJetPtnoCSV->Write("bJetPtnoCSV");
+  h_bJetPtwtCSV->Write("bJetPtwtCSV");
+  h_totalEvents->Write("totalEvents");
+  
+  outFile->Write();
 
-  delete h_jetPtwtCSV;
-  delete h_jetPtnoCSV;
-
-  return g_bTagEff;
+  delete f;
+  delete outFile;
 
 }

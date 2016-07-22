@@ -11,26 +11,25 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 
-TGraphAsymmErrors* eleBtagEff(string flavor){
+TGraphAsymmErrors* eleBtagEff(string inputFile, string flavor){
   
   // read the ntuples (in pcncu)
   
-  TreeReader data("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_13TeV-madgraph.root");
+  TreeReader data(inputFile.data());
 
-  TH1F* h_jetPtnoCSV = new TH1F("h_jetPtnoCSV", "", 100, 0, 2000);
-  TH1F* h_jetPtwtCSV = new TH1F("h_jetPtwtCSV", "", 100, 0, 2000);
+  float varBins[] = {30,50,70,100,140,200,300,670,2000};
+  int   nvarBins  = sizeof(varBins)/sizeof(varBins[0])-1;
+
+  TH1F* h_jetPtnoCSV = new TH1F("h_jetPtnoCSV", "", nvarBins, varBins);
+  TH1F* h_jetPtwtCSV = new TH1F("h_jetPtwtCSV", "", nvarBins, varBins);
 
   // begin of event loop
 
-  fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
-
   for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
-
-    if( (unsigned)ev % 50000 == 0 )
-      fprintf(stdout, "Still left events %lli\n", ev);
 
     data.GetEntry(ev);
 
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
@@ -82,37 +81,31 @@ TGraphAsymmErrors* eleBtagEff(string flavor){
 
     for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
       
-      if( flavor == "udsg" &&
-	  ( FATsubjetFlavor[goodFATJetID][is] != 1  || 
-	    FATsubjetFlavor[goodFATJetID][is] != 2  || 
-	    FATsubjetFlavor[goodFATJetID][is] != 3  || 
-	    FATsubjetFlavor[goodFATJetID][is] != 21 )) continue;
-      
-      if( flavor == "c" && FATsubjetFlavor[goodFATJetID][is] != 4 ) continue;
-      if( flavor == "b" && FATsubjetFlavor[goodFATJetID][is] != 5 ) continue;
+      if( flavor == "udsg" && (FATsubjetFlavor[goodFATJetID][is] == 4 || FATsubjetFlavor[goodFATJetID][is] == 5) ) continue;
+      if( flavor == "c"    && FATsubjetFlavor[goodFATJetID][is] != 4 ) continue;
+      if( flavor == "b"    && FATsubjetFlavor[goodFATJetID][is] != 5 ) continue;
  
       TLorentzVector thisSubJet;
+
       thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
 			    FATsubjetSDPy[goodFATJetID][is],
 			    FATsubjetSDPz[goodFATJetID][is],
 			    FATsubjetSDE[goodFATJetID][is]);
  
-      h_jetPtnoCSV->Fill(thisSubJet.Pt());     
+      h_jetPtnoCSV->Fill(thisSubJet.Pt(),eventWeight);     
     
       if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
-	h_jetPtwtCSV->Fill(thisSubJet.Pt());
+	h_jetPtwtCSV->Fill(thisSubJet.Pt(),eventWeight);
  
     } // end of subjet loop                           
 
   } // end of event loop
   
-  fprintf(stdout, "Processed all events\n");
-
   // Divide two histograms to get the efficiency
 
   TGraphAsymmErrors* g_bTagEff = new TGraphAsymmErrors();
 
-  g_bTagEff->Divide(h_jetPtwtCSV, h_jetPtnoCSV, "B");
+  g_bTagEff->BayesDivide(h_jetPtwtCSV, h_jetPtnoCSV, "B");
   g_bTagEff->SetMarkerStyle(8);
   g_bTagEff->SetMinimum(0);
   g_bTagEff->SetMaximum(1.3);
