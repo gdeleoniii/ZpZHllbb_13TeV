@@ -1,5 +1,5 @@
-R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
-R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
 void rooFitDatazh(string channel, string catcut, string type, int first, int last, int iter){

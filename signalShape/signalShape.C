@@ -1,7 +1,9 @@
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
+
 #include "zpEleShape.h"
 #include "zpMuShape.h"
-R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
-R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
+
 using namespace RooFit;
 
 const int N = 10;

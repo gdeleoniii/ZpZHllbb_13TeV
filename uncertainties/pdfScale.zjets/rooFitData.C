@@ -1,5 +1,5 @@
-R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
-R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut, string type, int first, int last, int iter){
@@ -84,8 +84,6 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
     RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
 
-    //a.setConstant(true);
-
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
@@ -111,8 +109,6 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
     RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
-
-    //c.setConstant(true);
 
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);

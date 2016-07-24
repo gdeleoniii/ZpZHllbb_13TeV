@@ -6,8 +6,8 @@
 #include <TFile.h>
 #include <TClonesArray.h>
 #include <TLorentzVector.h>
-#include "../untuplizer.h"
-#include "../isPassZmumu.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 
 void mZHmuLimit(string inputFile, string outputFile, Int_t btag=1){
 

@@ -1,5 +1,5 @@
-R__LOAD_LIBRARY(PDFs/HWWLVJRooPdfs_cxx.so)
-R__LOAD_LIBRARY(PDFs/PdfDiagonalizer_cc.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
+R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut, bool removeMinor=true){
@@ -110,14 +110,6 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Side band jet mass in data
 
-  /*
-  RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
-  RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
-  RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
-  offsetSB.setConstant(true);
-  RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
-  */
-
   RooRealVar lamda("lamda", "lamda", -0.02,  -5.,   5.);
   RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
 
@@ -156,7 +148,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Alpha ratio part
   
   // Fit ZH mass in side band  
-
+  /*
   RooRealVar a("a", "a", -0.002, -1., 1.);
   RooRealVar b("b", "b", 1200, 0., 5000.);
 
@@ -180,6 +172,56 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
+  RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+
+  float p2 = c.getVal();
+  float p3 = d.getVal();
+  */
+  float bmin, bmax;
+
+  if( channel == "ele" ){
+    bmin = (catcut=="1") ? 1300. : 0.;
+    bmax = (catcut=="1") ? 1800. : 2.;
+  }
+
+  else if( channel == "mu" ){
+    bmin = 600.; 
+    bmax = 1200.;
+  }
+    
+  RooRealVar a("a", "a", -0.002, -0.005, 0.);
+  RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
+
+  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
+  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
+
+  RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+
+  float p0 = a.getVal();
+  float p1 = b.getVal();
+
+  // Fit ZH mass in signal region
+
+  float dmin, dmax;
+    
+  if( channel == "ele" ){
+    dmin = (catcut=="1") ? 800.  : 2100.;
+    dmax = (catcut=="1") ? 1400. : 2800.;
+  }
+    
+  else if( channel == "mu" ){
+    dmin = (catcut=="1") ? 0. : 1500.;
+    dmax = (catcut=="1") ? 1. : 2500.;
+  }
+    
+  RooRealVar c("c", "c", -0.002, -0.005, 0.);
+  RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
+
+  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
+  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+
+  RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
   RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
 
   float p2 = c.getVal();
@@ -263,7 +305,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   lar->SetTextSize(0.035);
   lar->SetLineWidth(5);
-  
+
   TCanvas* cv = new TCanvas("cv","",0,0,1000,800);
 
   cv->cd();
