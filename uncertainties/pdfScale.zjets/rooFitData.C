@@ -26,6 +26,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
   RooBinning mZHbin(21, 900., 3000.);
   
+  TFile* output = new TFile(Form("alpha_%sScale_%s_cat%s.root", type.data(), channel.data(), catcut.data()), "recreate");
+
   for(int nw = last; nw >= first; nw -= iter){
 
     // fprintf(stdout, ">>>> Weight %i <<<<\n", nw);
@@ -123,6 +125,10 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
     RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", p2,p3,p0,p1), RooArgSet(mZH));
 
+    TF1* f_alpha = (TF1*)model_alpha.asTF(RooArgList(mZH),RooArgList(),mZH);
+
+    f_alpha->Write(Form("alpha%02i",nw));
+
     fprintf(stdout, "p0=%f\tp1=%f\tp2=%f\tp3=%f\n", p0,p1,p2,p3);
 
     // Plot the results to a frame 
@@ -136,6 +142,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
 
   } // end of weight for loop
+
+  output->Write();
 
   TLegend* leg = new TLegend(0.15,0.15,0.30,0.25);
 
@@ -180,8 +188,6 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
   lar->DrawLatexNDC(0.72, 0.75, "side band");
   c->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
-
-
 
   c->cd();
   mZHsgFrame->Draw();
