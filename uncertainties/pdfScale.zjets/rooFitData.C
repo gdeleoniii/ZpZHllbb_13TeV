@@ -19,18 +19,24 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
 
   RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
-  
+  RooBinning mZHbin(32, 800., 4000.);
+
+  RooPlot* alphaFrame = mZH.frame();
   RooPlot* mZHsbFrame = mZH.frame();
   RooPlot* mZHsgFrame = mZH.frame();
 
-  RooBinning mZHbin(32, 800., 4000.);
-  
-  const int N = 1+(last-first)/iter;
+  int N = 1+(last-first)/iter;
   int iw = N-1;
   float alpha[11][N];
 
-  for(int nw = last; nw >= first; nw -= iter){
+  TF1* f_alpha = new TF1("f_alpha", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);
+   
+  TCanvas* cv = new TCanvas("cv", "", 0, 0, 1000, 800);
 
+  cv->cd();
+  
+  for( int nw = last; nw >= first; nw -= iter ){
+    
     // Define all the variables from the trees 
 
     RooRealVar cat("cat", "", 0, 2);
@@ -120,26 +126,23 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     float p2 = c.getVal();
     float p3 = d.getVal();
 
-    // Set the model of alpha ratio and save it
+    // Set the model of alpha ratio
 
-    TF1* model_alpha = new TF1("ftest", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);
+    f_alpha->SetParameters(p2,p3,p0,p1);
+    f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
 
-    model_alpha->SetParameters(p2,p3,p0,p1);
-    model_alpha->SetTitle("");
+    if(nw==last) f_alpha->Draw();
+    else         f_alpha->DrawCopy("same");
 
     int mzh = 800;
-
     for( int im = 0; im < 11; ++im ){
-
-      alpha[im][iw] = model_alpha->Eval(mzh);
+      alpha[im][iw] = f_alpha->Eval(mzh);
       mzh += (mzh<2000) ? 200 : 500;
-
     }
-
     --iw;
 
     // Plot the results to a frame 
-    
+
     dataSetZjetsSB.plotOn(mZHsbFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
     model_ZHSB.plotOn(mZHsbFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
 
@@ -148,24 +151,46 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     
     fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
-    delete model_alpha;
-
   } // end of weight loop
-  
+
+
+  TLatex* lar = new TLatex();
+
+  lar->SetTextSize(0.035);
+  lar->SetLineWidth(5);
+
+  f_alpha->SetTitle("");
+  f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
+  f_alpha->GetYaxis()->SetTitleOffset(1.3);
+  f_alpha->SetMinimum(0);
+  f_alpha->SetMaximum(f_alpha->GetMaximum()*1.5);
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf(", type.data(), channel.data(), catcut.data()));
+
   // Calculate RMS value of each mass bin
 
-  float Mzh[11]   = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
-  float Alpha[11], Uncp[11], Uncm[11];
+  float Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
+  float Alpha[11], Unc[11];
 
   for( int im = 0; im < 11; ++im ){
 
     Alpha[im] = alpha[im][0];
-    Uncp[im] = (type=="mur1") ? fabs(alpha[im][1]-alpha[im][0]) : TMath::RMS(N, alpha[im]);
-    Uncm[im] = (type=="mur1") ? fabs(alpha[im][2]-alpha[im][0]) : Uncp[im];
 
+    if( type == "mur1" )
+      Unc[im] = ( fabs(alpha[im][1]-alpha[im][0]) > fabs(alpha[im][2]-alpha[im][0]) ) ?
+	fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
+
+    else 
+      Unc[im] = TMath::RMS(N, alpha[im]);
+
+    fprintf(stdout, "mass=%f\tcentral=%f\t%f\t%f\tunc=%f\n", Mzh[im], alpha[im][0], alpha[im][1], alpha[im][2], Unc[im]);
+    
   }
 
-  TGraphAsymmErrors *g = new TGraphAsymmErrors(11, Mzh, Alpha);
+  TGraphErrors *g = new TGraphErrors(11, Mzh, Alpha);
 
   g->SetTitle("");
   g->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -173,7 +198,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   g->GetYaxis()->SetTitleOffset(1.3);
   g->SetMinimum(0);
 
-  TGraphAsymmErrors *g_alpha = new TGraphAsymmErrors(11, Mzh, Alpha, 0, 0, Uncp, Uncm);
+  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
 
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
@@ -181,43 +206,37 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(1001);
   g_alpha->SetFillColor(kYellow);  
-
-  mZHsbFrame->SetTitle("");
-  mZHsbFrame->SetMinimum(0);
-
-  mZHsgFrame->SetTitle("");
-  mZHsgFrame->SetMinimum(0);
   
-  TLatex* lar = new TLatex();
-
-  lar->SetTextSize(0.035);
-  lar->SetLineWidth(5);
-  
-  TCanvas* c = new TCanvas("c","",0,0,1000,800);
-
-  c->cd();
+  cv->Clear();
+  cv->cd();
   g->Draw();
   g_alpha->Draw("3same");
   g_alpha->Draw("cxsame");
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("alpha_%sScale_%s_cat%s.pdf(", type.data(), channel.data(), catcut.data()));  
-  
-  c->cd();
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));  
+
+  cv->Clear();
+  cv->cd();
+  mZHsbFrame->SetTitle("");
+  mZHsbFrame->SetMinimum(0);
   mZHsbFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
   lar->DrawLatexNDC(0.72, 0.75, "side band");
-  c->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
 
-  c->cd();
+  cv->Clear();
+  cv->cd();
+  mZHsgFrame->SetTitle("");
+  mZHsgFrame->SetMinimum(0);  
   mZHsgFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
   lar->DrawLatexNDC(0.72, 0.75, "signal region");
-  c->Print(Form("alpha_%sScale_%s_cat%s.pdf)", type.data(), channel.data(), catcut.data()));
-  
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf)", type.data(), channel.data(), catcut.data()));
+
 }
