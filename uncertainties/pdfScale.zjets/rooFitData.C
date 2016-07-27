@@ -18,10 +18,19 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
 
+  // Define all the variables from the trees 
+
+  RooRealVar cat("cat", "", 0, 2);
+  RooRealVar mJet("prmass", "",  30.,  300.);
   RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
   RooBinning mZHbin(32, 800., 4000.);
 
-  RooPlot* alphaFrame = mZH.frame();
+  mZH.setRange("fullRange", 800., 4000.);
+
+  TCut catCut = Form("cat==%s", catcut.c_str());
+  TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
+  TCut sigCut = "prmass>105 && prmass<135";
+
   RooPlot* mZHsbFrame = mZH.frame();
   RooPlot* mZHsgFrame = mZH.frame();
 
@@ -37,21 +46,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   
   for( int nw = last; nw >= first; nw -= iter ){
     
-    // Define all the variables from the trees 
-
-    RooRealVar cat("cat", "", 0, 2);
-    RooRealVar mJet("prmass", "",  30.,  300.);
     RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
-  
-    // Set the range in zh mass 
-
-    mZH.setRange("fullRange", 800., 4000.);
-
     RooArgSet variables(cat, mJet, mZH, evWeight);
-
-    TCut catCut = Form("cat==%s", catcut.c_str());
-    TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
-    TCut sigCut = "prmass>105 && prmass<135";
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
 
@@ -60,16 +56,13 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   
     // Total event numbers
 
-    float totalSBMcEv = dataSetZjetsSB.sumEntries();
-    float totalSGMcEv = dataSetZjetsSG.sumEntries();
-
     RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
     RooRealVar nSGMcEvents("nSGMcEvents", "nSGMcEvents", 0., 1.e10);
 
-    nSBMcEvents.setVal(totalSBMcEv);
+    nSBMcEvents.setVal(dataSetZjetsSB.sumEntries());
     nSBMcEvents.setConstant(true);
   
-    nSGMcEvents.setVal(totalSGMcEv);
+    nSGMcEvents.setVal(dataSetZjetsSG.sumEntries());
     nSGMcEvents.setConstant(true);
   
     // Alpha ratio part
@@ -79,12 +72,12 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  600. : 1500.;
-      bmax = (catcut=="1") ? 1200. : 2500.;
+      bmin = (catcut=="1") ?  700. : 1500.;
+      bmax = (catcut=="1") ? 1100. : 2500.;
     }
 
     else if( channel == "mu" ){
-      bmin = (catcut=="1") ? 100. : 2000.; 
+      bmin = (catcut=="1") ? 200. : 2100.; 
       bmax = (catcut=="1") ? 700. : 2700.;
     }
     
@@ -105,8 +98,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 3000. : 0.;
-      dmax = (catcut=="1") ? 3900. : 1.;
+      dmin = (catcut=="1") ? 3200. : 0.;
+      dmax = (catcut=="1") ? 3500. : 1.;
     }
     
     else if( channel == "mu" ){
@@ -129,10 +122,14 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     // Set the model of alpha ratio
 
     f_alpha->SetParameters(p2,p3,p0,p1);
+    f_alpha->SetTitle("");
+    f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+    f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
+    f_alpha->GetYaxis()->SetTitleOffset(1.3);
+    f_alpha->SetMinimum(0);
+    f_alpha->SetMaximum(f_alpha->GetMaximum()*3);
     f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
-
-    if(nw==last) f_alpha->Draw();
-    else         f_alpha->DrawCopy("same");
+    f_alpha->DrawCopy((nw==last) ? "" : "same");
 
     int mzh = 800;
     for( int im = 0; im < 11; ++im ){
@@ -141,6 +138,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     }
     --iw;
 
+    fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\talphaM1200=%f\n", nw, p0, p1, p2, p3, f_alpha->Eval(1200));
+
     // Plot the results to a frame 
 
     dataSetZjetsSB.plotOn(mZHsbFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
@@ -148,23 +147,14 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
     dataSetZjetsSG.plotOn(mZHsgFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
     model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
-    
-    fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
   } // end of weight loop
-
 
   TLatex* lar = new TLatex();
 
   lar->SetTextSize(0.035);
   lar->SetLineWidth(5);
 
-  f_alpha->SetTitle("");
-  f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
-  f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
-  f_alpha->GetYaxis()->SetTitleOffset(1.3);
-  f_alpha->SetMinimum(0);
-  f_alpha->SetMaximum(f_alpha->GetMaximum()*1.5);
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
@@ -186,20 +176,16 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     else 
       Unc[im] = TMath::RMS(N, alpha[im]);
 
-    fprintf(stdout, "mass=%f\tcentral=%f\t%f\t%f\tunc=%f\n", Mzh[im], alpha[im][0], alpha[im][1], alpha[im][2], Unc[im]);
-    
-  }
-
-  TGraphErrors *g = new TGraphErrors(11, Mzh, Alpha);
-
-  g->SetTitle("");
-  g->GetXaxis()->SetTitle("m_{ZH} (GeV)");
-  g->GetYaxis()->SetTitle("#alpha Ratio");  
-  g->GetYaxis()->SetTitleOffset(1.3);
-  g->SetMinimum(0);
+  } // end of mass points
 
   TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
 
+  g_alpha->SetTitle("");
+  g_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
+  g_alpha->GetYaxis()->SetTitleOffset(1.3);
+  g_alpha->GetXaxis()->SetLimits(800,4000);
+  g_alpha->SetMinimum(0);
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);
@@ -209,7 +195,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   
   cv->Clear();
   cv->cd();
-  g->Draw();
+  g_alpha->Draw("apz");
   g_alpha->Draw("3same");
   g_alpha->Draw("cxsame");
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
