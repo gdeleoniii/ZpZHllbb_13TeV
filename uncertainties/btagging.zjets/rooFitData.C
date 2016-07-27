@@ -14,11 +14,11 @@ void rooFitData(string channel, string catcut){
   RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "", 30., 300.);
   RooRealVar evWeight("evweight", "", 0., 1.e10);
-  RooRealVar mZH("mllbb", "M_{ZH}", 900., 3000., "GeV");
+  RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
  
-  mZH.setRange("fullRange", 900., 3000.);
+  mZH.setRange("fullRange", 800., 4000.);
  
-  RooBinning mZHbin(21, 900., 3000.);
+  RooBinning mZHbin(21, 800., 4000.);
   RooArgSet variables(cat, mJet, mZH, evWeight);
  
   TCut catCut = Form("cat==%s", catcut.c_str());
