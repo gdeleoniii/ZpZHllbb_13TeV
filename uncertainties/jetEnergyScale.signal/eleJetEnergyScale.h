@@ -85,6 +85,7 @@ float eleJetEnergyScale(string inputFile, string js, int cat){
       if( fabs(myJet->Eta()) > 2.4 ) continue;
       if( !FATjetPassIDLoose[ij] ) continue;
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
+      if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
       
       goodFATJetID = ij;
       thisJet = *myJet;
