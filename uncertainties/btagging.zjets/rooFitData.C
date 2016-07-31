@@ -147,6 +147,7 @@ void rooFitData(string channel, string catcut){
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->SetMinimum(0);
+  g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);

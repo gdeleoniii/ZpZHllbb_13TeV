@@ -1,5 +1,5 @@
-#include <iostream>
-#include <cstdio>
+#include <fstream>
+#include <TSystem.h>
 #include "elePileUpWeight.h"
 #include "muPileUpWeight.h"
 
@@ -9,24 +9,27 @@ void pileUpWeight(){
 
   for( int cat = 1; cat <= 2; ++cat ){
 
-    FILE* fe = fopen(Form("eb%d_pileUpUnc.txt",cat), "w");
-    FILE* fm = fopen(Form("mb%d_pileUpUnc.txt",cat), "w");
+    FILE* fe = fopen(Form("ele_%ibtag_pileUpUnc.txt", cat), "w");
+    FILE* fm = fopen(Form("mu_%ibtag_pileUpUnc.txt", cat), "w");
 
-    // mass, central, up, down
+    fprintf(fe, "mass\tcentral\tPUuncUp\tPUuncDw\n");
+    fprintf(fm, "mass\tcentral\tPUuncUp\tPUuncDw\n");
+
+    float pu0e[11], puUpe[11], puDwe[11];
+    float pu0m[11], puUpm[11], puDwm[11];
 
     for( int i = 0; i < 11; ++i ){
     
-      fprintf(fe, "%d\t%g\t%g\t%g\n",
-	      mzh[i],
-	      elePileUpWeight(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",     mzh[i]), cat),
-	      elePileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat),
-	      elePileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat));
+      pu0e[i]  = elePileUpWeight(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat);
+      puUpe[i] = fabs( elePileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat) - pu0e[i] );
+      puDwe[i] = fabs( elePileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat) - pu0e[i] );
 
-      fprintf(fm, "%d\t%g\t%g\t%g\n",
-	      mzh[i],
-	      muPileUpWeight(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",     mzh[i]), cat),
-	      muPileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat),
-	      muPileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat));
+      pu0m[i]  = muPileUpWeight(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat);
+      puUpm[i] = fabs( muPileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat) - pu0m[i] );
+      puDwm[i] = fabs( muPileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat) - pu0m[i] );
+
+      fprintf(fe, "%i\t%g\t%g\t%g\n", mzh[i], pu0e[i], puUpe[i], puDwe[i]);      
+      fprintf(fm, "%i\t%g\t%g\t%g\n", mzh[i], pu0m[i], puUpm[i], puDwm[i]);
     
     }
 
@@ -34,5 +37,8 @@ void pileUpWeight(){
     fclose(fm);
 
   }
+
+  gSystem->Exec("mkdir signalpuWeightResults");
+  gSystem->Exec("mv *txt signalpuWeightResults");
 
 }

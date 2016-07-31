@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut, string type, int first, int last, int iter){
+void rooFitData(string channel, string catcut, string type, int first, int last){
 
   // Suppress all the INFO message
 
@@ -34,17 +34,22 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   RooPlot* mZHsbFrame = mZH.frame();
   RooPlot* mZHsgFrame = mZH.frame();
 
-  int N = 1+(last-first)/iter;
+  int N = last-first;
   int iw = N-1;
-  float alpha[11][N];
+  float alphaScale[11][N], alphaCentral[11];
 
   TF1* f_alpha = new TF1("f_alpha", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);
    
+  f_alpha->SetTitle("");
+  f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
+  f_alpha->GetYaxis()->SetTitleOffset(1.3);
+  
   TCanvas* cv = new TCanvas("cv", "", 0, 0, 1000, 800);
 
   cv->cd();
   
-  for( int nw = last; nw >= first; nw -= iter ){
+  for( int nw = last; nw >= first; --nw ){
     
     RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
     RooArgSet variables(cat, mJet, mZH, evWeight);
@@ -122,23 +127,27 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     // Set the model of alpha ratio
 
     f_alpha->SetParameters(p2,p3,p0,p1);
-    f_alpha->SetTitle("");
-    f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
-    f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
-    f_alpha->GetYaxis()->SetTitleOffset(1.3);
     f_alpha->SetMinimum(0);
-    f_alpha->SetMaximum(f_alpha->GetMaximum()*3);
+    f_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
     f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
     f_alpha->DrawCopy((nw==last) ? "" : "same");
 
     int mzh = 800;
+
     for( int im = 0; im < 11; ++im ){
-      alpha[im][iw] = f_alpha->Eval(mzh);
+
+      if( nw != first )
+	alphaScale[im][iw] = f_alpha->Eval(mzh);
+      else
+	alphaCentral[im] = f_alpha->Eval(mzh);
+
       mzh += (mzh<2000) ? 200 : 500;
+
     }
+
     --iw;
 
-    fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\talphaM1200=%f\n", nw, p0, p1, p2, p3, f_alpha->Eval(1200));
+    fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
     // Plot the results to a frame 
 
@@ -149,6 +158,13 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
     model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
 
   } // end of weight loop
+
+  TLegend* leg = new TLegend(0.15,0.15,0.35,0.25);
+
+  leg->SetBorderSize(0);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetTextSize(0.04);
 
   TLatex* lar = new TLatex();
 
@@ -162,23 +178,20 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
 
   // Calculate RMS value of each mass bin
 
-  float Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
-  float Alpha[11], Unc[11];
+  float Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
 
   for( int im = 0; im < 11; ++im ){
 
-    Alpha[im] = alpha[im][0];
-
     if( type == "mur1" )
-      Unc[im] = ( fabs(alpha[im][1]-alpha[im][0]) > fabs(alpha[im][2]-alpha[im][0]) ) ?
-	fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
+      Unc[im] = ( fabs(alphaScale[im][1]-alphaCentral[im]) > fabs(alphaScale[im][0]-alphaCentral[im]) ) ?
+	fabs(alphaScale[im][1]-alphaCentral[im]) : fabs(alphaScale[im][0]-alphaCentral[im]);
 
     else 
-      Unc[im] = TMath::RMS(N, alpha[im]);
+      Unc[im] = TMath::RMS(N, alphaScale[im]);
 
   } // end of mass points
 
-  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
+  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, alphaCentral, 0, Unc);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -186,6 +199,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->SetMinimum(0);
+  g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);
@@ -198,6 +212,8 @@ void rooFitData(string channel, string catcut, string type, int first, int last,
   g_alpha->Draw("apz");
   g_alpha->Draw("3same");
   g_alpha->Draw("cxsame");
+  leg->AddEntry(g_alpha, "alpha ratio with uncertainties", "lf");
+  leg->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));

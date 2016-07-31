@@ -33,7 +33,7 @@ void toyMC_mu(string inputFile, string outputFile, string js){
 
   // setup calibration and reader
 
-  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/CSVV1.csv");
+  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
   BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, "central");
   BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");

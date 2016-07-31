@@ -1,6 +1,5 @@
-#include <iostream>
 #include <fstream>
-#include <string>
+#include <TSystem.h>
 #include "elePdfScaleUnc.h"
 #include "muPdfScaleUnc.h"
 
@@ -10,22 +9,25 @@ void pdfScaleUnc(){
 
   for( int cat = 1; cat <= 2; ++cat ){
 
-    FILE* fe = fopen(Form("eb%d_pdfScaleUnc.txt",cat), "w");
-    FILE* fm = fopen(Form("mb%d_pdfScaleUnc.txt",cat), "w");
+    FILE* fe = fopen(Form("ele_%ibtag_pdfScaleUnc.txt", cat), "w");
+    FILE* fm = fopen(Form("mu_%ibtag_pdfScaleUnc.txt", cat), "w");
 
-    // mass, mur=1, pdf
+    fprintf(fe, "mass\tpdfUnc\tscaleUnc\n");
+    fprintf(fm, "mass\tpdfUnc\tscaleUnc\n");
+
+    float pdfUnce[11], scaleUnce[11];
+    float pdfUncm[11], scaleUncm[11];
 
     for( int i = 0; i < 11; ++i ){
 
-      fprintf(fe, "%d\t%g\t%g\n",
-	      mzh[i],
-	      elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, 0,2,1),
-	      elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, 9,109,1));
+      scaleUnce[i] = elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2);
+      pdfUnce[i]   = elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 10, 109);
 
-      fprintf(fm, "%d\t%g\t%g\n",
-	      mzh[i],
-	      muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, 0,2,1),
-	      muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, 9,109,1));
+      scaleUncm[i] = muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2);
+      pdfUncm[i]   = muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 10, 109);
+
+      fprintf(fe, "%i\t%g\t%g\n", mzh[i], pdfUnce[i], scaleUnce[i]);      
+      fprintf(fm, "%i\t%g\t%g\n", mzh[i], pdfUncm[i], scaleUncm[i]);
     
     }
 
@@ -33,5 +35,8 @@ void pdfScaleUnc(){
     fclose(fm);
 
   }
+
+  gSystem->Exec("mkdir signalPdfScaleResults");
+  gSystem->Exec("mv *txt signalPdfScaleResults");
 
 }

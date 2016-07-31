@@ -5,7 +5,7 @@
 
 void jetEnergyScale(){
 
-  float mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
+  int mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
 
   for( int cat = 1; cat <= 2; ++cat ){
 
@@ -20,16 +20,16 @@ void jetEnergyScale(){
 
     for( int i = 0; i < 11; ++i ){
 
-      jes0e[i]  = eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "central", cat);
-      jesUpe[i] = fabs( eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "up", cat) - jes0e[i] );
-      jesDwe[i] = fabs( eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "dw", cat) - jes0e[i] );
+      jes0e[i]  = eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "central", cat);
+      jesUpe[i] = fabs( eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "up", cat) - jes0e[i] );
+      jesDwe[i] = fabs( eleJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "dw", cat) - jes0e[i] );
 
-      jes0m[i]  = muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "central", cat);
-      jesUpm[i] = fabs( muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "up", cat) - jes0m[i] );
-      jesDwm[i] = fabs( muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", (int)mzh[i]), "dw", cat) - jes0m[i] );
+      jes0m[i]  = muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "central", cat);
+      jesUpm[i] = fabs( muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "up", cat) - jes0m[i] );
+      jesDwm[i] = fabs( muJetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "dw", cat) - jes0m[i] );
 
-      fprintf(fe, "%i\t%g\t%g\t%g\n", (int)mzh[i], jes0e[i], jesUpe[i], jesDwe[i]);      
-      fprintf(fm, "%i\t%g\t%g\t%g\n", (int)mzh[i], jes0m[i], jesUpm[i], jesDwm[i]);
+      fprintf(fe, "%i\t%g\t%g\t%g\n", mzh[i], jes0e[i], jesUpe[i], jesDwe[i]);      
+      fprintf(fm, "%i\t%g\t%g\t%g\n", mzh[i], jes0m[i], jesUpm[i], jesDwm[i]);
 
     }
 
