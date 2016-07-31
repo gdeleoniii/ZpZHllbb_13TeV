@@ -12,7 +12,7 @@ float elePileUpWeight(string inputFile, int cat){
 
   TreeReader data(inputFile.data());
   
-  float passEvent = 0;
+  float passEvent = 0.;
 
   // begin of event loop
 
@@ -54,19 +54,6 @@ float elePileUpWeight(string inputFile, int cat){
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
 
-      int nsubBjet = 0;
-
-      for( int is = 0; is < FATnSubSDJet[ij]; ++is ){
-
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) ++nsubBjet;
-
-      }
- 
-      // b-tag cut
- 
-      if( cat == 1 && nsubBjet != 1 ) continue;
-      if( cat == 2 && nsubBjet != 2 ) continue;
-       
       goodFATJetID = ij;
       thisJet = *myJet;
 
@@ -77,6 +64,19 @@ float elePileUpWeight(string inputFile, int cat){
     if( goodFATJetID < 0 ) continue;
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
+
+    int nsubBjet = 0;
+
+    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
+            
+      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ) ++nsubBjet;
+      
+    } // end of subjet loop
+    
+    // b-tag cut
+    
+    if( cat == 1 && nsubBjet != 1 ) continue;
+    if( cat == 2 && nsubBjet != 2 ) continue;
 
     passEvent += eventWeight;
 

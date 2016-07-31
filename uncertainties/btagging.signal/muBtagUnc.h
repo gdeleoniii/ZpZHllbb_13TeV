@@ -1,5 +1,4 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone_cpp.so)
-
 #include <vector>
 #include <string>
 #include <iostream>
@@ -10,14 +9,12 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float muBtagUnc(string inputFile, int cat, int jSF,
-		TGraphAsymmErrors* g_l, TGraphAsymmErrors* g_c, TGraphAsymmErrors* g_b){
+float muBtagUnc(string inputFile, int cat, string region, int mzh){
 
   // setup calibration and reader
 
-  string region = (jSF==0) ? "central" : ((jSF==1) ? "up" : "down");
+  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
-  BTagCalibration       calib ("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/CSVV1.csv");
   BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, region.data());
   BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, region.data());
   BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, region.data());
@@ -26,10 +23,20 @@ float muBtagUnc(string inputFile, int cat, int jSF,
   reader_c.load(calib, BTagEntry::FLAV_C, "mujets");
   reader_b.load(calib, BTagEntry::FLAV_B, "mujets");
 
+  // to read b-tag effinciency 
+
+  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/mu_udsgflavor_zjetsBtagEff.root");
+  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/mu_cflavor_zjetsBtagEff.root");
+  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/mu_bflavor_signalBtagEff.root");
+  
+  TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("mu_udsgflavor"));
+  TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("mu_cflavor"));
+  TGraphAsymmErrors* g_b = (TGraphAsymmErrors*)(f_b->Get(Form("mu_bflavor_m%i",mzh)));
+
   // read the ntuples (in pcncu)
   
   TreeReader data(inputFile.data());
-  
+
   float passEvent = 0.;
 
   // begin of event loop
@@ -147,7 +154,7 @@ float muBtagUnc(string inputFile, int cat, int jSF,
     passEvent += (pData/pMC);
 
   } // end of event loop
-  
+
   return passEvent/(float)data.GetEntriesFast();
 
 }

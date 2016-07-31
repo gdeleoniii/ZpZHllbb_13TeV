@@ -6,13 +6,13 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 
-float elePdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
+float elePdfScaleUnc(string inputFile, int cat, int first, int last){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
 
-  int N = 1+(last-first)/iter;
+  int N = 1+last-first;
   float* efficiency = new float[N];
   float* passEvent  = new float[N];
   float  totalEvent = 1./data.GetEntriesFast();
@@ -60,19 +60,7 @@ float elePdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
       if( !FATjetPassIDLoose[ij] ) continue;
       if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
       if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
-      
-      int nsubBjet = 0;
-      for( int is = 0; is < FATnSubSDJet[ij]; ++is ){
 
-	if( FATsubjetSDCSV[ij][is] > 0.605 ) ++nsubBjet;
-
-      }
- 
-      // b-tag cut
- 
-      if( cat == 1 && nsubBjet != 1 ) continue;
-      if( cat == 2 && nsubBjet != 2 ) continue;
-      
       goodFATJetID = ij;
       thisJet = *myJet;
 
@@ -84,10 +72,23 @@ float elePdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
 
     if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
 
+    int nsubBjet = 0;
+
+    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
+            
+      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ) ++nsubBjet;
+      
+    } // end of subjet loop
+    
+    // b-tag cut
+    
+    if( cat == 1 && nsubBjet != 1 ) continue;
+    if( cat == 2 && nsubBjet != 2 ) continue;
+        
     ++cpass;
 
     int i = 0;
-    for( int n = first; n <= last; n += iter ){
+    for( int n = first; n <= last; ++n ){
       passEvent[i] += pdfscaleSysWeight[n];
       ++i;
     }
@@ -97,7 +98,9 @@ float elePdfScaleUnc(string inputFile, int cat, int first, int last, int iter){
   for( int n = 0; n < N; ++n )
     efficiency[n] = passEvent[n]*totalEvent;
 
-  return TMath::RMS(N, efficiency)/(cpass*totalEvent);
+  return (first != 0) ?
+    TMath::RMS(N, efficiency)/(cpass*totalEvent) : 
+    TMath::Max(fabs(efficiency[2]-efficiency[0]), fabs(efficiency[1]-efficiency[0]));
 
   delete [] passEvent;
   delete [] efficiency;
