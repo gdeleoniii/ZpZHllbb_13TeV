@@ -6,17 +6,18 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 
-float elePdfScaleUnc(string inputFile, int cat, int first, int last){
+float elePdfScaleUnc(string inputFile, int cat, int first, int last, bool onlyCentral=false){
 
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
 
   int N = 1+last-first;
-  float* efficiency = new float[N];
+  float* efficiency = new float[N-1];
   float* passEvent  = new float[N];
   float  totalEvent = 1./data.GetEntriesFast();
   float  cpass = 0.;
+  float  efficiencyCentral = -1;
 
   std::fill_n(efficiency,N,0.);
   std::fill_n(passEvent,N,0.);
@@ -87,22 +88,28 @@ float elePdfScaleUnc(string inputFile, int cat, int first, int last){
         
     ++cpass;
 
-    int i = 0;
-    for( int n = first; n <= last; ++n ){
-      passEvent[i] += pdfscaleSysWeight[n];
-      ++i;
+    int iw = N-1;
+    for( int nw = last; nw >= first; --nw ){
+      passEvent[iw] += pdfscaleSysWeight[nw];
+      --iw;
     }
 
   } // end of event loop
 
-  for( int n = 0; n < N; ++n )
-    efficiency[n] = passEvent[n]*totalEvent;
+  for( int nw = N-1; nw >= 0; --nw ){
 
-  return (first != 0) ?
-    TMath::RMS(N, efficiency)/(cpass*totalEvent) : 
-    TMath::Max(fabs(efficiency[2]-efficiency[0]), fabs(efficiency[1]-efficiency[0]));
+    if( nw != 0 )
+      efficiency[nw-1] = passEvent[nw]*totalEvent;
+    else 
+      efficiencyCentral = passEvent[nw]*totalEvent;
+
+  }
+
+  float uncertainty = (first != 0) ? TMath::RMS(N, efficiency)/(cpass*totalEvent) : TMath::Max(fabs(efficiency[1]-efficiencyCentral), fabs(efficiency[0]-efficiencyCentral));
 
   delete [] passEvent;
   delete [] efficiency;
+
+  return ( !onlyCentral ) ? uncertainty : efficiencyCentral;
 
 }

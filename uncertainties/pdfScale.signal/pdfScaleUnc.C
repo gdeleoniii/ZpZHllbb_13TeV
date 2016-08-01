@@ -12,22 +12,24 @@ void pdfScaleUnc(){
     FILE* fe = fopen(Form("ele_%ibtag_pdfScaleUnc.txt", cat), "w");
     FILE* fm = fopen(Form("mu_%ibtag_pdfScaleUnc.txt", cat), "w");
 
-    fprintf(fe, "mass\tpdfUnc\tscaleUnc\n");
-    fprintf(fm, "mass\tpdfUnc\tscaleUnc\n");
+    fprintf(fe, "mass\tcentral\tpdfUnc\tscaleUnc\n");
+    fprintf(fm, "mass\tcentral\tpdfUnc\tscaleUnc\n");
 
-    float pdfUnce[11], scaleUnce[11];
-    float pdfUncm[11], scaleUncm[11];
+    float centrale[11], pdfUnce[11], scaleUnce[11];
+    float centralm[11], pdfUncm[11], scaleUncm[11];
 
     for( int i = 0; i < 11; ++i ){
 
+      centrale[i]  = elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2, true);
       scaleUnce[i] = elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2);
       pdfUnce[i]   = elePdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 10, 109);
 
+      centralm[i] = muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2, true);
       scaleUncm[i] = muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 0, 2);
       pdfUncm[i]   = muPdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, 10, 109);
 
-      fprintf(fe, "%i\t%g\t%g\n", mzh[i], pdfUnce[i], scaleUnce[i]);      
-      fprintf(fm, "%i\t%g\t%g\n", mzh[i], pdfUncm[i], scaleUncm[i]);
+      fprintf(fe, "%i\t%g\t%g\t%g\n", mzh[i], centrale[i], pdfUnce[i], scaleUnce[i]);      
+      fprintf(fm, "%i\t%g\t%g\t%g\n", mzh[i], centralm[i], pdfUncm[i], scaleUncm[i]);
     
     }
 
