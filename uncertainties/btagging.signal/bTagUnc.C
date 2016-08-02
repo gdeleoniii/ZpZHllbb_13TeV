@@ -1,7 +1,4 @@
-#include <fstream>
-#include <TSystem.h>
-#include "eleBtagUnc.h"
-#include "muBtagUnc.h"
+#include "bTagUnc.h"
 
 void bTagUnc(){
 
@@ -20,13 +17,13 @@ void bTagUnc(){
 
     for( int i = 0; i < 11; ++i ){
 
-      btagsf0e[i]  = eleBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, "central", mzh[i]);
-      btagsfUpe[i] = eleBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, "up", mzh[i]);
-      btagsfDwe[i] = eleBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), cat, "down", mzh[i]);
+      btagsf0e[i]  = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "ele", cat, "central", mzh[i]);
+      btagsfUpe[i] = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "ele", cat, "up", mzh[i]);
+      btagsfDwe[i] = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "ele", cat, "down", mzh[i]);
 
-      btagsf0m[i]  = muBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, "central", mzh[i]);
-      btagsfUpm[i] = muBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, "up", mzh[i]);
-      btagsfDwm[i] = muBtagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), cat, "down", mzh[i]);
+      btagsf0m[i]  = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), "mu", cat, "central", mzh[i]);
+      btagsfUpm[i] = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), "mu", cat, "up", mzh[i]);
+      btagsfDwm[i] = btagUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root", mzh[i]), "mu", cat, "down", mzh[i]);
     
       fprintf(fe, "%i\t%g\t%g\t%g\n", (int)mzh[i], btagsf0e[i], btagsfUpe[i], btagsfDwe[i]);      
       fprintf(fm, "%i\t%g\t%g\t%g\n", (int)mzh[i], btagsf0m[i], btagsfUpm[i], btagsfDwm[i]);
