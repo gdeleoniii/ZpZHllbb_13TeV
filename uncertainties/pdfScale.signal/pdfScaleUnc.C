@@ -27,8 +27,8 @@ void pdfScaleUnc(){
       centralmP[i] = pdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i], 9, 109, true);
       pdfUncm[i]   = pdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i], 9, 109);
 
-      fprintf(fe, "%i\t%g\t%g\t%g\t%g\n", mzh[i], centraleP[i], pdfUnce[i], centraleS[i], scaleUnce[i]);      
-      fprintf(fm, "%i\t%g\t%g\t%g\t%g\n", mzh[i], centralmP[i], pdfUncm[i], centralmS[i], scaleUncm[i]);
+      fprintf(fe, "%i\t%.3f\t%.3f\t%.3f\t%.3f\n", mzh[i], centraleP[i], pdfUnce[i], centraleS[i], scaleUnce[i]);      
+      fprintf(fm, "%i\t%.3f\t%.3f\t%.3f\t%.3f\n", mzh[i], centralmP[i], pdfUncm[i], centralmS[i], scaleUncm[i]);
     
     }
 

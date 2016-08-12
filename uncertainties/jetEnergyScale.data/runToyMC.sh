@@ -6,6 +6,7 @@ source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.04.10/x86_64-slc6-gcc49-opt/root/
 pwd=$PWD
 
 ch=(ele mu)
+rg=(central up down)
 
 for ((i=0; i<${#ch[@]}; i++)); do
 
@@ -19,8 +20,12 @@ for ((i=0; i<${#ch[@]}; i++)); do
 
 	echo "Processing muon data set..."
 
-	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-05Oct2015-v1.root\"\,\"SingleMuon-Run2015D-v1\"\)
-	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-PromptReco-v4.root\"\,\"SingleMuon-Run2015D-v4\"\)
+	for ((j=0; j<${#rg[@]}; j++)); do
+
+	    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-05Oct2015-v1.root\"\,\"SingleMuon-Run2015D-v1\"\,\"${rg[$j]}\"\)
+	    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-PromptReco-v4.root\"\,\"SingleMuon-Run2015D-v4\"\,\"${rg[$j]}\"\)
+
+	done
 
 	mv *root data
 
@@ -28,39 +33,46 @@ for ((i=0; i<${#ch[@]}; i++)); do
 
 	echo "Processing electron data set..."
 
-        root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-05Oct2015-v1.root\"\,\"SingleElectron-Run2015D-v1\"\)
-	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-PromptReco-v4.root\"\,\"SingleElectron-Run2015D-v4\"\)
+	for ((j=0; j<${#rg[@]}; j++)); do
+
+            root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-05Oct2015-v1.root\"\,\"SingleElectron-Run2015D-v1\"\,\"${rg[$j]}\"\)
+	    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-PromptReco-v4.root\"\,\"SingleElectron-Run2015D-v4\"\,\"${rg[$j]}\"\)
+
+	done
 
 	mv *root data
 
     fi
 
-    echo "Processing Z+jets background..."
-
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-100to200_13TeV\"\)
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-200to400_13TeV\"\)
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-400to600_13TeV\"\)
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root\"\,\"DYJetsToLL_M-50_HT-600toInf_13TeV\"\)
-
-    mv *root Zjets
-
     echo "Processing VV background..."
 
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_WW_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WW_TuneCUETP8M1_13TeV\"\)
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\)
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\)
+    for ((j=0; j<${#rg[@]}; j++)); do
+
+	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_WW_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WW_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\)
+	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\)
+	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\)
+
+    done
 
     mv *root VV
 
     echo "Processing ZH background..."
 
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8.root\"\,\"ZH_HToBB_ZToLL_M125_13TeV\"\)
+    for ((j=0; j<${#rg[@]}; j++)); do
+
+	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8.root\"\,\"ZH_HToBB_ZToLL_M125_13TeV\"\,\"${rg[$j]}\"\)
+
+    done
 
     mv *root ZH
 
     echo "Processing ttbar background..."
 
-    root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\)
+    for ((j=0; j<${#rg[@]}; j++)); do
+
+	root -q -b -l toyMC_${ch[$i]}.C\(\"$samplePath/skim_${ch[$i]}_crab_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\)
+
+    done
 
     mv *root TT
 

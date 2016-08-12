@@ -1,0 +1,15 @@
+*** For uncertainty study on signal efficiency ***
+
+1. The format of folders in this directory is uncertaintySource.onWhichSamples
+
+2. All the uncertainty studies on signal efficiency are located in *.signal folders.
+
+3. Inside each *.signal forders, you can see a .C file and a .h file. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
+
+4. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
+
+5. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
+
+*** For uncertainty study on alpha ratio ***
+
+Under construction.....

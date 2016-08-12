@@ -9,11 +9,11 @@ void jetEnergyScale(){
     FILE* fe = fopen(Form("ele_%ibtag_jesUnc.txt", cat), "w");
     FILE* fm = fopen(Form("mu_%ibtag_jesUnc.txt", cat), "w");
 
-    fprintf(fe, "mass\tcentral\tJESuncUp\tJESuncDw\n");
-    fprintf(fm, "mass\tcentral\tJESuncUp\tJESuncDw\n");
+    fprintf(fe, "mass\tcentral\tJES_relativeUnc\n");
+    fprintf(fm, "mass\tcentral\tJES_relativeUnc\n");
 
-    float jes0e[11], jesUpe[11], jesDwe[11];
-    float jes0m[11], jesUpm[11], jesDwm[11];
+    float jes0e[11], jesUpe[11], jesDwe[11], jesUnce[11];
+    float jes0m[11], jesUpm[11], jesDwm[11], jesUncm[11];
 
     for( int i = 0; i < 11; ++i ){
 
@@ -21,12 +21,16 @@ void jetEnergyScale(){
       jesUpe[i] = fabs( jetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "up", "ele", cat, mzh[i]) - jes0e[i] );
       jesDwe[i] = fabs( jetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "dw", "ele", cat, mzh[i]) - jes0e[i] );
 
+      jesUnce[i] = TMath::Max(jesUpe[i],jesDwe[i])/jes0e[i];
+
       jes0m[i]  = jetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "central", "mu", cat, mzh[i]);
       jesUpm[i] = fabs( jetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "up", "mu", cat, mzh[i]) - jes0m[i] );
       jesDwm[i] = fabs( jetEnergyScale(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "dw", "mu", cat, mzh[i]) - jes0m[i] );
 
-      fprintf(fe, "%i\t%g\t%g\t%g\n", mzh[i], jes0e[i], jesUpe[i], jesDwe[i]);      
-      fprintf(fm, "%i\t%g\t%g\t%g\n", mzh[i], jes0m[i], jesUpm[i], jesDwm[i]);
+      jesUncm[i] = TMath::Max(jesUpm[i],jesDwm[i])/jes0m[i];
+
+      fprintf(fe, "%i\t%.3f\t%.3f\n", mzh[i], jes0e[i], jesUnce[i]);      
+      fprintf(fm, "%i\t%.3f\t%.3f\n", mzh[i], jes0m[i], jesUncm[i]);
 
     }
 

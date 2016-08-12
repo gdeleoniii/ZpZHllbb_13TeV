@@ -178,7 +178,7 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
 
   }
 
-  float uncertainty = (first != 0) ? TMath::RMS(N-1, efficiency)/efficiencyCentral : TMath::Max(fabs(efficiency[1]-efficiencyCentral), fabs(efficiency[0]-efficiencyCentral));
+  float uncertainty = (first != 0) ? TMath::RMS(N-1, efficiency)/efficiencyCentral : TMath::Max(fabs(efficiency[1]-efficiencyCentral), fabs(efficiency[0]-efficiencyCentral))/efficiencyCentral;
 
   delete [] passEvent;
   delete [] efficiency;

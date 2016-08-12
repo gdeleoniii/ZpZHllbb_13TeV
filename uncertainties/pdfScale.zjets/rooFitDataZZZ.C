@@ -31,12 +31,24 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
+  RooPlot* mZHsbFrame = mZH.frame();
+  RooPlot* mZHsgFrame = mZH.frame();
+
   int N = last-first;
   int iw = N-1;
   float alphaScale[11][N], alphaCentral[11];
 
   TF1* f_alpha = new TF1("f_alpha", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);
-     
+   
+  f_alpha->SetTitle("");
+  f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  f_alpha->GetYaxis()->SetTitle("#alpha Ratio");
+  f_alpha->GetYaxis()->SetTitleOffset(1.3);
+  
+  TCanvas* cv = new TCanvas("cv", "", 0, 0, 1000, 800);
+
+  cv->cd();
+  
   for( int nw = last; nw >= first; --nw ){
     
     RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
@@ -113,8 +125,13 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
     // Set the model of alpha ratio
 
     f_alpha->SetParameters(p2,p3,p0,p1);
+    f_alpha->SetMinimum(0);
+    f_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
+    f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
+    f_alpha->DrawCopy((nw==last) ? "" : "same");
 
     int mzh = 800;
+
     for( int im = 0; im < 11; ++im ){
 
       if( nw != first )
@@ -130,12 +147,29 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
 
     fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
+    // Plot the results to a frame 
+
+    dataSetZjetsSB.plotOn(mZHsbFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+    model_ZHSB.plotOn(mZHsbFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
+
+    dataSetZjetsSG.plotOn(mZHsgFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+    model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
+
   } // end of weight loop
+
+  TLatex* lar = new TLatex();
+
+  lar->SetTextSize(0.035);
+  lar->SetLineWidth(5);
+
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf(", type.data(), channel.data(), catcut.data()));
 
   // Calculate RMS value of each mass bin
 
   float Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
-  float relativeUnc[11];
 
   for( int im = 0; im < 11; ++im ){
 
@@ -146,19 +180,15 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
     else 
       Unc[im] = TMath::RMS(N, alphaScale[im]);
 
-    relativeUnc[im] = Unc[im]/alphaCentral[im];
-
   } // end of mass points
 
   TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, alphaCentral, 0, Unc);
 
   g_alpha->SetTitle("");
-  g_alpha->GetXaxis()->SetTitle("");
-  g_alpha->GetXaxis()->SetLabelOffset(999);
-  g_alpha->GetXaxis()->SetLabelSize(0);
-  g_alpha->GetXaxis()->SetLimits(800,4000);
+  g_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
+  g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->SetMinimum(0);
   g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
   g_alpha->SetLineWidth(2);
@@ -167,25 +197,6 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(1001);
   g_alpha->SetFillColor(kYellow);  
-  
-  TGraph* g_unc = new TGraph(11, Mzh, relativeUnc);
-  
-  g_unc->SetTitle("");
-  g_unc->GetXaxis()->SetTitle("m_{ZH} (GeV)");
-  g_unc->GetXaxis()->SetLabelSize(0.1);
-  g_unc->GetXaxis()->SetLabelOffset(0.005);
-  g_unc->GetXaxis()->SetTitleSize(0.125);
-  g_unc->GetXaxis()->SetTitleOffset(0.8);
-  g_unc->GetXaxis()->SetLimits(800,4000);
-  g_unc->GetYaxis()->SetTitle("Relative unc.");
-  g_unc->GetYaxis()->SetTitleOffset(0.45);
-  g_unc->GetYaxis()->SetLabelSize(0.1);
-  g_unc->GetYaxis()->SetTitleSize(0.1);
-  g_unc->GetYaxis()->SetNdivisions(505);
-  g_unc->SetMinimum(0);
-  g_unc->SetMaximum(1);
-  g_unc->SetMarkerStyle(8);
-  g_unc->SetMarkerColor(kBlack);
 
   TLegend* leg = new TLegend(0.15,0.15,0.35,0.25);
 
@@ -193,28 +204,9 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
   leg->SetTextSize(0.04);
-
-  TLatex* lar = new TLatex();
   
-  lar->SetTextSize(0.035);
-  lar->SetLineWidth(5);
-
-  float up_height     = 0.8;
-  float dw_correction = 1.375;
-  float dw_height     = (1-up_height)*dw_correction;
-
-  TCanvas cv("cv","",0,0,1000,900);
-  cv.Divide(1,2);
-
-  TPad* cv_up = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_1");
-  TPad* cv_dw = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_2"); 
-
-  cv_up->SetPad(0,1-up_height,1,1);
-  cv_dw->SetPad(0,0,1,dw_height);
-  cv_dw->SetBottomMargin(0.25);
-
-  cv_up->cd();
-
+  cv->Clear();
+  cv->cd();
   g_alpha->Draw("apz");
   g_alpha->Draw("3same");
   g_alpha->Draw("cxsame");
@@ -223,13 +215,40 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));  
 
-  cv_up->RedrawAxis();
-  cv_dw->cd();
+  TLegend* leg1 = new TLegend(0.55,0.55,0.85,0.70);
 
-  g_unc->Draw();
+  leg1->AddEntry(mZHsbFrame->findObject(mZHsbFrame->nameOf(0)), "MC side band (central)", "lep");
+  leg1->AddEntry(mZHsbFrame->findObject(mZHsbFrame->nameOf(1)), "Fit curve (central)", "l");
+  leg1->Draw();
 
-  cv.Draw();
-  cv.Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));  
+  cv->Clear();
+  cv->cd();
+  mZHsbFrame->addObject(leg1);
+  mZHsbFrame->SetTitle("");
+  mZHsbFrame->SetMinimum(0);
+  mZHsbFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
+
+  TLegend* leg2 = new TLegend(0.55,0.55,0.85,0.70);
+
+  leg2->AddEntry(mZHsgFrame->findObject(mZHsgFrame->nameOf(0)), "MC signal region (central)", "lep");
+  leg2->AddEntry(mZHsgFrame->findObject(mZHsgFrame->nameOf(1)), "Fit curve (central)", "l");
+  leg2->Draw();
+
+  cv->Clear();
+  cv->cd();
+  mZHsgFrame->addObject(leg2);
+  mZHsgFrame->SetTitle("");
+  mZHsgFrame->SetMinimum(0);
+  mZHsgFrame->Draw();
+  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+  cv->Print(Form("alpha_%sScale_%s_cat%s.pdf)", type.data(), channel.data(), catcut.data()));
 
 }

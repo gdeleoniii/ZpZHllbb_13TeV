@@ -9,11 +9,11 @@ void pileUpWeight(){
     FILE* fe = fopen(Form("ele_%ibtag_pileUpUnc.txt", cat), "w");
     FILE* fm = fopen(Form("mu_%ibtag_pileUpUnc.txt", cat), "w");
 
-    fprintf(fe, "mass\tcentral\tPUuncUp\tPUuncDw\n");
-    fprintf(fm, "mass\tcentral\tPUuncUp\tPUuncDw\n");
+    fprintf(fe, "mass\tcentral\tPU_relativeUnc\n");
+    fprintf(fm, "mass\tcentral\tPU_relativeUnc\n");
 
-    float pu0e[11], puUpe[11], puDwe[11];
-    float pu0m[11], puUpm[11], puDwm[11];
+    float pu0e[11], puUpe[11], puDwe[11], puUnce[11];
+    float pu0m[11], puUpm[11], puDwm[11], puUncm[11];
 
     for( int i = 0; i < 11; ++i ){
     
@@ -21,12 +21,16 @@ void pileUpWeight(){
       puUpe[i] = fabs( pileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "ele", cat, mzh[i]) - pu0e[i] );
       puDwe[i] = fabs( pileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "ele", cat, mzh[i]) - pu0e[i] );
 
+      puUnce[i] = TMath::Max(puUpe[i],puDwe[i])/pu0e[i];
+
       pu0m[i]  = pileUpWeight(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i]);
       puUpm[i] = fabs( pileUpWeight(Form("/data7/htong/skim_signalPileUpScaleUp/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i]) - pu0m[i] );
       puDwm[i] = fabs( pileUpWeight(Form("/data7/htong/skim_signalPileUpScaleDw/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i]) - pu0m[i] );
 
-      fprintf(fe, "%i\t%g\t%g\t%g\n", mzh[i], pu0e[i], puUpe[i], puDwe[i]);      
-      fprintf(fm, "%i\t%g\t%g\t%g\n", mzh[i], pu0m[i], puUpm[i], puDwm[i]);
+      puUncm[i] = TMath::Max(puUpm[i],puDwm[i])/pu0m[i];
+
+      fprintf(fe, "%i\t%.3f\t%.3f\n", mzh[i], pu0e[i], puUnce[i]);      
+      fprintf(fm, "%i\t%.3f\t%.3f\n", mzh[i], pu0m[i], puUncm[i]);
     
     }
 

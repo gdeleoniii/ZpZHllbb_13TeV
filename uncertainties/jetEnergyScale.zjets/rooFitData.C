@@ -78,9 +78,8 @@ void rooFitData(string channel, string catcut){
 
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-
-    RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-    RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+    
+    ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     float p0 = a.getVal();
     float p1 = b.getVal();
@@ -105,8 +104,7 @@ void rooFitData(string channel, string catcut){
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
 
-    RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-    RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+    ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     float p2 = c.getVal();
     float p3 = d.getVal();
@@ -128,22 +126,25 @@ void rooFitData(string channel, string catcut){
   // Calculate uncertainty of each mass bin
 
   float Alpha[11], Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
+  float relativeUnc[11];
 
   for( int im = 0; im < 11; ++im ){
 
     Alpha[im] = alpha[im][0];
-    Unc[im] = ( fabs(alpha[im][1]-alpha[im][0]) > fabs(alpha[im][2]-alpha[im][0]) ) ?
-      fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
+    Unc[im] = (fabs(alpha[im][1]-alpha[im][0])>fabs(alpha[im][2]-alpha[im][0])) ? fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
+    relativeUnc[im] = Unc[im]/Alpha[im];
 
   } // end of mass points
   
   TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
 
   g_alpha->SetTitle("");
-  g_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  g_alpha->GetXaxis()->SetTitle("");
+  g_alpha->GetXaxis()->SetLabelOffset(999);
+  g_alpha->GetXaxis()->SetLabelSize(0);
+  g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
-  g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->SetMinimum(0);
   g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
   g_alpha->SetLineWidth(2);
@@ -152,6 +153,25 @@ void rooFitData(string channel, string catcut){
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(1001);
   g_alpha->SetFillColor(kYellow);  
+  
+  TGraph* g_unc = new TGraph(11, Mzh, relativeUnc);
+  
+  g_unc->SetTitle("");
+  g_unc->GetXaxis()->SetTitle("m_{ZH} (GeV)");
+  g_unc->GetXaxis()->SetLabelSize(0.1);
+  g_unc->GetXaxis()->SetLabelOffset(0.005);
+  g_unc->GetXaxis()->SetTitleSize(0.125);
+  g_unc->GetXaxis()->SetTitleOffset(0.8);
+  g_unc->GetXaxis()->SetLimits(800,4000);
+  g_unc->GetYaxis()->SetTitle("Relative unc.");
+  g_unc->GetYaxis()->SetTitleOffset(0.45);
+  g_unc->GetYaxis()->SetLabelSize(0.1);
+  g_unc->GetYaxis()->SetTitleSize(0.1);
+  g_unc->GetYaxis()->SetNdivisions(505);
+  g_unc->SetMinimum(0);
+  g_unc->SetMaximum(1);
+  g_unc->SetMarkerStyle(8);
+  g_unc->SetMarkerColor(kBlack);
 
   TLegend* leg = new TLegend(0.15,0.15,0.35,0.25);
 
@@ -165,19 +185,37 @@ void rooFitData(string channel, string catcut){
   lar->SetTextSize(0.035);
   lar->SetLineWidth(5);
 
-  TCanvas* cv = new TCanvas("cv", "", 0, 0, 1000, 800);
+  float up_height     = 0.8;
+  float dw_correction = 1.375;
+  float dw_height     = (1-up_height)*dw_correction;
 
-  cv->cd();
+  TCanvas cv("cv","",0,0,1000,900);
+  cv.Divide(1,2);
+
+  TPad* cv_up = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_1");
+  TPad* cv_dw = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_2"); 
+
+  cv_up->SetPad(0,1-up_height,1,1);
+  cv_dw->SetPad(0,0,1,dw_height);
+  cv_dw->SetBottomMargin(0.25);
+
+  cv_up->cd();
+
   g_alpha->Draw("apz");
   g_alpha->Draw("3same");
   g_alpha->Draw("cxsame");
   leg->AddEntry(g_alpha, "alpha ratio with uncertainties", "lf");
   leg->Draw();
-
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
-  lar->DrawLatexNDC(0.72, 0.75, "JES");
-  cv->Print(Form("alpha_jetEnScale_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  cv_up->RedrawAxis();
+  cv_dw->cd();
+
+  g_unc->Draw();
+
+  cv.Draw();
+  cv.Print(Form("alpha_jetEnScale_%s_cat%s.pdf", channel.data(), catcut.data()));
 
 }
