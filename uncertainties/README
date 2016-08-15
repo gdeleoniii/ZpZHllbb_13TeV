@@ -6,9 +6,15 @@
 
 3. Inside each *.signal forders, you can see a .C file and a .h file. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
 
-4. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
+4. The .h files read some neccessary files. Make sure that you have everything before running the codes.
+   
+   4.1 The BTagCalibrationStandalone.h in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead
+   4.2 The CSVV1.csv                   in https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/CSVV1.csv
+   4.3 The b-tag efficiency root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
 
-5. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
+5. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
+
+6. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
 
 *** For uncertainty study on alpha ratio ***
 
