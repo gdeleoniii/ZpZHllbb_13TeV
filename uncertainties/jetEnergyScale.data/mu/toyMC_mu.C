@@ -28,11 +28,11 @@ float crossSection(string thisPath){
 
 }
 
-void toyMC_mu(string inputFile, string outputFile){
+void toyMC_mu(string inputFile, string outputFile, string js){
 
   // setup calibration and reader
 
-  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/CSVV1.csv");
+  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
   BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, "central");
   BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
@@ -44,9 +44,9 @@ void toyMC_mu(string inputFile, string outputFile){
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_udsgflavor_zjetsBtagEff.root");
-  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_cflavor_zjetsBtagEff.root");
-  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_bflavor_zjetsBtagEff.root");
+  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_udsgflavor_zjetsBtagEff.root");
+  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_cflavor_zjetsBtagEff.root");
+  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_bflavor_zjetsBtagEff.root");
   
   TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("mu_udsgflavor"));
   TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("mu_cflavor"));
@@ -61,7 +61,7 @@ void toyMC_mu(string inputFile, string outputFile){
 
   // Create a tree to store variables
 
-  TFile* outFile = new TFile(Form("%s_toyMC.root",outputFile.c_str()), "recreate");
+  TFile* outFile = new TFile(Form("%s_%s_toyMC.root",outputFile.data(), js.data()), "recreate");
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
@@ -103,6 +103,8 @@ void toyMC_mu(string inputFile, string outputFile){
     Int_t          FATnJet           = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
+    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -128,6 +130,8 @@ void toyMC_mu(string inputFile, string outputFile){
     for( int ij = 0; ij < FATnJet; ++ij ){
 
       TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
+
+      *myJet *= (js=="central") ? 1 : ( (js=="up") ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]) );
 
       if( myJet->Pt() < 200 ) continue;
       if( fabs(myJet->Eta()) > 2.4 ) continue;

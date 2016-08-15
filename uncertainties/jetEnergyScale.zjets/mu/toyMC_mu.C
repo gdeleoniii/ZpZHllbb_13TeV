@@ -45,9 +45,9 @@ void toyMC_mu(string inputFile, string outputFile, string js){
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_udsgflavor_zjetsBtagEff.root");
-  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_cflavor_zjetsBtagEff.root");
-  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/mu_bflavor_zjetsBtagEff.root");
+  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_udsgflavor_zjetsBtagEff.root");
+  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_cflavor_zjetsBtagEff.root");
+  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/mu_bflavor_zjetsBtagEff.root");
   
   TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("mu_udsgflavor"));
   TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("mu_cflavor"));
