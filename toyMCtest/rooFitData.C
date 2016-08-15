@@ -16,14 +16,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   if( channel == "ele" ){
 
-    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v1_toyMC.root",  channel.data()));
+    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v1_toyMC.root", channel.data()));
     treeData->Add(Form("%s/data/SingleElectron-Run2015D-v4_toyMC.root", channel.data()));
 
   }
 
   else if( channel == "mu" ){
 
-    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v1_toyMC.root",  channel.data()));
+    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v1_toyMC.root", channel.data()));
     treeData->Add(Form("%s/data/SingleMuon-Run2015D-v4_toyMC.root", channel.data()));
 
   }
@@ -39,10 +39,10 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   if( removeMinor ){
 
-    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
-    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
-    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
-    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
+    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
+    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
+    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
     treeData->Add(Form("%s/ZH/ZH_HToBB_ZToLL_M125_13TeV_toyMC.root", channel.data()));
 
   }
@@ -50,24 +50,21 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Define all the variables from the trees
 
   RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "M_{jet}",  30.,  300., "GeV");
-  RooRealVar mZH ("mllbb",   "M_{ZH}", 900., 3000., "GeV");
+  RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
+  RooRealVar mZH ("mllbb", "M_{ZH}", 800., 4000., "GeV");
   RooRealVar evWeight("evweight", "", 0., 1.e3);
 
-  // Set the range in zh mass 
+  // Set the range in zh mass and in jet mass
 
-  mZH.setRange("fullRange", 900., 3000.);
-
-  RooBinning binsmZH(21, 900, 3000);
-
-  // Set the range in jet mass
+  mZH.setRange("fullRange", 800., 4000.);
 
   mJet.setRange("allRange", 30., 300.);
   mJet.setRange("lowSB",    30.,  65.);
   mJet.setRange("highSB",  135., 300.);
   mJet.setRange("signal",  105., 135.);
 
-  RooBinning binsmJet(54, 30, 300);
+  RooBinning binsmZH(32, 800, 4000);
+  RooBinning binsmJet(27, 30, 300);
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
 
@@ -86,36 +83,37 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   
   // Total events number
 
-  float totalMcEv   = dataSetZjets.sumEntries();
-  float totalSBMcEv = dataSetZjetsSB.sumEntries();
-  float totalSGMcEv = dataSetZjetsSG.sumEntries();
-  float totalDataEv = dataSetData.sumEntries();
+  RooRealVar nMcEvents    ("nMcEvents",     "nMcEvents",     0., 1.e10);
+  RooRealVar nSBMcEvents  ("nSBMcEvents",   "nSBMcEvents",   0., 1.e10);
+  RooRealVar nSGMcEvents  ("nSGMcEvents",   "nSGMcEvents",   0., 1.e10);
+  RooRealVar nDataEvents  ("nDataEvents",   "nDataEvents",   0., 1.e10);
+  RooRealVar nSBDataEvents("nSBDataEvents", "nSBDataEvents", 0., 1.e10);
 
-  RooRealVar nMcEvents  ("nMcEvents",   "nMcEvents",   0., 9999999.);
-  RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 9999999.);
-  RooRealVar nSGMcEvents("nSGMcEvents", "nSGMcEvents", 0., 9999999.);
-  RooRealVar nDataEvents("nDataEvents", "nDataEvents", 0., 9999999.);
-
-  nMcEvents.setVal(totalMcEv);
+  nMcEvents.setVal(dataSetZjets.sumEntries());
   nMcEvents.setConstant(true);
   
-  nSBMcEvents.setVal(totalSBMcEv);
+  nSBMcEvents.setVal(dataSetZjetsSB.sumEntries());
   nSBMcEvents.setConstant(true);
   
-  nSGMcEvents.setVal(totalSGMcEv);
+  nSGMcEvents.setVal(dataSetZjetsSG.sumEntries());
   nSGMcEvents.setConstant(true);
   
-  nDataEvents.setVal(totalDataEv);
+  nDataEvents.setVal(dataSetData.sumEntries());
   nDataEvents.setConstant(true);
+
+  nSBDataEvents.setVal(dataSetDataSB.sumEntries());
+  nSBDataEvents.setConstant(true);
 
   // Side band jet mass in data
 
-  RooRealVar lamda("lamda", "lamda", -0.02,  -5.,   5.);
-  RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
+  RooRealVar lamda("lamda", "lamda", -0.025, -0.030, -0.005);
 
-  RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBMcEvents);
+  RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
+  RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
 
   RooFitResult* mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+  fprintf(stdout, "lamda value is %g\n", lamda.getVal());
 
   // Normalize factor to normalize the background in signal region of data
 
@@ -124,19 +122,98 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   float normFactor = dataSetDataSB.sumEntries()*(nSIGFit->getVal()/nSBFit->getVal());
  
-  fprintf(stdout, ">>>> The normalization factor is %g <<<<\n\n", normFactor);
+  fprintf(stdout, "The normalization factor is %g\n", normFactor);
  
-  // Plot the results on a frame
+  // Alpha ratio part
+  
+  float bmin, bmax;
+
+  if( channel == "ele" ){
+    bmin = (catcut=="1") ?  600. : 1400.;
+    bmax = (catcut=="1") ? 1500. : 2600.;
+  }
+
+  else if( channel == "mu" ){
+    bmin = (catcut=="1") ? 100. : 2100.; 
+    bmax = (catcut=="1") ? 900. : 2900.;
+  }
+    
+  RooRealVar p0("p0", "p0", -0.002, -0.005, 0.);
+  RooRealVar p1("p1", "p1", (bmin+bmax)*0.5, bmin, bmax);
+
+  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,p0,p1));
+  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
+
+  RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+
+  // Fit ZH mass in signal region
+
+  float dmin, dmax;
+   
+  if( channel == "ele" ){
+    dmin = (catcut=="1") ? 3100. : 0.;
+    dmax = (catcut=="1") ? 3900. : 1.;
+  }
+    
+  else if( channel == "mu" ){
+    dmin = (catcut=="1") ? 0. : 8.;
+    dmax = (catcut=="1") ? 1. : 18.;
+  }
+    
+  RooRealVar p2("p2", "p2", -0.002, -0.005, 0.);
+  RooRealVar p3("p3", "p3", (dmin+dmax)*0.5, dmin, dmax);
+
+  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,p2,p3));
+  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+
+  RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
+
+  // Fit ZH mass in side band region (data)
+
+  float pdmin, pdmax;
+    
+  if( channel == "ele" ){
+    pdmin = 0.;
+    pdmax = 2.;
+  }
+    
+  else if( channel == "mu" ){
+    pdmin = (catcut=="1") ? 5000. : 1300.;
+    pdmax = (catcut=="1") ? 5500. : 1500.;
+  }
+
+  RooRealVar pd0("pd0", "pd0", -0.002, -0.005, 0.);
+  RooRealVar pd1("pd1", "pd1", (pdmin+pdmax)*0.5, pdmin, pdmax);
+
+  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,pd0,pd1));
+  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
+
+  RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+  fprintf(stdout, "p0=%f\tp1=%f\tp2=%f\tp3=%f\tpd0=%f\tpd1=%f\n\n", p0.getVal(),p1.getVal(),p2.getVal(),p3.getVal(),pd0.getVal(),pd1.getVal());
+
+  // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
+
+  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(p0,p1)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(p2,p3)))->Integral(800,4000);
+
+  RooGenericPdf model_alpha  ("model_alpha", "model_alpha", Form("%f*TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", normConst, p2.getVal(),p3.getVal(),p0.getVal(),p1.getVal()), RooArgSet(mZH));
+  RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
+
+  // Plot the results to a frame 
+
+  /*-*-*-*-*-*-*/
 
   RooPlot* mJetFrame = mJet.frame();
 
-  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));  
+  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
-  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));  
+  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));
   ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"));
 
   TLegend* leg = new TLegend(0.60,0.72,0.85,0.85);
-  
+
   leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(2)), "Data side band", "lep");
   leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
   leg->Draw();
@@ -145,105 +222,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mJetFrame->SetMinimum(0);
   mJetFrame->SetTitle("");
 
-  // Alpha ratio part
-  
-  // Fit ZH mass in side band  
-  /*
-  RooRealVar a("a", "a", -0.002, -1., 1.);
-  RooRealVar b("b", "b", 1200, 0., 5000.);
-
-  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
-  RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-
-  RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-  RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
-
-  float p0 = a.getVal();
-  float p1 = b.getVal();
-
-  // Fit ZH mass in signal region
-
-  RooRealVar c("c", "c", -0.002, -1., 1.);
-  RooRealVar d("d", "d", 1200, 0., 5000.);
-
-  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
-  RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-
-  RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-  RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
-
-  float p2 = c.getVal();
-  float p3 = d.getVal();
-  */
-  float bmin, bmax;
-
-  if( channel == "ele" ){
-    bmin = (catcut=="1") ? 1300. : 0.;
-    bmax = (catcut=="1") ? 1800. : 2.;
-  }
-
-  else if( channel == "mu" ){
-    bmin = 600.; 
-    bmax = 1200.;
-  }
-    
-  RooRealVar a("a", "a", -0.002, -0.005, 0.);
-  RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
-
-  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
-  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-
-  RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-  RooAbsReal* nZHSBFit = ext_model_ZHSB.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
-
-  float p0 = a.getVal();
-  float p1 = b.getVal();
-
-  // Fit ZH mass in signal region
-
-  float dmin, dmax;
-    
-  if( channel == "ele" ){
-    dmin = (catcut=="1") ? 800.  : 2100.;
-    dmax = (catcut=="1") ? 1400. : 2800.;
-  }
-    
-  else if( channel == "mu" ){
-    dmin = (catcut=="1") ? 0. : 1500.;
-    dmax = (catcut=="1") ? 1. : 2500.;
-  }
-    
-  RooRealVar c("c", "c", -0.002, -0.005, 0.);
-  RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
-
-  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
-  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-
-  RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-  RooAbsReal* nZHSGFit = ext_model_ZHSG.createIntegral(RooArgSet(mZH), NormSet(mZH), Range("fullRange"));
-
-  float p2 = c.getVal();
-  float p3 = d.getVal();
-
-  // Fit ZH mass in side band region (data)
-
-  RooRealVar e("e", "e", -0.002, -1., 1.);
-  RooRealVar f("f", "f", 1200, 0., 5000.);
-
-  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,e,f));
-  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
-
-  RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-  // Draw the model of alpha ratio
-  // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
-
-  RooGenericPdf model_alpha  ("model_alpha", "model_alpha", Form("TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", p2,p3,p0,p1), RooArgSet(mZH));
-  RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
-
-  // Plot the results to a frame 
+  /*-*-*-*-*-*-*/
 
   RooPlot* mZHFrameMC = mZH.frame();
 
@@ -269,6 +248,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mZHFrameMC->SetMinimum(0);
   mZHFrameMC->SetTitle("");
 
+  /*-*-*-*-*-*-*/
+
   RooPlot* mZHFrame = mZH.frame();
 
   dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
@@ -286,11 +267,13 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mZHFrame->SetMinimum(0);
   mZHFrame->SetTitle("");
 
+  /*-*-*-*-*-*-*/
+
   RooPlot* predictFrame = mZH.frame();
 
   dataSetDataSG.plotOn(predictFrame, Binning(binsmZH));
   model_sigData.plotOn(predictFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
-  
+
   TLegend* leg2 = new TLegend(0.60,0.72,0.85,0.85);
 
   leg2->AddEntry(predictFrame->findObject(predictFrame->nameOf(0)), "Data signal region", "lep");
@@ -300,6 +283,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   predictFrame->addObject(leg2);
   predictFrame->SetMinimum(0);
   predictFrame->SetTitle("");
+
+  /*-*-*-*-*-*-*/
 
   TLatex* lar = new TLatex();
 
@@ -315,6 +300,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar->DrawLatexNDC(0.65, 0.60, Form("%s  %s btag", channel.data(), catcut.data()));
   cv->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
+  cv->Clear();
   cv->cd();
   mZHFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
@@ -322,6 +308,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
   cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
+  cv->Clear();
   cv->cd();
   predictFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
@@ -329,6 +316,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
   cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
   
+  cv->Clear();
   cv->cd();
   mJetFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");

@@ -130,7 +130,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
 
     --iw;
 
-    fprintf(stdout, "weight=%i\tp0=%f\tp1=%f\tp2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
+    fprintf(stdout, "weight=%i\t(sb)p0=%f\tp1=%f\t(sg)p2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
   } // end of weight loop
 

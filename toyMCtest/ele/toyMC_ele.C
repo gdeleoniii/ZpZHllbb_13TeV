@@ -32,7 +32,7 @@ void toyMC_ele(string inputFile, string outputFile){
 
   // setup calibration and reader
 
-  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/CSVV1.csv");
+  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
   BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, "central");
   BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
@@ -44,9 +44,9 @@ void toyMC_ele(string inputFile, string outputFile){
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/ele_udsgflavor_zjetsBtagEff.root");
-  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/ele_cflavor_zjetsBtagEff.root");
-  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/ele_bflavor_zjetsBtagEff.root");
+  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_udsgflavor_zjetsBtagEff.root");
+  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_cflavor_zjetsBtagEff.root");
+  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_bflavor_zjetsBtagEff.root");
   
   TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("ele_udsgflavor"));
   TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("ele_cflavor"));

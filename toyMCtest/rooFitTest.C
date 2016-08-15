@@ -42,48 +42,39 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
+  // Create a dataset from a tree -> to process an unbinned likelihood fitting
+
+  RooDataSet dataSet  ("dataSet", "dataSet", variables, Cut(catCut), WeightVar(evWeight), Import(*tree));
+  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut), WeightVar(evWeight), Import(*tree));
+
+  // Total events number
+
+  RooRealVar nMcEvents  ("nMcEvents",   "nMcEvents",   0., 1.e10);
+  RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
+
+  nMcEvents.setVal(dataSet.sumEntries());
+  nMcEvents.setConstant(true);
+
+  nSBMcEvents.setVal(dataSetSB.sumEntries());
+  nSBMcEvents.setConstant(true);
+
   /*******************************************/
   /*                 ALL RANGE               */
   /*******************************************/
 
-  // Create a dataset from a tree -> to process an unbinned likelihood fitting
+  RooRealVar lamda("lamda", "lamda", -0.02, -0.5, 0.);
 
-  RooDataSet dataSet("dataSet", 
-		     "dataSet",
-		     variables,
-		     Cut(catCut),
-		     WeightVar(evWeight), 
-		     Import(*tree));
-
-  // Define the pdf and fitting
-
-  RooRealVar lamda("lamda", "lamda", -0.02, -5., 5.);
   RooExponential model("model", "Exponential function for Z+jets mass", mJet, lamda);
+  RooExtendPdf ext_model("ext_model", "ext_model", model, nMcEvents);
 
-  RooFitResult* mJet_result = model.fitTo(dataSet, 
-					  SumW2Error(true), 
-					  Range("allRange"),
-					  Strategy(2),
-					  Minimizer("Minuit2"), 
-					  Save(1));
-
-  // Plot results on a frame
+  RooFitResult* mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   RooPlot* mJetFrame = mJet.frame();
 
-  dataSet.plotOn(mJetFrame,
-		 Binning(binsmJet));
- 
-  model.plotOn(mJetFrame, 
-	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent),
-	       VisualizeError(*mJet_result),
-	       FillColor(kYellow));
-
-  dataSet.plotOn(mJetFrame,
-		 Binning(binsmJet));
-
-  model.plotOn(mJetFrame, 
-	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
+  dataSet.plotOn(mJetFrame, Binning(binsmJet)); 
+  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), VisualizeError(*mJet_result), FillColor(kYellow));
+  dataSet.plotOn(mJetFrame, Binning(binsmJet));
+  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
 
   TLegend* leg1 = new TLegend(0.60,0.67,0.85,0.80);
 
@@ -98,46 +89,20 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   /*                SIDE BAND                */
   /*******************************************/
 
-  RooDataSet dataSetSB("dataSetSB",
-		       "dataSetSB",
-		       variables,
-		       Cut(catCut && sbCut), 
-		       WeightVar(evWeight),
-		       Import(*tree));
+  RooRealVar lamdaSB("lamdaSB", "lamda", -0.02, -0.5, 0.);
 
-  RooRealVar lamdaSB("lamdaSB", "lamda", -0.02, -5., 5.);
   RooExponential modelSB("modelSB", "Exponential function for Z+jets mass", mJet, lamdaSB);
+  RooExtendPdf ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
 
-  RooFitResult* mJetSB_result = modelSB.fitTo(dataSetSB,
-					      SumW2Error(true),
-					      Range("lowSB,highSB"),
-					      Strategy(2),
-					      Minimizer("Minuit2"),
-					      Save(1));
+  RooFitResult* mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   RooPlot* mJetFrameSB = mJet.frame();
 
-  dataSetSB.plotOn(mJetFrameSB,
-		   Binning(binsmJet));
-
-  modelSB.plotOn(mJetFrameSB, 
-		 Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent),
-		 Range("allRange"),
-		 VisualizeError(*mJetSB_result),
-		 FillColor(kYellow));
-
-  dataSetSB.plotOn(mJetFrameSB,
-		   Binning(binsmJet));
-
-  modelSB.plotOn(mJetFrameSB, 
-		 Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent),
-		 Range("allRange"));
-
-  model.plotOn(mJetFrameSB,
-	       Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent),
-	       Range("allRange"),
-	       LineStyle(7),
-	       LineColor(kRed));
+  dataSetSB.plotOn(mJetFrameSB, Binning(binsmJet));
+  ext_modelSB.plotOn(mJetFrameSB, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
+  dataSetSB.plotOn(mJetFrameSB, Binning(binsmJet));
+  ext_modelSB.plotOn(mJetFrameSB, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"));
+  ext_model.plotOn(mJetFrameSB, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), LineStyle(7), LineColor(kRed));
 
   TLegend* leg2 = new TLegend(0.60,0.62,0.85,0.80);
  
@@ -149,6 +114,8 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   mJetFrameSB->addObject(leg2);
   mJetFrameSB->SetTitle("");
 
+  // fprintf(stdout, "lamda=%f\tlamdaSB=%f\n", lamda.getVal(), lamdaSB.getVal());
+
   /*******************************************/
   /*            BIAS AND PULL                */
   /*******************************************/
@@ -157,37 +124,40 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
   // Fit is converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima
 
-  TH1F* h_bias = new TH1F("h_bias", "", 16, -2, 2);
-  TH1F* h_pull = new TH1F("h_pull", "", 40, -5, 5);
+  TH1F* h_bias = new TH1F("h_bias", "", 12, -3, 3);
+  TH1F* h_pull = new TH1F("h_pull", "", 40, -10, 10);
 
-  RooMsgService::instance().setSilentMode(true);
-
-  for( int ntoy = 1000; ntoy > 0; --ntoy ){
+  for( int ntoy = 3000; ntoy > 0; --ntoy ){
 
     if( !pullTest ) break;
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = modelSB.generate(mjet, dataSet.sumEntries());
+    RooDataSet* setToyMC = model.generate(mjet, dataSet.sumEntries());
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
 
-    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -5., 5.);
-    RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
+    RooRealVar nToyMcEvents("nToyMcEvents", "nToyMcEvents", 0., 1.e10);
 
-    RooFitResult* toyMC_result = model_toyMC.fitTo(thisToyMC,
-						   SumW2Error(true),
-						   Range("lowSB,highSB"),
-						   Strategy(2),
-						   Minimizer("Minuit2"),
-						   Save(1));
+    nToyMcEvents.setVal(thisToyMC.sumEntries());
+    nToyMcEvents.setConstant(true);
+
+    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -0.5, 0.);
+
+    RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
+    RooExtendPdf ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
+
+    RooFitResult* toyMC_result = ext_model_toyMC.fitTo(thisToyMC, SumW2Error(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+    fprintf(stdout, "nToy=%i\tlamdaToy=%f\tstatus=%i\n", ntoy, lamda_toyMC.getVal(), toyMC_result->status());
+
     if( toyMC_result->status() != 0 ) continue;
    
     float nsbreal = setToyMC->sumEntries(sbCut)/setToyMC->sumEntries();
 
     RooRealVar nSBReal("nSBReal", "", nsbreal, 0., 1.);
    
-    RooAbsReal* nSIGFit = model_toyMC.createIntegral(mjet, NormSet(mjet), Range("signal"));
-    RooAbsReal* nSBFit  = model_toyMC.createIntegral(mjet, NormSet(mjet), Range("lowSB,highSB"));
+    RooAbsReal* nSIGFit = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("signal"));
+    RooAbsReal* nSBFit  = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("lowSB,highSB"));
 
     RooFormulaVar formula("formula", "ev in signal region of toyMC", "@0*@1/@2", RooArgList(nSBReal, *nSIGFit, *nSBFit));
     
@@ -197,13 +167,16 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     h_bias->Fill((nSigFit - nSigReal)/nSigReal);
     h_pull->Fill((nSigFit - nSigReal)/fitUnc);
-
+    /*
+    delete setToyMC;
+    delete toyMC_result;
+    delete nSIGFit;
+    delete nSBFit;
+    */
   } // End of ntoy loop
 
-  RooMsgService::instance().setSilentMode(false);
-
-  RooRealVar bias("bias", "Bias", -2, 2);
-  RooRealVar pull("pull", "Pull", -5, 5);
+  RooRealVar bias("bias", "Bias", -3, 3);
+  RooRealVar pull("pull", "Pull", -10, 10);
 
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
@@ -249,14 +222,15 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
+  c->Clear();
   c->cd();
   mJetFrameSB->Draw();
-
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
   
+  c->Clear();
   c->cd();
   biasFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
@@ -264,6 +238,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
   c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
+  c->Clear();
   c->cd();
   pullFrame->Draw();
   lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");

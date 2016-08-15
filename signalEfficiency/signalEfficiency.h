@@ -4,15 +4,15 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float btagUnc(string inputFile, string channel, int cat, string region, int mzh){
+float signalEfficiency(string inputFile, string channel, int cat, int mzh){
 
   // setup calibration and reader
 
   BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
-  BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, region.data());
-  BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, region.data());
-  BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, region.data());
+  BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, "central");
+  BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
+  BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, "central");
 
   reader_udsg.load(calib, BTagEntry::FLAV_UDSG, "mujets");
   reader_c.load(calib, BTagEntry::FLAV_C, "mujets");
@@ -20,22 +20,22 @@ float btagUnc(string inputFile, string channel, int cat, string region, int mzh)
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_udsgflavor_zjetsBtagEff.root");
-  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_cflavor_zjetsBtagEff.root");
-  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_bflavor_signalBtagEff.root");
+  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_cflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_bflavor_signalBtagEff.root", channel.data()));
   
-  TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("ele_udsgflavor"));
-  TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("ele_cflavor"));
-  TGraphAsymmErrors* g_b = (TGraphAsymmErrors*)(f_b->Get(Form("ele_bflavor_m%i",mzh)));
+  TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get(Form("%s_udsgflavor", channel.data())));
+  TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get(Form("%s_cflavor", channel.data())));
+  TGraphAsymmErrors* g_b = (TGraphAsymmErrors*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
 
   // read the ntuples (in pcncu)
-  
-  TreeReader data(inputFile.data());
 
+  TreeReader data(inputFile.data());
+  
   TFile f(inputFile.data());
 
   float totalEvent = ((TH1D*)f.Get("h_totalEv"))->Integral();
-  float passEvent = 0.;
+  float passEvent  = 0.;
 
   // begin of event loop
 
@@ -112,21 +112,21 @@ float btagUnc(string inputFile, string channel, int cat, string region, int mzh)
       if( FATsubjetFlavor[goodFATJetID][is] != 4 && FATsubjetFlavor[goodFATJetID][is] != 5 ){
 
 	btagEff = g_l->Eval(thisSubJet.Pt());
-	scaleFactor = reader_udsg.eval_auto_bounds(region.data(), BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJet.Pt());
+	scaleFactor = reader_udsg.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJet.Pt());
 
       }
 
       else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
 
 	btagEff = g_c->Eval(thisSubJet.Pt());
-	scaleFactor = reader_c.eval_auto_bounds(region.data(), BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJet.Pt());
+	scaleFactor = reader_c.eval_auto_bounds("central", BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJet.Pt());
 
       }
 
       else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
 
 	btagEff = g_b->Eval(thisSubJet.Pt());
-	scaleFactor = reader_b.eval_auto_bounds(region.data(), BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
+	scaleFactor = reader_b.eval_auto_bounds("central", BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
 
       }
 
@@ -146,16 +146,16 @@ float btagUnc(string inputFile, string channel, int cat, string region, int mzh)
       }
       
     } // end of subjet for loop
-    
+
     // b-tag cut
     
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
-        
+
     passEvent += eventWeight*(pData/pMC);
 
   } // end of event loop
-
+  
   return passEvent/totalEvent;
 
 }

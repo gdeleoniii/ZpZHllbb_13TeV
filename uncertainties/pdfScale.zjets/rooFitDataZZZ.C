@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut, string type, int first, int last){
+void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", int first=0, int last=2){
 
   // Suppress all the INFO message
 
@@ -17,6 +17,38 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMC.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
   treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
+
+
+
+  /*
+    int cat;
+    float mjet, mzh, weight;
+
+    treeZjets->SetBranchAddress("cat",&cat);
+    treeZjets->SetBranchAddress("prmass",&mjet);
+    treeZjets->SetBranchAddress("mllbb",&mzh);
+    treeZjets->SetBranchAddress("evweight00",&weight);
+
+    TFile* f=new TFile("DYJetsToLL_M-50_HT-100to200_13TeV_toyMC.root","recreate");
+    TH1F* h=new TH1F("h","",32,800,4000);
+    for(int n=0; n<treeZjets->GetEntries();n++){
+
+
+    treeZjets->GetEntry(n);
+
+    if(cat != 1) continue;
+    if(!(mjet>105 && mjet<135))continue;
+    h->Fill(mzh,weight);
+
+
+    }
+    h->Write();
+    f->Write();
+  */
+
+
+
+
 
   // Define all the variables from the trees 
 
@@ -38,7 +70,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   int iw = N-1;
   float alphaScale[11][N], alphaCentral[11];
 
-  TF1* f_alpha = new TF1("f_alpha", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);
+  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp([1]*x+[2]/x)/TMath::Exp([3]*x+[4]/x)", 800, 4000);
    
   f_alpha->SetTitle("");
   f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -51,6 +83,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   
   for( int nw = last; nw >= first; --nw ){
     
+    //    if(nw!=first)continue;
     RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
     RooArgSet variables(cat, mJet, mZH, evWeight);
 
@@ -77,13 +110,13 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  700. : 1500.;
-      bmax = (catcut=="1") ? 1100. : 2500.;
+      bmin = (catcut=="1") ?  600. : 1400.;
+      bmax = (catcut=="1") ? 1500. : 2600.;
     }
 
     else if( channel == "mu" ){
-      bmin = (catcut=="1") ? 200. : 2100.; 
-      bmax = (catcut=="1") ? 700. : 2700.;
+      bmin = (catcut=="1") ? 100. : 2100.; 
+      bmax = (catcut=="1") ? 900. : 2900.;
     }
     
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
@@ -94,6 +127,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
 
     ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
+
     float p0 = a.getVal();
     float p1 = b.getVal();
 
@@ -102,13 +136,13 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 3200. : 0.;
-      dmax = (catcut=="1") ? 3500. : 1.;
+      dmin = (catcut=="1") ? 3100. : 0.;
+      dmax = (catcut=="1") ? 3900. : 1.;
     }
     
     else if( channel == "mu" ){
-      dmin = (catcut=="1") ? 0. : 10.;
-      dmax = (catcut=="1") ? 1. : 15.;
+      dmin = (catcut=="1") ? 0. : 8.;
+      dmax = (catcut=="1") ? 1. : 18.;
     }
     
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
@@ -117,18 +151,22 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
     
+
     ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
 
     float p2 = c.getVal();
     float p3 = d.getVal();
 
     // Set the model of alpha ratio
+    float normConst = ((TF1*)model_ZHSB.asTF(mZH,RooArgList(a,b)))->Integral(800,4000) / ((TF1*)model_ZHSG.asTF(mZH,RooArgList(c,d)))->Integral(800,4000);
 
-    f_alpha->SetParameters(p2,p3,p0,p1);
+    f_alpha->SetParameters(normConst,p2,p3,p0,p1);
     f_alpha->SetMinimum(0);
-    f_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
     f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
     f_alpha->DrawCopy((nw==last) ? "" : "same");
+
+    cout <<f_alpha->Integral(800,4000) << endl;
 
     int mzh = 800;
 
@@ -149,11 +187,11 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
 
     // Plot the results to a frame 
 
-    dataSetZjetsSB.plotOn(mZHsbFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
-    model_ZHSB.plotOn(mZHsbFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
+    dataSetZjetsSB.plotOn(mZHsbFrame, DataError(RooAbsData::None),XErrorSize(0),Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+        ext_model_ZHSB.plotOn(mZHsbFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
 
-    dataSetZjetsSG.plotOn(mZHsgFrame, Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
-    model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
+    dataSetZjetsSG.plotOn(mZHsgFrame, DataError(RooAbsData::None),XErrorSize(0),Binning(mZHbin), MarkerColor((nw==first)?kBlue:kCyan), LineColor((nw==first)?kBlue:kCyan));
+     ext_model_ZHSG.plotOn(mZHsgFrame, Range("fullRange"), LineColor((nw==first)?kBlue:kCyan));
 
   } // end of weight loop
 
@@ -190,7 +228,7 @@ void rooFitData(string channel, string catcut, string type, int first, int last)
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->SetMinimum(0);
-  g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
+ 
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);

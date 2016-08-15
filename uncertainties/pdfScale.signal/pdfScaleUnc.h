@@ -20,9 +20,9 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_cflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_bflavor_signalBtagEff.root", channel.data()));
+  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/%s_cflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/%s_bflavor_signalBtagEff.root", channel.data()));
   
   TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get(Form("%s_udsgflavor", channel.data())));
   TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get(Form("%s_cflavor", channel.data())));
@@ -161,7 +161,7 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
         
     int iw = N-1;
     for( int nw = last; nw >= first; --nw ){
-      passEvent[iw] += pdfscaleSysWeight[nw]*eventWeight*(pData/pMC);
+      passEvent[iw] += (pdfscaleSysWeight[nw]/pdfscaleSysWeight[first])*eventWeight*(pData/pMC);
       --iw;
     }
 

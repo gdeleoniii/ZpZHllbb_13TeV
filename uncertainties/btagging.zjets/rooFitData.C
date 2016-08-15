@@ -28,7 +28,7 @@ void rooFitData(string channel, string catcut){
   string region[3] = {"central","up","down"};
   float alpha[11][3];
 
-  TF1* f_alpha = new TF1("f_alpha", "TMath::Exp([0]*x+[1]/x)/TMath::Exp([2]*x+[3]/x)", 800, 4000);   
+  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp([1]*x+[2]/x)/TMath::Exp([3]*x+[4]/x)", 800, 4000);
 
   for(int nw = 2; nw >= 0; --nw){
 
@@ -64,13 +64,13 @@ void rooFitData(string channel, string catcut){
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  700. : 1500.;
-      bmax = (catcut=="1") ? 1100. : 2500.;
+      bmin = (catcut=="1") ?  600. : 1400.;
+      bmax = (catcut=="1") ? 1500. : 2600.;
     }
 
     else if( channel == "mu" ){
-      bmin = (catcut=="1") ? 200. : 2100.; 
-      bmax = (catcut=="1") ? 700. : 2700.;
+      bmin = (catcut=="1") ? 100. : 2100.; 
+      bmax = (catcut=="1") ? 900. : 2900.;
     }
     
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
@@ -89,15 +89,15 @@ void rooFitData(string channel, string catcut){
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 3200. : 0.;
-      dmax = (catcut=="1") ? 3500. : 1.;
+      dmin = (catcut=="1") ? 3100. : 0.;
+      dmax = (catcut=="1") ? 3900. : 1.;
     }
     
     else if( channel == "mu" ){
-      dmin = (catcut=="1") ? 0. : 10.;
-      dmax = (catcut=="1") ? 1. : 15.;
+      dmin = (catcut=="1") ? 0. : 8.;
+      dmax = (catcut=="1") ? 1. : 18.;
     }
-    
+        
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
     RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
 
@@ -111,7 +111,9 @@ void rooFitData(string channel, string catcut){
 
     // Set the model of alpha ratio
 
-    f_alpha->SetParameters(p2,p3,p0,p1);
+    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(a,b)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(c,d)))->Integral(800,4000);
+
+    f_alpha->SetParameters(normConst,p2,p3,p0,p1);
 
     int mzh = 800;
     for( int im = 0; im < 11; ++im ){
@@ -148,7 +150,7 @@ void rooFitData(string channel, string catcut){
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->SetMinimum(0);
-  g_alpha->SetMaximum( (channel=="ele"&&catcut=="1") ? 50 : ( (channel=="mu"&&catcut=="1") ? 1.5 : 0.2 ) );
+  g_alpha->SetMaximum(1.8);
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);
@@ -171,7 +173,8 @@ void rooFitData(string channel, string catcut){
   g_unc->GetYaxis()->SetTitleSize(0.1);
   g_unc->GetYaxis()->SetNdivisions(505);
   g_unc->SetMinimum(0);
-  g_unc->SetMaximum(1);
+  g_unc->SetMaximum(0.45);
+  g_unc->SetLineWidth(2);
   g_unc->SetMarkerStyle(8);
   g_unc->SetMarkerColor(kBlack);
 

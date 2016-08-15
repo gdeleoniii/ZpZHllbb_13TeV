@@ -1,19 +1,15 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
-
 #include "zpEleShape.h"
 #include "zpMuShape.h"
-
 using namespace RooFit;
-
-const int N = 10;
 
 void signalShape(string chan, int cat){
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
 
-  float mzh[N] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500};
+  float mzh[10] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500};
 
   RooRealVar mZH("mZH", "m_{ZH} (GeV)", 500, 4000);
   mZH.setRange("fullRange", 500., 4000.);
@@ -23,7 +19,7 @@ void signalShape(string chan, int cat){
   TH1F* f_ = NULL;
   TLegend* leg = new TLegend(0.65,0.40,0.85,0.75);
   
-  for( int i = 0; i < N; ++i ){
+  for( int i = 0; i < 10; ++i ){
 
     RooRealVar m("m", "mean", mzh[i], mzh[i]-50, mzh[i]+50);
     RooRealVar s("s", "sigma", 25., 80.);
@@ -33,8 +29,8 @@ void signalShape(string chan, int cat){
     m.setConstant(true);
 
     f_ = (chan == "mu") ?
-      zpMuShape(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(int)mzh[i]), cat) :
-      zpEleShape(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(int)mzh[i]), cat);
+      zpMuShape(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(int)mzh[i]), cat, (int)mzh[i]) :
+      zpEleShape(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",(int)mzh[i]), cat, (int)mzh[i]);
 
     RooDataHist h_("h_", "", mZH, Import(*f_));
     RooCBShape model("model", "Cystal Ball Function", mZH, m, s, a, n);
@@ -54,6 +50,7 @@ void signalShape(string chan, int cat){
   leg->Draw();
   myFrame->addObject(leg);
   myFrame->SetTitle("");
+  myFrame->SetMinimum(1.e-3);
 
   TLatex lar;
 

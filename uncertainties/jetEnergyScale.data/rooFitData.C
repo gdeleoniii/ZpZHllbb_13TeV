@@ -35,6 +35,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   for(int nw = 2; nw >= 0; --nw){
 
+    // if( nw != 0 ) continue; // trun on when study no remove minor backgroung or using another model
+
     // Input files and sum all backgrounds
 
     TChain* treeData  = new TChain("tree");
@@ -74,14 +76,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
     nSBDataEvents.setConstant(true);
 
     // Side band jet mass in data
-    
-    // RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
-    // RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
-    // RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
-    // offsetSB.setConstant(true);
-    // RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
-    
-    RooRealVar lamda("lamda", "lamda", -0.02, -0.5, -0.0001);
+    /*
+      RooRealVar constantSB("constantSB", "constantSB", -0.02,  -1.,   0.);
+      RooRealVar offsetSB  ("offsetSB",   "offsetSB",      30, -50., 200.);
+      RooRealVar widthSB   ("widthSB",    "widthSB",      100,   0., 200.);
+      offsetSB.setConstant(true);
+      RooErfExpPdf model_mJetSB("model_mJetSB", "model_mJetSB", mJet, constantSB, offsetSB, widthSB);
+    */
+    RooRealVar lamda("lamda", "lamda", -0.025, -0.030, -0.005);
     RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
     RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
 
@@ -114,7 +116,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar->DrawLatexNDC(0.65, 0.83, "Data side band");
   lar->DrawLatexNDC(0.65, 0.78, Form("%s  %s btag", channel.data(), catcut.data()));
-  lar->DrawLatexNDC(0.50, 0.70, Form("Norm factor: %f^{+%f}_{-%f}", normFactor[0], fabs(normFactor[2]-normFactor[0]), fabs(normFactor[1]-normFactor[0])));
-  cv->Print(Form("jetEnScaleOnData_Vexp_noRemoveMinor_%s_cat%s.pdf", channel.data(), catcut.data()));
+  //lar->DrawLatexNDC(0.50, 0.70, Form("Norm factor: %f", normFactor[0]));
+  lar->DrawLatexNDC(0.50, 0.70, Form("Norm factor: %f#pm%f", normFactor[0], TMath::Max(fabs(normFactor[2]-normFactor[0]),fabs(normFactor[1]-normFactor[0]))));
+  cv->Print(Form("jetEnScaleOnData_Vexp_%s_cat%s.pdf", channel.data(), catcut.data()));
 
 }
