@@ -167,15 +167,10 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     h_bias->Fill((nSigFit - nSigReal)/nSigReal);
     h_pull->Fill((nSigFit - nSigReal)/fitUnc);
-    /*
-    delete setToyMC;
-    delete toyMC_result;
-    delete nSIGFit;
-    delete nSBFit;
-    */
+
   } // End of ntoy loop
 
-  RooRealVar bias("bias", "Bias", -3, 3);
+  RooRealVar bias("bias", "Bias", -10, 10);
   RooRealVar pull("pull", "Pull", -10, 10);
 
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
