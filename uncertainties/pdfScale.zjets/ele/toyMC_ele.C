@@ -150,25 +150,27 @@ void toyMC_ele(string inputFile, string outputFile){
 			    FATsubjetSDPz[goodFATJetID][is],
 			    FATsubjetSDE[goodFATJetID][is]);
 
+      float thisSubJetPt = thisSubJet.Pt() < 420 ? thisSubJet.Pt() : 419.999;
+
       float btagEff, scaleFactor;
 
       if( FATsubjetFlavor[goodFATJetID][is] != 4 && FATsubjetFlavor[goodFATJetID][is] != 5 ){
 
-	btagEff = g_l->Eval(thisSubJet.Pt());
-	scaleFactor = reader_udsg.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJet.Pt());
+	btagEff = g_l->Eval(thisSubJetPt);
+	scaleFactor = reader_udsg.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJetPt);
 
       }
 
       else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
 
-	btagEff = g_c->Eval(thisSubJet.Pt());
-	scaleFactor = reader_c.eval_auto_bounds("central", BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJet.Pt());
+	btagEff = g_c->Eval(thisSubJetPt);
+	scaleFactor = reader_c.eval_auto_bounds("central", BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJetPt);
 
       }
       else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
 
-	btagEff = g_b->Eval(thisSubJet.Pt());
-	scaleFactor = reader_b.eval_auto_bounds("central", BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
+	btagEff = g_b->Eval(thisSubJetPt);
+	scaleFactor = reader_b.eval_auto_bounds("central", BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJetPt);
 
       }
 
