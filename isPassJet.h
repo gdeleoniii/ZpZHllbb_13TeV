@@ -6,8 +6,7 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-bool isPassJet(TreeReader& data, int goodFATJetID, bool jetMassCut=true, 
-	       TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL){
+bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, bool jetMassCut=true){
 
   Int_t          FATnJet           = data.GetInt("FATnJet");    
   Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
@@ -28,7 +27,7 @@ bool isPassJet(TreeReader& data, int goodFATJetID, bool jetMassCut=true,
     if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
     if( jetMassCut && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
       
-    goodFATJetID = ij;
+    *goodFATJetID = ij;
     thisJet = *myJet;
     findJet = true;
 
@@ -40,7 +39,7 @@ bool isPassJet(TreeReader& data, int goodFATJetID, bool jetMassCut=true,
 
 }
 
-float bTagWeight(TreeReader& data, int goodFATJetID, int nsubBjet, 
+float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, 
 		 BTagCalibrationReader& reader_l, BTagCalibrationReader& reader_c, BTagCalibrationReader& reader_b,
 		 TGraphAsymmErrors* g_l, TGraphAsymmErrors* g_c, TGraphAsymmErrors* g_b){
 
@@ -61,10 +60,7 @@ float bTagWeight(TreeReader& data, int goodFATJetID, int nsubBjet,
             
     TLorentzVector thisSubJet;
       
-    thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
-			  FATsubjetSDPy[goodFATJetID][is],
-			  FATsubjetSDPz[goodFATJetID][is],
-			  FATsubjetSDE[goodFATJetID][is]);
+    thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is], FATsubjetSDPy[goodFATJetID][is], FATsubjetSDPz[goodFATJetID][is], FATsubjetSDE[goodFATJetID][is]);
 
     float btagEff, scaleFactor;
 
@@ -92,7 +88,7 @@ float bTagWeight(TreeReader& data, int goodFATJetID, int nsubBjet,
 
       pMC   *= btagEff;
       pData *= scaleFactor * btagEff;
-      ++nsubBjet;
+      ++(*nsubBjet);
       
     }
       
