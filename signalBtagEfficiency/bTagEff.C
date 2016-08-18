@@ -4,10 +4,12 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TGraphAsymmErrors.h>
-#include "eleBtagEff.h"
-#include "muBtagEff.h"
+#include "bTagEff.h"
 
 void bTagEff(string channel, string flavor){
+
+  float varBins[] = {30,50,70,100,140,200,300,670,2000};
+  int   nvarBins  = sizeof(varBins)/sizeof(varBins[0])-1;
 
   int mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
 
@@ -17,12 +19,22 @@ void bTagEff(string channel, string flavor){
 
     TGraphAsymmErrors *g = new TGraphAsymmErrors();
 
-    g = (channel=="ele") ? 
-      eleBtagEff(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]), flavor.data()) :
-      muBtagEff (Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]),  flavor.data());
+    if( channel == "ele" )
+      g = bTagEff(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]),"ele",flavor.data());
+    else if( channel == "mu" )
+      g = bTagEff(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]),"mu",flavor.data());
+        
+    TH1F h("h", "", nvarBins, varBins);
 
-    g->GetXaxis()->SetLimits(0,2000);
-    g->Write(Form("%s_%sflavor_m%i",channel.data(),flavor.data(),mzh[i]));
+    for( int n = 0; n < g->GetN(); ++n ){
+
+      double x, y;
+      g->GetPoint(n,x,y);
+      h.SetBinContent(h.FindBin(x), y);
+
+    }
+
+    h.Write(Form("%s_%sflavor_m%i",channel.data(),flavor.data(),mzh[i]));
     f.Write();
 
     TLegend leg(0.60, 0.70, 0.90, 0.87);
@@ -42,6 +54,7 @@ void bTagEff(string channel, string flavor){
     TCanvas c("c", "", 0, 0, 800, 600);
 
     c.cd();
+    g->GetXaxis()->SetLimits(0,2000);
     g->Draw("ap");
     leg.Draw();
     lar.DrawLatex(0.15, 0.83, "CMS");
