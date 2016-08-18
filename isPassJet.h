@@ -15,8 +15,6 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
   bool findJet = false;  
 
-  TLorentzVector thisJet(0,0,0,0);
-
   for( int ij = 0; ij < FATnJet; ++ij ){
 
     TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
@@ -28,7 +26,6 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
     if( jetMassCut && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
       
     *goodFATJetID = ij;
-    thisJet = *myJet;
     findJet = true;
 
     break;
@@ -39,9 +36,9 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
 }
 
-float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, 
+float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, TH1F* h_l, TH1F* h_c, TH1F* h_b,
 		 BTagCalibrationReader& reader_l, BTagCalibrationReader& reader_c, BTagCalibrationReader& reader_b,
-		 TGraphAsymmErrors* g_l, TGraphAsymmErrors* g_c, TGraphAsymmErrors* g_b){
+		 string region="central"){
 
   Int_t          FATnJet         = data.GetInt("FATnJet");
   Int_t*         FATnSubSDJet    = data.GetPtrInt("FATnSubSDJet");
@@ -62,28 +59,38 @@ float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet,
       
     thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is], FATsubjetSDPy[goodFATJetID][is], FATsubjetSDPz[goodFATJetID][is], FATsubjetSDE[goodFATJetID][is]);
 
+    float thisSubJetPt;
+
+    if( thisSubJet.Pt() < 30 ) 
+      thisSubJetPt = 30.001;
+    else if( thisSubJet.Pt() > 2000 )
+      thisSubJetPt = 1999.999;
+    else
+      thisSubJetPt = thisSubJet.Pt();
+
     float btagEff, scaleFactor;
 
     if( FATsubjetFlavor[goodFATJetID][is] != 4 && FATsubjetFlavor[goodFATJetID][is] != 5 ){
 
-      btagEff = g_l->Eval(thisSubJet.Pt());
-      scaleFactor = reader_l.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJet.Pt());
+      btagEff = h_l->GetBinContent(h_l->FindBin(thisSubJetPt));
+      scaleFactor = reader_l.eval_auto_bounds(region.data(), BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJet.Pt());
 
     }
 
     else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
 
-      btagEff = g_c->Eval(thisSubJet.Pt());
-      scaleFactor = reader_c.eval_auto_bounds("central", BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJet.Pt());
+      btagEff = h_c->GetBinContent(h_c->FindBin(thisSubJetPt));
+      scaleFactor = reader_c.eval_auto_bounds(region.data(), BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJet.Pt());
 
     }
+
     else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
 
-      btagEff = g_b->Eval(thisSubJet.Pt());
-      scaleFactor = reader_b.eval_auto_bounds("central", BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
+      btagEff = h_b->GetBinContent(h_b->FindBin(thisSubJetPt));
+      scaleFactor = reader_b.eval_auto_bounds(region.data(), BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
 
     }
-
+    if(btagEff<1e-5) cout << "opps" << endl;
     if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ){
 
       pMC   *= btagEff;
