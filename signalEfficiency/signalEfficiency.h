@@ -16,18 +16,18 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
   BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, "central");
 
   reader_l.load(calib, BTagEntry::FLAV_UDSG, "comb");
-  reader_c.load(calib, BTagEntry::FLAV_C, "mujets");
-  reader_b.load(calib, BTagEntry::FLAV_B, "mujets");
+  reader_c.load(calib, BTagEntry::FLAV_C,    "mujets");
+  reader_b.load(calib, BTagEntry::FLAV_B,    "mujets");
 
   // to read b-tag effinciency 
 
   TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_cflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_signalBtagEff.root", channel.data()));
+  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_cflavor_zjetsBtagEff.root",    channel.data()));
+  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_signalBtagEff.root",   channel.data()));
   
-  TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get(Form("%s_udsgflavor", channel.data())));
-  TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get(Form("%s_cflavor", channel.data())));
-  TGraphAsymmErrors* g_b = (TGraphAsymmErrors*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
+  TH1F* h_l = (TH1F*)(f_l->Get(Form("%s_udsgflavor",  channel.data())));
+  TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",     channel.data())));
+  TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
 
   // read the ntuples (in pcncu)
 
@@ -74,7 +74,7 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
 
     int nsubBjet = 0;
 
-    float btagWeight = 1; bTagWeight(data, goodFATJetID, &nsubBjet, reader_l, reader_c, reader_b, g_l, g_c, g_b);
+    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
 
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
