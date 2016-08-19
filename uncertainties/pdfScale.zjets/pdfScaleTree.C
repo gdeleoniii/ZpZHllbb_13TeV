@@ -117,9 +117,7 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
     int nsubBjet = 0;
 
     float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
-    
-    // b-tag cut
-    
+
     if     ( nsubBjet == 1 ) cat = 1;
     else if( nsubBjet == 2 ) cat = 2;      
     else                     cat = 0;

@@ -6,12 +6,14 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, bool jetMassCut=true){
+bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, bool jetMassCut=true, int jetScale=0){
 
-  Int_t          FATnJet           = data.GetInt("FATnJet");    
-  Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-  TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-  vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
+  Int_t         FATnJet           = data.GetInt("FATnJet");    
+  Float_t*      FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+  Float_t*      FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
+  Float_t*      FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
+  vector<bool>& FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
+  TClonesArray* FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
   bool findJet = false;  
 
@@ -19,12 +21,19 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
     TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
+    if( jetScale == 1 ) 
+      *myJet *= 1+FATjetCorrUncUp[ij];
+    else if( jetScale == -1 )
+      *myJet *= 1-FATjetCorrUncDown[ij];
+    else
+      *myJet *= 1;
+
     if( myJet->Pt() < 200 ) continue;
     if( fabs(myJet->Eta()) > 2.4 ) continue;
     if( !FATjetPassIDLoose[ij] ) continue;
     if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
     if( jetMassCut && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
-      
+
     *goodFATJetID = ij;
     findJet = true;
 
@@ -90,7 +99,7 @@ float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, TH1F* h_l, T
       scaleFactor = reader_b.eval_auto_bounds(region.data(), BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJet.Pt());
 
     }
-    if(btagEff<1e-5) cout << "opps" << endl;
+
     if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ){
 
       pMC   *= btagEff;
@@ -108,6 +117,6 @@ float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, TH1F* h_l, T
       
   } // end of subjet loop
 
-  return pData/pMC;
+  return pMC > 0 ? pData/pMC : 0;
 
 }

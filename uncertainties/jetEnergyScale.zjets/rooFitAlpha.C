@@ -36,10 +36,10 @@ void rooFitData(string channel, string catcut){
 
     TChain* treeZjets = new TChain("tree");
     
-    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
-    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
-    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
-    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
+    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%stoyMC.root", region[nw].data(), channel.data()));
+    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%stoyMC.root", region[nw].data(), channel.data()));
+    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_%stoyMC.root", region[nw].data(), channel.data()));
+    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_%stoyMC.root", region[nw].data(), channel.data()));
 
     // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
