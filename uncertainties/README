@@ -4,18 +4,32 @@
 
 2. All the uncertainty studies on signal efficiency are located in *.signal folders.
 
-3. Inside each *.signal forders, you can see a .C file and a .h file. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
+3. Inside each *.signal forders, you can see a .C file and a .h file. 
 
-4. The .h files read some neccessary files. Make sure that you have everything before running the codes.
+4. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
+
+5. The .h files read some neccessary files. Make sure that you have everything before running the codes.
    
-   4.1 The BTagCalibrationStandalone.h in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead
-   4.2 The CSVV1.csv in                   https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/CSVV1.csv
-   4.3 The b-tag efficiency root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
+   5.1 The BTagCalibrationStandalone.h in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead
+   5.2 The CSVV1.csv in                   https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/CSVV1.csv
+   5.3 The b-tag efficiency root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
 
-5. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
+6. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
 
-6. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
+7. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
 
 *** For uncertainty study on alpha ratio ***
 
-Under construction.....
+1. All the uncertainty studies on alpha ratio are located in *.zjets folders. Please create a folder named "Zjets" first.
+
+2. Inside each *.zjets folders, you can see two .C files and two .sh files. 
+
+3. The *Tree.C file analyze the skimmed samples and create a mini tree for RooFit (will be saved in "Zjets" folder). This code can be run easily with ./runTree.sh
+
+4. The rooFitAlpha.C read the mini tree created by *Tree.C, doing unbinned likelihood fit and output results in pdf files. This code can be run easily with ./runAlpha.sh
+
+---> Important: User should modify lines after for loop in runAlpha.sh first <---
+
+5. In summary, run ./runTree.sh, then ./runAlpha.sh
+
+*** End of discription ***
