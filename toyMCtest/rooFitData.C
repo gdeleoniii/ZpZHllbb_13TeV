@@ -71,6 +71,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
+  TCut specialCut = "(mllbb<1600 || mllbb>1700)";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
@@ -78,7 +79,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetDataSG ("dataSetDataSG",  "dataSetDataSG",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables, Cut(catCut),           WeightVar(evWeight), Import(*treeZjets));
-  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
+  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut && specialCut),  WeightVar(evWeight), Import(*treeZjets));  
   RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
   // Total events number
@@ -120,7 +121,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooAbsReal* nSIGFit = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
   RooAbsReal* nSBFit  = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
 
-  float normFactor = dataSetDataSB.sumEntries()*(nSIGFit->getVal()/nSBFit->getVal());
+  float normFactor = nSBDataEvents.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
  
   fprintf(stdout, "The normalization factor is %g\n", normFactor);
  
@@ -196,7 +197,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(p0,p1)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(p2,p3)))->Integral(800,4000);
+  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(p0,p1)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(p2,p3)))->Integral(800,4000);
 
   RooGenericPdf model_alpha  ("model_alpha", "model_alpha", Form("%f*TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", normConst, p2.getVal(),p3.getVal(),p0.getVal(),p1.getVal()), RooArgSet(mZH));
   RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
