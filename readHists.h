@@ -7,17 +7,22 @@
 class readHist{
     
  public:
-  
+
+  readHist();  
   readHist(string);
   TH1D* getHist(string);
+  static float crossSection(string);
 
  private:
 
   TFile* thisFile;
   string thisFileName;
-  float crossSection(string);
    
 };
+
+readHist::readHist(){
+
+}
 
 readHist::readHist(string rootFile){
 

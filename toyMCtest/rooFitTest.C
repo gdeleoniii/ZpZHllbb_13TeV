@@ -124,10 +124,10 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
   // Fit is converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima
 
-  TH1F* h_bias = new TH1F("h_bias", "", 12, -3, 3);
+  TH1F* h_bias = new TH1F("h_bias", "", 40, -10, 10);
   TH1F* h_pull = new TH1F("h_pull", "", 40, -10, 10);
 
-  for( int ntoy = 3000; ntoy > 0; --ntoy ){
+  for( int ntoy = 1000; ntoy > 0; --ntoy ){
 
     if( !pullTest ) break;
 
@@ -141,7 +141,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
     nToyMcEvents.setVal(thisToyMC.sumEntries());
     nToyMcEvents.setConstant(true);
 
-    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -0.5, 0.);
+    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -0.5, -0.001);
 
     RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
     RooExtendPdf ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
