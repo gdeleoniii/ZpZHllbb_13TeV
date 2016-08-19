@@ -1,26 +1,10 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone_cpp.so)
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readHists.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
-
-float crossSection(string thisPath){
-
-  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/xSec.txt");
-  string token;
-  float crosssection = 0., thisNum = 0.;
-
-  while( textFile >> token >> thisNum ){
-
-    if( thisPath.find(token) != string::npos )
-      crosssection = thisNum;
-
-  }
-
-  return crosssection;
-
-}
 
 void pdfScaleTree(string inputFile, string outputFile, string channel){
 
@@ -50,9 +34,6 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
 
   TreeReader data(inputFile.data());
 
-  TFile* f = new TFile(inputFile.data());
-  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
-
   // Create a tree to store variables
 
   TFile* outFile = new TFile(Form("%s_%sMiniTree.root", outputFile.data(), channel.data()), "recreate");
@@ -71,7 +52,8 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
 
   // Calculate the scale correspond to inputFile
 
-  Float_t scale = 2512.*crossSection(outputFile.data())/h_totalEvents->Integral();
+  TFile f(inputFile.data());
+  float scale = 2512.*readHist::crossSection(outputFile.data())/((TH1F*)f.Get("h_totalEv"))->Integral();
 
   // begin of event loop
 
