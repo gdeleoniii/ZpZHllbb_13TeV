@@ -18,8 +18,6 @@ for ((i=0; i<${#ch[@]}; i++)); do
 	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-05Oct2015-v1.root\"\,\"SingleMuon-Run2015D-v1\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-PromptReco-v4.root\"\,\"SingleMuon-Run2015D-v4\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 
-	    mv *root data
-
 	elif [ `echo ${ch[$i]} | grep -c "ele"` -gt 0 ]; then
 
 	    echo "Processing electron data set..."
@@ -27,9 +25,9 @@ for ((i=0; i<${#ch[@]}; i++)); do
             root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-05Oct2015-v1.root\"\,\"SingleElectron-Run2015D-v1\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-PromptReco-v4.root\"\,\"SingleElectron-Run2015D-v4\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 
-	    mv *root data
-
 	fi
+
+	mv *root data
 
 	echo "Processing VV background..."
 

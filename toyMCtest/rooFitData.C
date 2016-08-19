@@ -16,34 +16,34 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   if( channel == "ele" ){
 
-    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v1_toyMC.root", channel.data()));
-    treeData->Add(Form("%s/data/SingleElectron-Run2015D-v4_toyMC.root", channel.data()));
+    treeData->Add(Form("data/SingleElectron-Run2015D-v1_%sMiniTree.root", channel.data()));
+    treeData->Add(Form("data/SingleElectron-Run2015D-v4_%sMiniTree.root", channel.data()));
 
   }
 
   else if( channel == "mu" ){
 
-    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v1_toyMC.root", channel.data()));
-    treeData->Add(Form("%s/data/SingleMuon-Run2015D-v4_toyMC.root", channel.data()));
+    treeData->Add(Form("data/SingleMuon-Run2015D-v1_%sMiniTree.root", channel.data()));
+    treeData->Add(Form("data/SingleMuon-Run2015D-v4_%sMiniTree.root", channel.data()));
 
   }
 
   else return;
 
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
 
   // To remove minor background contribution in data set (weight is -1)
 
   if( removeMinor ){
 
-    treeData->Add(Form("%s/VV/WW_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
-    treeData->Add(Form("%s/VV/WZ_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
-    treeData->Add(Form("%s/VV/ZZ_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
-    treeData->Add(Form("%s/TT/TT_TuneCUETP8M1_13TeV_toyMC.root",     channel.data()));
-    treeData->Add(Form("%s/ZH/ZH_HToBB_ZToLL_M125_13TeV_toyMC.root", channel.data()));
+    treeData->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
 
   }
 
