@@ -61,11 +61,11 @@ void rooFitNorm(string channel, string catcut, bool removeMinor=true){
 
     if( removeMinor ){
 
-      treeData->Add(Form("VV/WW_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
-      treeData->Add(Form("VV/WZ_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
-      treeData->Add(Form("VV/ZZ_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
-      treeData->Add(Form("TT/TT_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
-      treeData->Add(Form("ZH/ZH_HToBB_ZToLL_M125_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
+      treeData->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
+      treeData->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
+      treeData->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
+      treeData->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%s_%sMiniTree.root",     region[nw].data(), channel.data()));
+      treeData->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
 
     }
  

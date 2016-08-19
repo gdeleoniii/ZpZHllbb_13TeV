@@ -37,19 +37,15 @@ for ((i=0; i<${#ch[@]}; i++)); do
 	root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_crab_WZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"WZ_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 	root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_crab_ZZ_TuneCUETP8M1_13TeV-pythia8.root\"\,\"ZZ_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 
-	mv *root VV
-
 	echo "Processing ZH background..."
 
 	root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_crab_ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8.root\"\,\"ZH_HToBB_ZToLL_M125_13TeV\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
-
-	mv *root ZH
 
 	echo "Processing ttbar background..."
 
 	root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_crab_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
 
-	mv *root TT
+	mv *root minor
 
     done
 
