@@ -33,6 +33,7 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
+  TFile f(inputFile.data());
 
   // Create a tree to store variables
 
@@ -49,7 +50,6 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
   // Calculate the scale correspond to inputFile
 
-  TFile f(inputFile.data());
   float scale = 2512.*readHist::crossSection(outputFile.data())/((TH1F*)f.Get("h_totalEv"))->Integral();
 
   // begin of event loop
