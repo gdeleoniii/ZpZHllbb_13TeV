@@ -113,7 +113,6 @@ void bTagUncTree(string inputFile, string outputFile, string region, string chan
   tree->Write();  
   outFile->Write();
 
-  delete f;
   delete outFile;
 
 }

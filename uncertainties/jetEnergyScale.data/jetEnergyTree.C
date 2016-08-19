@@ -127,7 +127,6 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
   tree->Write();  
   outFile->Write();
 
-  delete f;
   delete outFile;
 
 }

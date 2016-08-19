@@ -122,7 +122,6 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
   tree->Write();  
   outFile->Write();
 
-  delete f;
   delete outFile;
 
 }
