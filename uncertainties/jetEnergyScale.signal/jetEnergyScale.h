@@ -44,15 +44,10 @@ float jetEnergyScale(string inputFile, string js, string channel, int cat, int m
 
     data.GetEntry(ev);
 
-    Float_t       eventWeight       = data.GetFloat("ev_weight");
-    TClonesArray* muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray* eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray* FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-    Int_t         FATnJet           = data.GetInt("FATnJet");    
-    Float_t*      FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    Float_t*      FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
-    Float_t*      FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
-    vector<bool>& FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
+    Float_t       eventWeight = data.GetFloat("ev_weight");
+    TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good reco level events     
     // select good leptons
@@ -68,30 +63,17 @@ float jetEnergyScale(string inputFile, string js, string channel, int cat, int m
     // select good FATjet
 
     int goodFATJetID = -1;
-    TLorentzVector thisJet(0,0,0,0);
-    
-    for( int ij = 0; ij < FATnJet; ++ij ){
 
-      TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
+    int JES = 0;
 
-      *myJet *= (js=="central") ? 1 : ( (js=="up") ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]) );
+    if     ( jes == "up"   ) JES =  1;
+    else if( jes == "down" ) JES = -1;
 
-      if( myJet->Pt() < 200 ) continue;
-      if( fabs(myJet->Eta()) > 2.4 ) continue;
-      if( !FATjetPassIDLoose[ij] ) continue;
-      if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
-      if( FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135 ) continue;
-      
-      goodFATJetID = ij;
-      thisJet = *myJet;
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
 
-      break;
- 
-    } // end of FatnJet loop
- 
-    if( goodFATJetID < 0 ) continue;
+    TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
+    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
 
     // b-tag cut
 

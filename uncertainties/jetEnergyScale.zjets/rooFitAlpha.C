@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut){
+void rooFitAlpha(string channel, string catcut){
 
   // Suppress all the INFO message
 

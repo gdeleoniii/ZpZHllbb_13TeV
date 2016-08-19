@@ -1,14 +1,8 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone_cpp.so)
-#include <vector>
-#include <string>
-#include <fstream>
-#include <iostream>
-#include <TH1D.h>
-#include <TFile.h>
-#include <TClonesArray.h>
-#include <TLorentzVector.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
 float crossSection(string thisPath){
@@ -28,29 +22,29 @@ float crossSection(string thisPath){
 
 }
 
-void toyMC_ele(string inputFile, string outputFile, string js){
+void jetEnergyTree(string inputFile, string outputFile, string jes, string channel){
 
   // setup calibration and reader
 
   BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
-  BTagCalibrationReader reader_udsg(BTagEntry::OP_LOOSE, "central");
+  BTagCalibrationReader reader_l(BTagEntry::OP_LOOSE, "central");
   BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
   BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, "central");
 
-  reader_udsg.load(calib, BTagEntry::FLAV_UDSG, "mujets");
-  reader_c.load(calib, BTagEntry::FLAV_C, "mujets");
-  reader_b.load(calib, BTagEntry::FLAV_B, "mujets");
+  reader_l.load(calib, BTagEntry::FLAV_UDSG, "comb");
+  reader_c.load(calib, BTagEntry::FLAV_C,    "mujets");
+  reader_b.load(calib, BTagEntry::FLAV_B,    "mujets");
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_udsgflavor_zjetsBtagEff.root");
-  TFile* f_c = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_cflavor_zjetsBtagEff.root");
-  TFile* f_b = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/ele_bflavor_zjetsBtagEff.root");
+  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_cflavor_zjetsBtagEff.root",    channel.data()));
+  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_zjetsBtagEff.root",    channel.data()));
   
-  TGraphAsymmErrors* g_l = (TGraphAsymmErrors*)(f_l->Get("ele_udsgflavor"));
-  TGraphAsymmErrors* g_c = (TGraphAsymmErrors*)(f_c->Get("ele_cflavor"));
-  TGraphAsymmErrors* g_b = (TGraphAsymmErrors*)(f_b->Get("ele_bflavor"));
+  TH1F* h_l = (TH1F*)(f_l->Get(Form("%s_udsgflavor", channel.data())));
+  TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",    channel.data())));
+  TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor",    channel.data())));
 
   // read the ntuples (in pcncu)
 
@@ -61,7 +55,7 @@ void toyMC_ele(string inputFile, string outputFile, string js){
 
   // Create a tree to store variables
 
-  TFile* outFile = new TFile(Form("%s_%s_toyMC.root",outputFile.data(), js.data()), "recreate");
+  TFile* outFile = new TFile(Form("%s_%s_%sMiniTree.root", outputFile.data(), jes.data(), channel.data()), "recreate");
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
@@ -97,112 +91,42 @@ void toyMC_ele(string inputFile, string outputFile, string js){
 
     data.GetEntry(ev);
 
-    Bool_t         isData            = data.GetBool("isData");
-    Float_t        eventWeight       = data.GetFloat("ev_weight"); 
-    TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
-    Int_t          FATnJet           = data.GetInt("FATnJet");    
-    Int_t*         FATnSubSDJet      = data.GetPtrInt("FATnSubSDJet");
-    Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    Float_t*       FATjetCorrUncUp   = data.GetPtrFloat("FATjetCorrUncUp");
-    Float_t*       FATjetCorrUncDown = data.GetPtrFloat("FATjetCorrUncDown");
-    TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-    vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
-    vector<float>* FATsubjetSDCSV    = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
-    vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
-    vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
-    vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
-    vector<float>* FATsubjetSDE      = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
-    vector<int>*   FATsubjetFlavor   = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
+    Bool_t        isData      = data.GetBool("isData");
+    Float_t       eventWeight = data.GetFloat("ev_weight");
+    TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good leptons
       
     vector<int> goodLepID;
-    if( !isPassZee(data,goodLepID) ) continue;
 
-    TLorentzVector* thisLep = (TLorentzVector*)eleP4->At(goodLepID[0]);   
-    TLorentzVector* thatLep = (TLorentzVector*)eleP4->At(goodLepID[1]);   
+    if( channel == "ele" && !isPassZee(data,goodLepID)   ) continue;
+    if( channel == "mu"  && !isPassZmumu(data,goodLepID) ) continue;
+
+    TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[0]) : (TLorentzVector*)muP4->At(goodLepID[0]);
+    TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[1]) : (TLorentzVector*)muP4->At(goodLepID[1]);
 
     // select good FATjet
 
     int goodFATJetID = -1;
-    TLorentzVector thisJet(0,0,0,0);
 
-    for( int ij = 0; ij < FATnJet; ++ij ){
+    int JES = 0;
 
-      TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
+    if     ( jes == "up"   ) JES =  1;
+    else if( jes == "down" ) JES = -1;
 
-      *myJet *= (js=="central") ? 1 : ( (js=="up") ? (1+FATjetCorrUncUp[ij]) : (1-FATjetCorrUncDown[ij]) );
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
 
-      if( myJet->Pt() < 200 ) continue;
-      if( fabs(myJet->Eta()) > 2.4 ) continue;
-      if( !FATjetPassIDLoose[ij] ) continue;
-      if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
-      
-      goodFATJetID = ij;
-      thisJet = *myJet;
+    TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-      break;
- 
-    } // end of FatnJet loop
- 
-    if( goodFATJetID < 0 ) continue;
+    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
 
-    if( (*thisLep+*thatLep+thisJet).M() < 750 ) continue;
+    // b-tag cut
 
     int nsubBjet = 0;
-    float pMC = 1., pData = 1.;
 
-    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
-            
-      TLorentzVector thisSubJet;
-      
-      thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
-			    FATsubjetSDPy[goodFATJetID][is],
-			    FATsubjetSDPz[goodFATJetID][is],
-			    FATsubjetSDE[goodFATJetID][is]);
-
-      float thisSubJetPt = thisSubJet.Pt() < 420 ? thisSubJet.Pt() : 419.999;
-
-      float btagEff, scaleFactor;
-
-      if( FATsubjetFlavor[goodFATJetID][is] != 4 && FATsubjetFlavor[goodFATJetID][is] != 5 ){
-
-	btagEff = g_l->Eval(thisSubJetPt);
-	scaleFactor = reader_udsg.eval_auto_bounds("central", BTagEntry::FLAV_UDSG, thisSubJet.Eta(), thisSubJetPt);
-
-      }
-
-      else if( FATsubjetFlavor[goodFATJetID][is] == 4 ){
-
-	btagEff = g_c->Eval(thisSubJetPt);
-	scaleFactor = reader_c.eval_auto_bounds("central", BTagEntry::FLAV_C, thisSubJet.Eta(), thisSubJetPt);
-
-      }
-      else if( FATsubjetFlavor[goodFATJetID][is] == 5 ){
-
-	btagEff = g_b->Eval(thisSubJetPt);
-	scaleFactor = reader_b.eval_auto_bounds("central", BTagEntry::FLAV_B, thisSubJet.Eta(), thisSubJetPt);
-
-      }
-
-      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 ){
-
-	pMC   *= btagEff;
-	pData *= scaleFactor * btagEff;
-	++nsubBjet;
-	
-      }
-      
-      else{
-	
-	pMC   *= (1 - btagEff);
-	pData *= (1 - scaleFactor * btagEff);
-	
-      }
-      
-    } // end of subjet loop
-    
-    // b-tag cut
+    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
     
     if     ( nsubBjet == 1 ) cat = 1;
     else if( nsubBjet == 2 ) cat = 2;      
@@ -210,7 +134,7 @@ void toyMC_ele(string inputFile, string outputFile, string js){
 
     mllbb    = (*thisLep+*thatLep+thisJet).M();
     prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = isData ? 1 : eventWeight * scale * (pData/pMC) * minor;
+    evweight = isData ? 1 : eventWeight * scale * btagWeight * minor;
 
     tree->Fill();
 
