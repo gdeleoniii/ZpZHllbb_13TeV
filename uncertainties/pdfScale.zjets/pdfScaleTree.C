@@ -22,15 +22,15 @@ float crossSection(string thisPath){
 
 }
 
-void bTagUncTree(string inputFile, string outputFile, string region, string channel){
+void pdfScaleTree(string inputFile, string outputFile, string channel){
 
   // setup calibration and reader
 
   BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
 
-  BTagCalibrationReader reader_l(BTagEntry::OP_LOOSE, region.data());
-  BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, region.data());
-  BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, region.data());
+  BTagCalibrationReader reader_l(BTagEntry::OP_LOOSE, "central");
+  BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
+  BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, "central");
 
   reader_l.load(calib, BTagEntry::FLAV_UDSG, "comb");
   reader_c.load(calib, BTagEntry::FLAV_C,    "mujets");
@@ -51,21 +51,23 @@ void bTagUncTree(string inputFile, string outputFile, string region, string chan
   TreeReader data(inputFile.data());
 
   TFile* f = new TFile(inputFile.data());
-
   TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
 
   // Create a tree to store variables
 
-  TFile* outFile = new TFile(Form("%s_%s_%sMiniTree.root", outputFile.data(), region.data(), channel.data()), "recreate");
+  TFile* outFile = new TFile(Form("%s_%sMiniTree.root", outputFile.data(), channel.data()), "recreate");
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
-  Float_t mllbb, prmass, evweight;
+  Float_t mllbb, prmass;
+  Float_t evweight[110] = {0};
 
-  tree->Branch("cat",      &cat,      "cat/I");
-  tree->Branch("mllbb",    &mllbb,    "mllbb/F");
-  tree->Branch("prmass",   &prmass,   "prmass/F");
-  tree->Branch("evweight", &evweight, "evweight/F");
+  tree->Branch("cat",      &cat,     "cat/I");
+  tree->Branch("mllbb",    &mllbb,   "mllbb/F");
+  tree->Branch("prmass",   &prmass,  "prmass/F");
+
+  for(int i = 0; i < 110; ++i)
+    tree->Branch(Form("evweight%02i",i), &(evweight[i]), Form("evweight%02i/F",i));
 
   // Calculate the scale correspond to inputFile
 
@@ -82,11 +84,12 @@ void bTagUncTree(string inputFile, string outputFile, string region, string chan
 
     data.GetEntry(ev);
 
-    Float_t       eventWeight      = data.GetFloat("ev_weight");
-    Float_t*      FATjetPRmassCorr = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    TClonesArray* muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray* eleP4            = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray* FATjetP4         = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Float_t*      pdfscaleSysWeight = data.GetPtrFloat("pdfscaleSysWeights"); 
+    Float_t       eventWeight       = data.GetFloat("ev_weight");
+    Float_t*      FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    TClonesArray* muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray* eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray* FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good reco level events     
     // select good leptons
@@ -113,15 +116,22 @@ void bTagUncTree(string inputFile, string outputFile, string region, string chan
 
     int nsubBjet = 0;
 
-    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b, region.data());
+    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
+    
+    // b-tag cut
     
     if     ( nsubBjet == 1 ) cat = 1;
     else if( nsubBjet == 2 ) cat = 2;      
     else                     cat = 0;
     
-    mllbb    = (*thisLep+*thatLep+*thisJet).M(); 
-    prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = eventWeight * scale * btagWeight;
+    mllbb  = (*thisLep+*thatLep+*thisJet).M(); 
+    prmass = FATjetPRmassCorr[goodFATJetID];
+
+    for( int i = 0; i < 110; ++i ){
+      evweight[i] = (i<9) ?
+	eventWeight * scale * btagWeight * pdfscaleSysWeight[i] :
+	eventWeight * scale * btagWeight * (pdfscaleSysWeight[i]/pdfscaleSysWeight[9]);
+    }
 
     tree->Fill();
 

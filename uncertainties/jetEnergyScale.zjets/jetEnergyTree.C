@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone_cpp.so)
 #include <vector>
+#include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -65,7 +66,7 @@ void toyMC_ele(string inputFile, string outputFile, string js){
   TTree* tree = new TTree("tree", "TreeForRooFit");
 
   Int_t   cat;
-  Float_t mllbb, prmass, evweight;
+  Float_t prmass, evweight, mllbb;
 
   tree->Branch("cat",      &cat,      "cat/I");
   tree->Branch("mllbb",    &mllbb,    "mllbb/F");
@@ -75,16 +76,6 @@ void toyMC_ele(string inputFile, string outputFile, string js){
   // Calculate the scale correspond to inputFile
 
   Float_t scale = 2512.*crossSection(outputFile.data())/h_totalEvents->Integral();
-
-  // Mark minor backgounds
-
-  Int_t minor = 1;
-
-  if( (inputFile.find("WW") != string::npos) ||
-      (inputFile.find("WZ") != string::npos) ||
-      (inputFile.find("ZZ") != string::npos) ||
-      (inputFile.find("ZH") != string::npos) ||
-      (inputFile.find("TT") != string::npos)  ) minor = -1;
 
   // begin of event loop
 
@@ -97,7 +88,6 @@ void toyMC_ele(string inputFile, string outputFile, string js){
 
     data.GetEntry(ev);
 
-    Bool_t         isData            = data.GetBool("isData");
     Float_t        eventWeight       = data.GetFloat("ev_weight"); 
     TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
     Int_t          FATnJet           = data.GetInt("FATnJet");    
@@ -126,7 +116,7 @@ void toyMC_ele(string inputFile, string outputFile, string js){
 
     int goodFATJetID = -1;
     TLorentzVector thisJet(0,0,0,0);
-
+    
     for( int ij = 0; ij < FATnJet; ++ij ){
 
       TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
@@ -207,10 +197,10 @@ void toyMC_ele(string inputFile, string outputFile, string js){
     if     ( nsubBjet == 1 ) cat = 1;
     else if( nsubBjet == 2 ) cat = 2;      
     else                     cat = 0;
-
-    mllbb    = (*thisLep+*thatLep+thisJet).M();
+    
+    mllbb    = (*thisLep+*thatLep+thisJet).M(); 
     prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = isData ? 1 : eventWeight * scale * (pData/pMC) * minor;
+    evweight = eventWeight * scale * (pData/pMC);
 
     tree->Fill();
 

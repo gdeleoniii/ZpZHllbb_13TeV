@@ -2,51 +2,52 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitAlpha(string channel, string catcut){
+void rooFitAlpha(string channel, string catcut, string type, int first, int last){
 
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
 
-  // Define all the variables from the trees
+  // Input files and sum all backgrounds
 
-  RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "", 30., 300.);
-  RooRealVar evWeight("evweight", "", 0., 1.e10);
+  TChain* treeZjets = new TChain("tree");
+
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
+
+  // Define all the variables from the trees 
+
+  RooRealVar cat("cat", "", 0, 2);
+  RooRealVar mJet("prmass", "",  30.,  300.);
   RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
- 
+  RooBinning mZHbin(32, 800., 4000.);
+
   mZH.setRange("fullRange", 800., 4000.);
- 
-  RooBinning mZHbin(21, 800., 4000.);
-  RooArgSet variables(cat, mJet, mZH, evWeight);
- 
+
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
-  string region[3] = {"central","up","down"};
-  float alpha[11][3];
+  int N = last-first;
+  int iw = N-1;
+  float alphaScale[11][N], alphaCentral[11];
 
   TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp([1]*x+[2]/x)/TMath::Exp([3]*x+[4]/x)", 800, 4000);
-
-  for(int nw = 2; nw >= 0; --nw){
-
-    // Input files and sum all backgrounds
-
-    TChain* treeZjets = new TChain("tree");
+     
+  for( int nw = last; nw >= first; --nw ){
     
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    
-    // Create a dataset from a tree -> to process an unbinned likelihood fitting
+    RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
+    RooArgSet variables(cat, mJet, mZH, evWeight);
+
+    // Create a dataset from a tree -> to process unbinned likelihood fitting
 
     RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
     RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
-
-    // Total events number
+  
+    // Total event numbers
 
     RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
     RooRealVar nSGMcEvents("nSGMcEvents", "nSGMcEvents", 0., 1.e10);
@@ -64,13 +65,13 @@ void rooFitAlpha(string channel, string catcut){
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  0. : 1400.;
-      bmax = (catcut=="1") ? 3000. : 2600.;
+      bmin = (catcut=="1") ?  700. : 200.;
+      bmax = (catcut=="1") ? 1200. : 700.;
     }
 
     else if( channel == "mu" ){
-      bmin = (catcut=="1") ? 100. : 2100.; 
-      bmax = (catcut=="1") ? 900. : 2900.;
+      bmin = (catcut=="1") ?  900. : 1900.; 
+      bmax = (catcut=="1") ? 1400. : 2400.;
     }
     
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
@@ -78,7 +79,7 @@ void rooFitAlpha(string channel, string catcut){
 
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-    
+
     ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     float p0 = a.getVal();
@@ -89,26 +90,26 @@ void rooFitAlpha(string channel, string catcut){
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 0. : 0.;
-      dmax = (catcut=="1") ? 5000. : 1.;
+      dmin = (catcut=="1") ? 2600. :  1.;
+      dmax = (catcut=="1") ? 3100. : 10.;
     }
     
     else if( channel == "mu" ){
-      dmin = (catcut=="1") ? 0. : 8.;
-      dmax = (catcut=="1") ? 1. : 18.;
+      dmin = (catcut=="1") ?  500. :  1.;
+      dmax = (catcut=="1") ? 2000. : 100.;
     }
-        
+    
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
     RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
 
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-
+    
     ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     float p2 = c.getVal();
     float p3 = d.getVal();
-
+ 
     // Set the model of alpha ratio
 
     float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(a,b)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(c,d)))->Integral(800,4000);
@@ -117,30 +118,41 @@ void rooFitAlpha(string channel, string catcut){
 
     int mzh = 800;
     for( int im = 0; im < 11; ++im ){
-      alpha[im][nw] = f_alpha->Eval(mzh);
+
+      if( nw != first )
+	alphaScale[im][iw] = f_alpha->Eval(mzh);
+      else
+	alphaCentral[im] = f_alpha->Eval(mzh);
+
       mzh += (mzh<2000) ? 200 : 500;
+
     }
 
-    fprintf(stdout, "p0=%f\tp1=%f\tp2=%f\tp3=%f\n", p0,p1,p2,p3);
+    --iw;
 
-    delete treeZjets;
+    fprintf(stdout, "weight=%i\t(sb)p0=%f\tp1=%f\t(sg)p2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
 
   } // end of weight loop
-   
-  // Calculate uncertainty of each mass bin
 
-  float Alpha[11], Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
+  // Calculate RMS value of each mass bin
+
+  float Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
   float relativeUnc[11];
 
   for( int im = 0; im < 11; ++im ){
 
-    Alpha[im] = alpha[im][0];
-    Unc[im] = (fabs(alpha[im][1]-alpha[im][0])>fabs(alpha[im][2]-alpha[im][0])) ? fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
-    relativeUnc[im] = Unc[im]/Alpha[im];
+    if( type == "mur1" )
+      Unc[im] = ( fabs(alphaScale[im][1]-alphaCentral[im]) > fabs(alphaScale[im][0]-alphaCentral[im]) ) ?
+	fabs(alphaScale[im][1]-alphaCentral[im]) : fabs(alphaScale[im][0]-alphaCentral[im]);
+
+    else 
+      Unc[im] = TMath::RMS(N, alphaScale[im]);
+
+    relativeUnc[im] = Unc[im]/alphaCentral[im];
 
   } // end of mass points
-  
-  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
+
+  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, alphaCentral, 0, Unc);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetTitle("");
@@ -221,6 +233,6 @@ void rooFitAlpha(string channel, string catcut){
   g_unc->Draw();
 
   cv.Draw();
-  cv.Print(Form("alpha_bTagScale_%s_cat%s.pdf", channel.data(), catcut.data()));
+  cv.Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));  
 
 }

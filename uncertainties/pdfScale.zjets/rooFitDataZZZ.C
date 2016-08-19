@@ -13,10 +13,10 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
 
   TChain* treeZjets = new TChain("tree");
 
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_toyMC.root", channel.data()));
-  treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_toyMC.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
 
 
 
@@ -110,14 +110,15 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  600. : 1400.;
-      bmax = (catcut=="1") ? 1500. : 2600.;
+      bmin = (catcut=="1") ?  700. : 200.;
+      bmax = (catcut=="1") ? 1200. : 700.;
     }
 
     else if( channel == "mu" ){
-      bmin = (catcut=="1") ? 100. : 2100.; 
-      bmax = (catcut=="1") ? 900. : 2900.;
+      bmin = (catcut=="1") ?  900. : 1900.; 
+      bmax = (catcut=="1") ? 1400. : 2400.;
     }
+
     
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
     RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
@@ -125,7 +126,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
-    ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+    ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(false), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
 
     float p0 = a.getVal();
@@ -136,14 +137,15 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 3100. : 0.;
-      dmax = (catcut=="1") ? 3900. : 1.;
+      dmin = (catcut=="1") ? 2600. :  1.;
+      dmax = (catcut=="1") ? 3100. : 10.;
     }
     
     else if( channel == "mu" ){
-      dmin = (catcut=="1") ? 0. : 8.;
-      dmax = (catcut=="1") ? 1. : 18.;
+      dmin = (catcut=="1") ?  500. :  1.;
+      dmax = (catcut=="1") ? 2000. : 100.;
     }
+
     
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
     RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
@@ -152,7 +154,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
     
 
-    ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+    ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(false), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
 
     float p2 = c.getVal();

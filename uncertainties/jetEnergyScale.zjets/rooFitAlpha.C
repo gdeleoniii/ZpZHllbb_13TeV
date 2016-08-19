@@ -2,7 +2,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 using namespace RooFit;
 
-void rooFitAlpha(string channel, string catcut){
+void rooFitData(string channel, string catcut){
 
   // Suppress all the INFO message
 
@@ -36,16 +36,16 @@ void rooFitAlpha(string channel, string catcut){
 
     TChain* treeZjets = new TChain("tree");
     
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_%sMiniTree.root", region[nw].data(), channel.data()));
-    
+    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
+    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
+    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
+    treeZjets->Add(Form("%s/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_toyMC.root", channel.data(), region[nw].data()));
+
     // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
     RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
     RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
-
+  
     // Total events number
 
     RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
@@ -64,15 +64,15 @@ void rooFitAlpha(string channel, string catcut){
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  0. : 1400.;
-      bmax = (catcut=="1") ? 3000. : 2600.;
+      bmin = (catcut=="1") ?  600. : 1400.;
+      bmax = (catcut=="1") ? 1500. : 2600.;
     }
 
     else if( channel == "mu" ){
       bmin = (catcut=="1") ? 100. : 2100.; 
       bmax = (catcut=="1") ? 900. : 2900.;
     }
-    
+        
     RooRealVar a("a", "a", -0.002, -0.005, 0.);
     RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
 
@@ -89,15 +89,15 @@ void rooFitAlpha(string channel, string catcut){
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 0. : 0.;
-      dmax = (catcut=="1") ? 5000. : 1.;
+      dmin = (catcut=="1") ? 3100. : 0.;
+      dmax = (catcut=="1") ? 3900. : 1.;
     }
     
     else if( channel == "mu" ){
       dmin = (catcut=="1") ? 0. : 8.;
       dmax = (catcut=="1") ? 1. : 18.;
     }
-        
+    
     RooRealVar c("c", "c", -0.002, -0.005, 0.);
     RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
 
@@ -122,8 +122,6 @@ void rooFitAlpha(string channel, string catcut){
     }
 
     fprintf(stdout, "p0=%f\tp1=%f\tp2=%f\tp3=%f\n", p0,p1,p2,p3);
-
-    delete treeZjets;
 
   } // end of weight loop
    
@@ -172,7 +170,7 @@ void rooFitAlpha(string channel, string catcut){
   g_unc->GetYaxis()->SetLabelSize(0.1);
   g_unc->GetYaxis()->SetTitleSize(0.1);
   g_unc->GetYaxis()->SetNdivisions(505);
-  g_unc->SetMinimum(1e-3);
+  g_unc->SetMinimum(0);
   g_unc->SetMaximum(0.45);
   g_unc->SetLineWidth(2);
   g_unc->SetMarkerStyle(8);
@@ -186,7 +184,7 @@ void rooFitAlpha(string channel, string catcut){
   leg->SetTextSize(0.04);
 
   TLatex* lar = new TLatex();
-  
+
   lar->SetTextSize(0.035);
   lar->SetLineWidth(5);
 
@@ -216,11 +214,11 @@ void rooFitAlpha(string channel, string catcut){
   lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
 
   cv_up->RedrawAxis();
-  cv_dw->cd()->SetLogy(1);
+  cv_dw->cd();
 
   g_unc->Draw();
 
   cv.Draw();
-  cv.Print(Form("alpha_bTagScale_%s_cat%s.pdf", channel.data(), catcut.data()));
+  cv.Print(Form("alpha_jetEnScale_%s_cat%s.pdf", channel.data(), catcut.data()));
 
 }
