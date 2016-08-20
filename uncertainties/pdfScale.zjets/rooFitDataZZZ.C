@@ -6,7 +6,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
@@ -62,7 +62,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
-
+  TCut specialCut = "(mllbb<1600 || mllbb>1700)";
   RooPlot* mZHsbFrame = mZH.frame();
   RooPlot* mZHsgFrame = mZH.frame();
 
@@ -70,7 +70,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
   int iw = N-1;
   float alphaScale[11][N], alphaCentral[11];
 
-  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp([1]*x+[2]/x)/TMath::Exp([3]*x+[4]/x)", 800, 4000);
+  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 800, 4000);
    
   f_alpha->SetTitle("");
   f_alpha->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -89,7 +89,7 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
 
-    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
+    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut /*&& specialCut*/),  WeightVar(evWeight), Import(*treeZjets));  
     RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
     // Total event numbers
@@ -110,8 +110,8 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     float bmin, bmax;
 
     if( channel == "ele" ){
-      bmin = (catcut=="1") ?  700. : 200.;
-      bmax = (catcut=="1") ? 1200. : 700.;
+      bmin = (catcut=="1") ?  700. : 1500.;
+      bmax = (catcut=="1") ? 1200. : 2000.;
     }
 
     else if( channel == "mu" ){
@@ -120,10 +120,11 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     }
 
     
-    RooRealVar a("a", "a", -0.002, -0.005, 0.);
-    RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
+    RooRealVar a("a", "a",  150., 100., 300.);
+    //    RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
+    RooRealVar b("b", "b", 0.05,  0.01, 1. );
 
-    RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
+    RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a,b));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
     ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(false), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -137,20 +138,22 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     float dmin, dmax;
     
     if( channel == "ele" ){
-      dmin = (catcut=="1") ? 2600. :  1.;
-      dmax = (catcut=="1") ? 3100. : 10.;
+      dmin = (catcut=="1") ? 10. :  10.;
+      dmax = (catcut=="1") ? 400. : 400.;
     }
     
     else if( channel == "mu" ){
-      dmin = (catcut=="1") ?  500. :  1.;
-      dmax = (catcut=="1") ? 2000. : 100.;
+      dmin = (catcut=="1") ?  10. :  10.;
+      dmax = (catcut=="1") ? 400. : 400.;
     }
 
     
-    RooRealVar c("c", "c", -0.002, -0.005, 0.);
-    RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
+    RooRealVar c("c", "c", 150., 10., 400.);
+    //    RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
+    RooRealVar d("d", "d", 0.05,  0.01, 1. );
 
-    RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
+
+    RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,c,d));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
     
 
@@ -167,8 +170,6 @@ void rooFitDataZZZ(string channel="mu", string catcut="1", string type="mur1", i
     f_alpha->SetMinimum(0);
     f_alpha->SetLineColor((nw==first)?kBlue:kCyan);
     f_alpha->DrawCopy((nw==last) ? "" : "same");
-
-    cout <<f_alpha->Integral(800,4000) << endl;
 
     int mzh = 800;
 
