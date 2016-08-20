@@ -195,12 +195,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooPlot* expectedFrame   = mZH.frame(); 
 
   dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
-  ext_model_ZHSB.plotOn(mcSBmZhFrame, VisualizeError(*mZHSB_result), FillStyle(3002));
+  ext_model_ZHSB.plotOn(mcSBmZhFrame, VisualizeError(*mZHSB_result,1,false), FillStyle(3002));
   dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
   ext_model_ZHSB.plotOn(mcSBmZhFrame, LineColor(kBlue));
-  
+
   dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
-  ext_model_ZHSG.plotOn(mcSGmZhFrame, VisualizeError(*mZHSG_result), FillStyle(3002));
+  ext_model_ZHSG.plotOn(mcSGmZhFrame, VisualizeError(*mZHSG_result,1,false), FillStyle(3002));
   dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
   ext_model_ZHSG.plotOn(mcSGmZhFrame, LineColor(kBlue));
   
@@ -209,17 +209,17 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   model_alpha   .plotOn(alphaFrame, LineColor(kBlack));
 
   dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
-  ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result), FillStyle(3002));
+  ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result,1,false), FillStyle(3002));
   dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
   ext_model_ZH .plotOn(dataSBmZhFrame, LineColor(kBlue));
 
   dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
-  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillStyle(3002));
+  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
   dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
   dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
-  model_sigData.plotOn(expectedFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineColor(kBlue));
+  model_sigData.plotOn(expectedFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineColor(kGreen+1));
 
   RooPlot* mcSBmZhPullFrame = mZH.frame();
   RooPlot* mcSGmZhPullFrame = mZH.frame();
@@ -234,7 +234,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar.SetLineWidth(5);
 
   float up_height = 0.82;
-  float dw_height = (1-up_height)*1.4;
+  float dw_height = (1-up_height)*1.445;
 
   TCanvas c0("c0","",0,0,1000,800);
   
@@ -256,7 +256,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mcSBmZhFrame->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Z+jets in sidebands");
 
@@ -265,9 +265,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   c0_dw->cd()->SetLogy(0);
 
   mcSBmZhPullFrame->addObject(mcSBmZhFrame->pullHist(), "P");
-  mcSBmZhPullFrame->GetXaxis()->SetLabelSize(0.1);
-  mcSBmZhPullFrame->GetYaxis()->SetLabelSize(0.1);
-  mcSBmZhPullFrame->GetYaxis()->SetTitleSize(0.1);
+  mcSBmZhPullFrame->SetTitle("");
+  mcSBmZhPullFrame->GetYaxis()->SetTitle("Pulls");
+  mcSBmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
+  mcSBmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
+  mcSBmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
+  mcSBmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
+  mcSBmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
+  mcSBmZhPullFrame->GetYaxis()->SetNdivisions(505);
   mcSBmZhPullFrame->SetMinimum(-4);
   mcSBmZhPullFrame->SetMaximum(4);
   mcSBmZhPullFrame->Draw();
@@ -291,10 +296,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mcSGmZhFrame->SetTitle("");
   mcSGmZhFrame->SetMinimum(1e-4);
   mcSGmZhFrame->SetMaximum(10);
+  mcSGmZhFrame->GetXaxis()->SetTitle("");
+  mcSGmZhFrame->GetXaxis()->SetLabelOffset(999);
   mcSGmZhFrame->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Z+jets in signal region");
 
@@ -302,44 +309,82 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   c1_dw->cd()->SetLogy(0);
 
   mcSGmZhPullFrame->addObject(mcSGmZhFrame->pullHist(), "P");
-  mcSGmZhPullFrame->GetXaxis()->SetLabelSize(0.1);
-  mcSGmZhPullFrame->GetYaxis()->SetLabelSize(0.1);
-  mcSGmZhPullFrame->GetYaxis()->SetTitleSize(0.1);
+  mcSGmZhPullFrame->SetTitle("");
+  mcSGmZhPullFrame->GetYaxis()->SetTitle("Pulls");
+  mcSGmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
+  mcSGmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
+  mcSGmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
+  mcSGmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
+  mcSGmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
+  mcSGmZhPullFrame->GetYaxis()->SetNdivisions(505);
   mcSGmZhPullFrame->SetMinimum(-4);
   mcSGmZhPullFrame->SetMaximum(4);
   mcSGmZhPullFrame->Draw();
 
   c1.Draw();
   c1.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  
+
+  TCanvas c2("c2","",0,0,1000,800);
+  
+  c2.Divide(1,2);
+
+  TPad* c2_up = (TPad*)c2.GetListOfPrimitives()->FindObject("c2_1");
+  TPad* c2_dw = (TPad*)c2.GetListOfPrimitives()->FindObject("c2_2"); 
+
+  c2_up->SetPad(0,1-up_height,1,1);
+  c2_dw->SetPad(0,0,1,dw_height);
+  c2_dw->SetBottomMargin(0.25);
+  c2_up->cd()->SetLogy(1);
+
+  dataSBmZhFrame->SetTitle("");
+  dataSBmZhFrame->SetMinimum(1e-4);
+  dataSBmZhFrame->SetMaximum(100);
+  dataSBmZhFrame->GetXaxis()->SetTitle("");
+  dataSBmZhFrame->GetXaxis()->SetLabelOffset(999);
+  dataSBmZhFrame->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "data in sidebands");
+
+  c2_up->RedrawAxis();
+
+  c2_dw->cd()->SetLogy(0);
+
+  dataSBmZhPullFrame->addObject(dataSBmZhFrame->pullHist(), "P");
+  dataSBmZhPullFrame->SetTitle("");
+  dataSBmZhPullFrame->GetYaxis()->SetTitle("Pulls");
+  dataSBmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
+  dataSBmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
+  dataSBmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
+  dataSBmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
+  dataSBmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
+  dataSBmZhPullFrame->GetYaxis()->SetNdivisions(505);
+  dataSBmZhPullFrame->SetMinimum(-4);
+  dataSBmZhPullFrame->SetMaximum(4);
+  dataSBmZhPullFrame->Draw();
+
+  c2.Draw();
+  c2.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   TCanvas cv("cv","",0,0,1000,800);
   TLegend leg(0.60,0.70,0.85,0.80);
+
   cv.cd();
   alphaFrame->SetTitle("");
   alphaFrame->GetYaxis()->SetTitle("");
   alphaFrame->Draw();
   leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(0)), "bkg. fit in sidebands", "l");
   leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(1)), "bkg. fit in signal region", "l");
-  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(2)), "#alpha function (ExpTail)", "l");
+  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(2)), "#alpha function (y=exp(#frac{-x}{a+bx}))", "l");
   leg.SetBorderSize(0);
   leg.Draw();
   alphaFrame->addObject(&leg);
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.60, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-  
-
-  cv.Clear();
-  cv.cd()->SetLogy(1);
-  dataSBmZhFrame->SetTitle("");
-  dataSBmZhFrame->SetMinimum(1e-4);
-  dataSBmZhFrame->SetMaximum(100);
-  dataSBmZhFrame->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "data in sidebands");
+  lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
   cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   cv.Clear();

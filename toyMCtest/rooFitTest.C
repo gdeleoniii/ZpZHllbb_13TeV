@@ -41,11 +41,12 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
+  TCut specialCut = "(mllbb<1600 || mllbb>1700)";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
   RooDataSet dataSet  ("dataSet", "dataSet", variables, Cut(catCut), WeightVar(evWeight), Import(*tree));
-  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut), WeightVar(evWeight), Import(*tree));
+  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut && specialCut), WeightVar(evWeight), Import(*tree));
 
   // Total events number
 
@@ -152,21 +153,25 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     if( toyMC_result->status() != 0 ) continue;
    
-    float nsbreal = setToyMC->sumEntries(sbCut)/setToyMC->sumEntries();
+    // calulate normalize factor
 
-    RooRealVar nSBReal("nSBReal", "", nsbreal, 0., 1.);
-   
     RooAbsReal* nSIGFit = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("signal"));
     RooAbsReal* nSBFit  = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("lowSB,highSB"));
 
-    RooFormulaVar formula("formula", "ev in signal region of toyMC", "@0*@1/@2", RooArgList(nSBReal, *nSIGFit, *nSBFit));
-    
-    float nSigFit  = nSIGFit->getVal();
-    float nSigReal = setToyMC->sumEntries(sigCut)/setToyMC->sumEntries();
-    float fitUnc   = formula.getPropagatedError(*toyMC_result);
+    RooRealVar nSBHist("nSBHist", "nSBHist", 0., 1.e10);
 
-    h_bias->Fill((nSigFit - nSigReal)/nSigReal);
-    h_pull->Fill((nSigFit - nSigReal)/fitUnc);
+    nSBHist.setVal(setToyMC->sumEntries(sbCut));
+    nSBHist.setConstant(true);
+
+    float toyNormFactor = nSBHist.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
+    float toyNormHiste  = setToyMC->sumEntries(sigCut);
+
+    RooFormulaVar formula("formula", "events in signal region of toyMC", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
+
+    float fitUnc = formula.getPropagatedError(*toyMC_result);
+
+    h_bias->Fill((toyNormFactor - toyNormHiste)/toyNormHiste);
+    h_pull->Fill((toyNormFactor - toyNormHiste)/fitUnc);
 
   } // End of ntoy loop
 
