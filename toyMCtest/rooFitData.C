@@ -225,9 +225,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooPlot* mcSGmZhPullFrame = mZH.frame();
   RooPlot* dataSBmZhPullFrame = mZH.frame();
 
-  /*****************************************/
-  /*          Output the results          */
-  /*****************************************/
+  // Output the results
 
   TLatex lar;
   lar.SetTextSize(0.03);
