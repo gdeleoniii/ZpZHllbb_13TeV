@@ -63,15 +63,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   mJet.setRange("highSB",  135., 300.);
   mJet.setRange("signal",  105., 135.);
 
-  RooBinning binsmZH(32, 800, 4000);
-  RooBinning binsmJet(27, 30, 300);
+  RooBinning binsmZH(64, 800, 4000);
+  RooBinning binsmJet(54, 30, 300);
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
 
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
-  TCut specialCut = "(mllbb<1600 || mllbb>1700)";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
@@ -79,7 +78,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetDataSG ("dataSetDataSG",  "dataSetDataSG",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables, Cut(catCut),           WeightVar(evWeight), Import(*treeZjets));
-  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut && specialCut),  WeightVar(evWeight), Import(*treeZjets));  
+  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
   RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
   // Total events number
@@ -127,22 +126,25 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
  
   // Alpha ratio part
   
-  float bmin, bmax;
+  // set fit parameters // [a,b][min,max]
+
+  float sgVaraMin, sgVaraMax;
 
   if( channel == "ele" ){
-    bmin = (catcut=="1") ?  600. : 1400.;
-    bmax = (catcut=="1") ? 1500. : 2600.;
+    sgVaraMin = 10; sgVaraMax = 50;
+  }
+  else{ 
+    sgVaraMin = 300; sgVaraMax = 350; 
   }
 
-  else if( channel == "mu" ){
-    bmin = (catcut=="1") ? 100. : 2100.; 
-    bmax = (catcut=="1") ? 900. : 2900.;
-  }
-    
-  RooRealVar p0("p0", "p0", -0.002, -0.005, 0.);
-  RooRealVar p1("p1", "p1", (bmin+bmax)*0.5, bmin, bmax);
+  RooRealVar sbVara("sbVara", "sbVara", 225., 150., 300.);
+  RooRealVar sbVarb("sbVarb", "sbVarb", 0.025, 0.01, 0.10);
+  RooRealVar sgVara("sgVara", "sgVara", 0.5*(sgVaraMin+sgVaraMax), sgVaraMin, sgVaraMax);
+  RooRealVar sgVarb("sgVarb", "sgVarb", 0.05, 0.0001, 0.1);
 
-  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,p0,p1));
+  // Fit ZH mass in side band
+
+  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
   RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
   RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -150,22 +152,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Fit ZH mass in signal region
 
-  float dmin, dmax;
-   
-  if( channel == "ele" ){
-    dmin = (catcut=="1") ? 3100. : 0.;
-    dmax = (catcut=="1") ? 3900. : 1.;
-  }
-    
-  else if( channel == "mu" ){
-    dmin = (catcut=="1") ? 0. : 8.;
-    dmax = (catcut=="1") ? 1. : 18.;
-  }
-    
-  RooRealVar p2("p2", "p2", -0.002, -0.005, 0.);
-  RooRealVar p3("p3", "p3", (dmin+dmax)*0.5, dmin, dmax);
-
-  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,p2,p3));
+  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
   RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
 
   RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -173,156 +160,209 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Fit ZH mass in side band region (data)
 
-  float pdmin, pdmax;
-    
-  if( channel == "ele" ){
-    pdmin = 0.;
-    pdmax = 2.;
+  float pd0Min, pd0Max;
+  if( channel == "ele" && catcut == "1"){
+    pd0Min = 550; pd0Max = 650;
   }
-    
-  else if( channel == "mu" ){
-    pdmin = (catcut=="1") ? 5000. : 1300.;
-    pdmax = (catcut=="1") ? 5500. : 1500.;
+  else{
+    pd0Min = 80; pd0Max = 180;
   }
 
-  RooRealVar pd0("pd0", "pd0", -0.002, -0.005, 0.);
-  RooRealVar pd1("pd1", "pd1", (pdmin+pdmax)*0.5, pdmin, pdmax);
+  RooRealVar pd0("pd0", "pd0", 0.5*(pd0Min+pd0Max), pd0Min, pd0Max);
+  RooRealVar pd1("pd1", "pd1", 0.05, 0., 1.);
 
-  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,pd0,pd1));
+  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,pd0,pd1));
   RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
 
   RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-  fprintf(stdout, "p0=%f\tp1=%f\tp2=%f\tp3=%f\tpd0=%f\tpd1=%f\n\n", p0.getVal(),p1.getVal(),p2.getVal(),p3.getVal(),pd0.getVal(),pd1.getVal());
+  fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\tpd0=%f\tpd1=%f\n\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal(), pd0.getVal(), pd1.getVal());
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(p0,p1)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(p2,p3)))->Integral(800,4000);
+  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(800,4000)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(800,4000);
 
-  RooGenericPdf model_alpha  ("model_alpha", "model_alpha", Form("%f*TMath::Exp(%f*@0+%f/@0)/TMath::Exp(%f*@0+%f/@0)", normConst, p2.getVal(),p3.getVal(),p0.getVal(),p1.getVal()), RooArgSet(mZH));
-  RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
+  RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
+  RooProdPdf model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
 
   // Plot the results to a frame 
 
-  /*-*-*-*-*-*-*/
+  RooPlot* mcSBmZhFrame    = mZH.frame();
+  RooPlot* mcSGmZhFrame    = mZH.frame();
+  RooPlot* alphaFrame      = mZH.frame();
+  RooPlot* dataSBmZhFrame  = mZH.frame();
+  RooPlot* dataSBmJetFrame = mJet.frame();
+  RooPlot* expectedFrame   = mZH.frame(); 
 
-  RooPlot* mJetFrame = mJet.frame();
-
-  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));
-  ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
-  dataSetDataSB   .plotOn(mJetFrame, Binning(binsmJet));
-  ext_model_mJetSB.plotOn(mJetFrame, Range("allRange"));
-
-  TLegend* leg = new TLegend(0.60,0.72,0.85,0.85);
-
-  leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(2)), "Data side band", "lep");
-  leg->AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
-  leg->Draw();
-
-  mJetFrame->addObject(leg);
-  mJetFrame->SetMinimum(0);
-  mJetFrame->SetTitle("");
-
-  /*-*-*-*-*-*-*/
-
-  RooPlot* mZHFrameMC = mZH.frame();
-
-  dataSetZjetsSB.plotOn(mZHFrameMC, Binning(binsmZH));
-  ext_model_ZHSB.plotOn(mZHFrameMC, VisualizeError(*mZHSB_result), FillColor(kYellow));
-  dataSetZjetsSB.plotOn(mZHFrameMC, Binning(binsmZH), LineColor(kBlue+3), MarkerColor(kBlue+3));
-  ext_model_ZHSB.plotOn(mZHFrameMC, LineStyle(7), LineColor(kBlue));
-
-  dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH));
-  ext_model_ZHSG.plotOn(mZHFrameMC, VisualizeError(*mZHSG_result), FillColor(kYellow));
-  dataSetZjetsSG.plotOn(mZHFrameMC, Binning(binsmZH), LineColor(kRed+3), MarkerColor(kRed+3));
-  ext_model_ZHSG.plotOn(mZHFrameMC, LineStyle(7), LineColor(kRed));
-
-  TLegend* leg0 = new TLegend(0.60,0.67,0.85,0.85);
-
-  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(2)), "MC side band", "lep");
-  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(6)), "MC signal region", "lep");
-  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(3)), "Fit curve of side band", "l");
-  leg0->AddEntry(mZHFrameMC->findObject(mZHFrameMC->nameOf(7)), "Fit curve of signal region", "l");
-  leg0->Draw();
-
-  mZHFrameMC->addObject(leg0);
-  mZHFrameMC->SetMinimum(0);
-  mZHFrameMC->SetTitle("");
-
-  /*-*-*-*-*-*-*/
-
-  RooPlot* mZHFrame = mZH.frame();
-
-  dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
-  ext_model_ZH .plotOn(mZHFrame, VisualizeError(*mZH_result), FillColor(kYellow));
-  dataSetDataSB.plotOn(mZHFrame, Binning(binsmZH));
-  ext_model_ZH .plotOn(mZHFrame, LineStyle(7), LineColor(kBlue));
-
-  TLegend* leg1 = new TLegend(0.60,0.72,0.85,0.85);
-
-  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(2)), "Data side band", "lep");
-  leg1->AddEntry(mZHFrame->findObject(mZHFrame->nameOf(3)), "Fit curve with errors", "l");
-  leg1->Draw();
+  dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
+  ext_model_ZHSB.plotOn(mcSBmZhFrame, VisualizeError(*mZHSB_result), FillStyle(3002));
+  dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
+  ext_model_ZHSB.plotOn(mcSBmZhFrame, LineColor(kBlue));
   
-  mZHFrame->addObject(leg1);
-  mZHFrame->SetMinimum(0);
-  mZHFrame->SetTitle("");
-
-  /*-*-*-*-*-*-*/
-
-  RooPlot* predictFrame = mZH.frame();
-
-  dataSetDataSG.plotOn(predictFrame, Binning(binsmZH));
-  model_sigData.plotOn(predictFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineStyle(7), LineColor(kRed));
-
-  TLegend* leg2 = new TLegend(0.60,0.72,0.85,0.85);
-
-  leg2->AddEntry(predictFrame->findObject(predictFrame->nameOf(0)), "Data signal region", "lep");
-  leg2->AddEntry(predictFrame->findObject(predictFrame->nameOf(1)), "Predicted backgrounds", "l");
-  leg2->Draw();
+  dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
+  ext_model_ZHSG.plotOn(mcSGmZhFrame, VisualizeError(*mZHSG_result), FillStyle(3002));
+  dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
+  ext_model_ZHSG.plotOn(mcSGmZhFrame, LineColor(kBlue));
   
-  predictFrame->addObject(leg2);
-  predictFrame->SetMinimum(0);
-  predictFrame->SetTitle("");
+  ext_model_ZHSB.plotOn(alphaFrame, LineColor(kBlue));
+  ext_model_ZHSG.plotOn(alphaFrame, LineColor(kRed));
+  model_alpha   .plotOn(alphaFrame, LineColor(kBlack));
 
-  /*-*-*-*-*-*-*/
+  dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
+  ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result), FillStyle(3002));
+  dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
+  ext_model_ZH .plotOn(dataSBmZhFrame, LineColor(kBlue));
 
-  TLatex* lar = new TLatex();
+  dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
+  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"), VisualizeError(*mJetSB_result), FillStyle(3002));
+  dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
+  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
-  lar->SetTextSize(0.035);
-  lar->SetLineWidth(5);
+  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
+  model_sigData.plotOn(expectedFrame, Normalization(normFactor, RooAbsReal::NumEvent), LineColor(kBlue));
 
-  TCanvas* cv = new TCanvas("cv","",0,0,1000,800);
+  RooPlot* mcSBmZhPullFrame = mZH.frame();
+  RooPlot* mcSGmZhPullFrame = mZH.frame();
+  RooPlot* dataSBmZhPullFrame = mZH.frame();
 
-  cv->cd();
-  mZHFrameMC->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.65, 0.60, Form("%s  %s btag", channel.data(), catcut.data()));
-  cv->Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
+  /*****************************************/
+  /*          Output the results          */
+  /*****************************************/
 
-  cv->Clear();
-  cv->cd();
-  mZHFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  TLatex lar;
+  lar.SetTextSize(0.03);
+  lar.SetLineWidth(5);
 
-  cv->Clear();
-  cv->cd();
-  predictFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  cv->Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  float up_height = 0.82;
+  float dw_height = (1-up_height)*1.4;
+
+  TCanvas c0("c0","",0,0,1000,800);
   
-  cv->Clear();
-  cv->cd();
-  mJetFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.65, 0.63, Form("%s  %s btag", channel.data(), catcut.data()));
-  cv->Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
+  c0.Divide(1,2);
+
+  TPad* c0_up = (TPad*)c0.GetListOfPrimitives()->FindObject("c0_1");
+  TPad* c0_dw = (TPad*)c0.GetListOfPrimitives()->FindObject("c0_2"); 
+
+  c0_up->SetPad(0,1-up_height,1,1);
+  c0_dw->SetPad(0,0,1,dw_height);
+  c0_dw->SetBottomMargin(0.25);
+  c0_up->cd()->SetLogy(1);
+
+  mcSBmZhFrame->SetTitle("");
+  mcSBmZhFrame->SetMinimum(1e-4);
+  mcSBmZhFrame->SetMaximum(catcut=="1"?100:10);
+  mcSBmZhFrame->GetXaxis()->SetTitle("");
+  mcSBmZhFrame->GetXaxis()->SetLabelOffset(999);
+  mcSBmZhFrame->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "Z+jets in sidebands");
+
+  c0_up->RedrawAxis();
+
+  c0_dw->cd()->SetLogy(0);
+
+  mcSBmZhPullFrame->addObject(mcSBmZhFrame->pullHist(), "P");
+  mcSBmZhPullFrame->GetXaxis()->SetLabelSize(0.1);
+  mcSBmZhPullFrame->GetYaxis()->SetLabelSize(0.1);
+  mcSBmZhPullFrame->GetYaxis()->SetTitleSize(0.1);
+  mcSBmZhPullFrame->SetMinimum(-4);
+  mcSBmZhPullFrame->SetMaximum(4);
+  mcSBmZhPullFrame->Draw();
+
+  c0.Draw();
+  c0.Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
+
+
+  TCanvas c1("c1","",0,0,1000,800);
+
+  c1.Divide(1,2);
+
+  TPad* c1_up = (TPad*)c1.GetListOfPrimitives()->FindObject("c1_1");
+  TPad* c1_dw = (TPad*)c1.GetListOfPrimitives()->FindObject("c1_2");
+
+  c1_up->SetPad(0,1-up_height,1,1);
+  c1_dw->SetPad(0,0,1,dw_height);
+  c1_dw->SetBottomMargin(0.25);
+  c1_up->cd()->SetLogy(1);
+
+  mcSGmZhFrame->SetTitle("");
+  mcSGmZhFrame->SetMinimum(1e-4);
+  mcSGmZhFrame->SetMaximum(10);
+  mcSGmZhFrame->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "Z+jets in signal region");
+
+  c1_up->RedrawAxis();
+  c1_dw->cd()->SetLogy(0);
+
+  mcSGmZhPullFrame->addObject(mcSGmZhFrame->pullHist(), "P");
+  mcSGmZhPullFrame->GetXaxis()->SetLabelSize(0.1);
+  mcSGmZhPullFrame->GetYaxis()->SetLabelSize(0.1);
+  mcSGmZhPullFrame->GetYaxis()->SetTitleSize(0.1);
+  mcSGmZhPullFrame->SetMinimum(-4);
+  mcSGmZhPullFrame->SetMaximum(4);
+  mcSGmZhPullFrame->Draw();
+
+  c1.Draw();
+  c1.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  TCanvas cv("cv","",0,0,1000,800);
+  TLegend leg(0.60,0.70,0.85,0.80);
+  cv.cd();
+  alphaFrame->SetTitle("");
+  alphaFrame->GetYaxis()->SetTitle("");
+  alphaFrame->Draw();
+  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(0)), "bkg. fit in sidebands", "l");
+  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(1)), "bkg. fit in signal region", "l");
+  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(2)), "#alpha function (ExpTail)", "l");
+  leg.SetBorderSize(0);
+  leg.Draw();
+  alphaFrame->addObject(&leg);
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.60, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+  
+
+  cv.Clear();
+  cv.cd()->SetLogy(1);
+  dataSBmZhFrame->SetTitle("");
+  dataSBmZhFrame->SetMinimum(1e-4);
+  dataSBmZhFrame->SetMaximum(100);
+  dataSBmZhFrame->Draw();
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "data in sidebands");
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  cv.Clear();
+  cv.cd()->SetLogy(0);
+  dataSBmJetFrame->SetTitle("");
+  dataSBmJetFrame->SetMinimum(0);
+  dataSBmJetFrame->Draw();
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  cv.Clear();
+  cv.cd()->SetLogy(1);
+  expectedFrame->SetTitle("");
+  expectedFrame->SetMinimum(1e-4);
+  expectedFrame->SetMaximum(10);
+  expectedFrame->Draw();
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
