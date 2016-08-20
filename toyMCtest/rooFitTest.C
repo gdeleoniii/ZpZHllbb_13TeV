@@ -13,8 +13,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   TChain* tree = new TChain("tree");
 
-  if( channel != "ele" && channel != "mu" ) return;
-  
   tree->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
   tree->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
   tree->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
@@ -23,8 +21,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   // Define all the variables from the trees
 
   RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "M_{jet}", 30.,  300., "GeV");
-  RooRealVar mZH ("mllbb",   "M_{ZH}",  0., 2000., "GeV");
+  RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
   RooRealVar evWeight("evweight", "", 0., 1.e3);
 
   // Set the range in jet mass
@@ -36,17 +33,16 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   RooBinning binsmJet(54, 30, 300);
 
-  RooArgSet variables(cat, mJet, mZH, evWeight);
+  RooArgSet variables(cat, mJet, evWeight);
 
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
-  TCut specialCut = "(mllbb<1600 || mllbb>1700)";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
   RooDataSet dataSet  ("dataSet", "dataSet", variables, Cut(catCut), WeightVar(evWeight), Import(*tree));
-  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut && specialCut), WeightVar(evWeight), Import(*tree));
+  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut), WeightVar(evWeight), Import(*tree));
 
   // Total events number
 
@@ -73,9 +69,9 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooPlot* mJetFrame = mJet.frame();
 
   dataSet.plotOn(mJetFrame, Binning(binsmJet)); 
-  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), VisualizeError(*mJet_result), FillColor(kYellow));
+  ext_model.plotOn(mJetFrame, VisualizeError(*mJet_result,1,false), FillStyle(3002));
   dataSet.plotOn(mJetFrame, Binning(binsmJet));
-  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
+  ext_model.plotOn(mJetFrame);
 
   TLegend* leg1 = new TLegend(0.60,0.67,0.85,0.80);
 
@@ -84,7 +80,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   leg1->Draw();
   
   mJetFrame->addObject(leg1);
-  mJetFrame->SetTitle("");
 
   /*******************************************/
   /*                SIDE BAND                */
@@ -100,10 +95,10 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooPlot* mJetFrameSB = mJet.frame();
 
   dataSetSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetFrameSB, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), VisualizeError(*mJetSB_result), FillColor(kYellow));
+  ext_modelSB.plotOn(mJetFrameSB, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
   dataSetSB.plotOn(mJetFrameSB, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetFrameSB, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"));
-  ext_model.plotOn(mJetFrameSB, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), LineStyle(7), LineColor(kRed));
+  ext_modelSB.plotOn(mJetFrameSB, Range("allRange"));
+  ext_model.plotOn(mJetFrameSB, Range("allRange"), LineStyle(7), LineColor(kRed));
 
   TLegend* leg2 = new TLegend(0.60,0.62,0.85,0.80);
  
@@ -113,7 +108,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   leg2->Draw();
   
   mJetFrameSB->addObject(leg2);
-  mJetFrameSB->SetTitle("");
 
   // fprintf(stdout, "lamda=%f\tlamdaSB=%f\n", lamda.getVal(), lamdaSB.getVal());
 
@@ -142,14 +136,14 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
     nToyMcEvents.setVal(thisToyMC.sumEntries());
     nToyMcEvents.setConstant(true);
 
-    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -0.5, -0.001);
+    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -1, -0.001);
 
     RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
     RooExtendPdf ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
 
     RooFitResult* toyMC_result = ext_model_toyMC.fitTo(thisToyMC, SumW2Error(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-    fprintf(stdout, "nToy=%i\tlamdaToy=%f\tstatus=%i\n", ntoy, lamda_toyMC.getVal(), toyMC_result->status());
+    // fprintf(stdout, "nToy=%i\tlamdaToy=%f\tstatus=%i\n", ntoy, lamda_toyMC.getVal(), toyMC_result->status());
 
     if( toyMC_result->status() != 0 ) continue;
    
@@ -208,42 +202,59 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   /*                 OUTPUT                  */
   /*******************************************/
 
-  TLatex* lar = new TLatex();
+  TLatex lar;
 
-  lar->SetTextSize(0.035);
-  lar->SetLineWidth(5);
+  lar.SetTextSize(0.035);
+  lar.SetLineWidth(5);
   
-  TCanvas* c = new TCanvas("c","",0,0,1000,800);
+  float up_height = 0.82;
+  float dw_height = (1-up_height)*1.445;
 
-  c->cd();
+  TCanvas c0("c0","",0,0,1000,800);
+  
+  c0.Divide(1,2);
+
+  TPad* c0_up = (TPad*)c0.GetListOfPrimitives()->FindObject("c0_1");
+  TPad* c0_dw = (TPad*)c0.GetListOfPrimitives()->FindObject("c0_2"); 
+
+  c0_up->SetPad(0,1-up_height,1,1);
+  c0_dw->SetPad(0,0,1,dw_height);
+  c0_dw->SetBottomMargin(0.25);
+  c0_up->cd()->SetLogy(1);
+
+  mJetFrame->SetTitle("");
+  mJetFrame->SetMinimum(1e-3);
+  mJetFrame->SetMaximum(10);
   mJetFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
-  c->Clear();
-  c->cd();
+  c.Clear();
+  c.cd()->SetLogy(1);
+  mJetFrameSB->SetMinimum(1e-3);
+  mJetFrameSB->SetMaximum(10);
   mJetFrameSB->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
   
-  c->Clear();
-  c->cd();
+  c.Clear();
+  c.cd()->SetLogy(0);
   biasFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
-  c->Clear();
-  c->cd();
+  c.Clear();
+  c.cd()->SetLogy(0);
   pullFrame->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
-  c->Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
