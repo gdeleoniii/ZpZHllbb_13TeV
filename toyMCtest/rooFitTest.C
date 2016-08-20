@@ -57,32 +57,17 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   // ALL RANGE
 
-  RooRealVar lamda("lamda", "lamda", -0.02, -0.5, 0.);
+  RooRealVar lamda("lamda", "lamda", -0.02, -0.5, -0.001);
   RooExponential model("model", "Exponential function for Z+jets mass", mJet, lamda);
   RooExtendPdf ext_model("ext_model", "ext_model", model, nMcEvents);
   RooFitResult* mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-
-  TLegend leg1(0.60,0.67,0.85,0.80);
-  leg1.AddEntry(mJetFrame->findObject(mJetFrame->nameOf(0)), "MC with statistical errors", "lep");
-  leg1.AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
-  leg1.Draw();
-  mJetFrame->addObject(leg1);
-
   // SIDE BAND
 
-  RooRealVar lamdaSB("lamdaSB", "lamda", -0.02, -0.5, 0.);
+  RooRealVar lamdaSB("lamdaSB", "lamda", -0.02, -0.5, -0.001);
   RooExponential modelSB("modelSB", "Exponential function for Z+jets mass", mJet, lamdaSB);
   RooExtendPdf ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
   RooFitResult* mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-
-  TLegend leg2(0.60,0.62,0.85,0.80);
-  leg2.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(0)), "MC with statistical errors", "lep");
-  leg2.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(3)), "Fit curve with errors", "l");
-  leg2.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(4)), "Fit curve of all range", "l");
-  leg2.Draw();
-  mJetSBFrame->addObject(leg2);
 
   // fprintf(stdout, "lamda=%f\tlamdaSB=%f\n", lamda.getVal(), lamdaSB.getVal());
 
@@ -107,7 +92,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
     nToyMcEvents.setVal(thisToyMC.sumEntries());
     nToyMcEvents.setConstant(true);
 
-    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -1, -0.001);
+    RooRealVar lamda_toyMC("lamda_toyMC", "lamda", -0.02, -0.05, -0.001);
 
     RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
     RooExtendPdf ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
@@ -146,10 +131,14 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
 
-  RooRealVar  mean("mean", "mean", 0, -10, 10);
-  RooRealVar  sigma("sigma", "sigma", 3, 0.1, 10);
-  RooGaussian gb("gb", "gauss", bias, mean, sigma);
-  RooGaussian gp("gp", "gauss", pull, mean, sigma);
+  RooRealVar gbmean("gbmean", "mean", 0, -10, 10);
+  RooRealVar gbsigma("gbsigma", "sigma", 3, 0.1, 10);
+
+  RooRealVar gpmean("gpmean", "mean", 0, -10, 10);
+  RooRealVar gpsigma("gpsigma", "sigma", 3, 0.1, 10);
+
+  RooGaussian gb("gb", "gauss", bias, gbmean, gbsigma);
+  RooGaussian gp("gp", "gauss", pull, gpmean, gpsigma);
 
   gb.fitTo(hbias);
   gp.fitTo(hpull);
@@ -194,6 +183,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   float dw_height = (1-up_height)*1.445;
 
   TCanvas c0("c0","",0,0,1000,800);
+  TLegend leg0(0.60,0.67,0.85,0.80);
   
   c0.Divide(1,2);
 
@@ -205,16 +195,21 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   c0_dw->SetBottomMargin(0.25);
   c0_up->cd()->SetLogy(1);
 
+  leg0.AddEntry(mJetFrame->findObject(mJetFrame->nameOf(0)), "MC with statistical errors", "lep");
+  leg0.AddEntry(mJetFrame->findObject(mJetFrame->nameOf(3)), "Fit curve with errors", "l");
+  leg0.Draw();
+
+  mJetFrame->addObject(&leg0);
   mJetFrame->SetTitle("");
   mJetFrame->SetMinimum(1e-3);
-  mJetFrame->SetMaximum(10);
+  mJetFrame->SetMaximum(catcut=="1"?100:10);
   mJetFrame->GetXaxis()->SetTitle("");
   mJetFrame->GetXaxis()->SetLabelOffset(999);
   mJetFrame->Draw();
 
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s  %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.62, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
 
   c0_up->RedrawAxis();
 
@@ -238,6 +233,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
 
   TCanvas c1("c1","",0,0,1000,800);
+  TLegend leg1(0.60,0.62,0.85,0.80);
 
   c1.Divide(1,2);
 
@@ -249,16 +245,22 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   c1_dw->SetBottomMargin(0.25);
   c1_up->cd()->SetLogy(1);
 
-  mJetFrame->SetTitle("");
+  leg1.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(0)), "MC with statistical errors", "lep");
+  leg1.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(3)), "Fit curve with errors", "l");
+  leg1.AddEntry(mJetSBFrame->findObject(mJetSBFrame->nameOf(4)), "Fit curve of all range", "l");
+  leg1.Draw();
+
+  mJetSBFrame->addObject(&leg1);
+  mJetSBFrame->SetTitle("");
   mJetSBFrame->SetMinimum(1e-3);
-  mJetSBFrame->SetMaximum(10);
+  mJetSBFrame->SetMaximum(catcut=="1"?100:10);
   mJetSBFrame->GetXaxis()->SetTitle("");
   mJetSBFrame->GetXaxis()->SetLabelOffset(999);
   mJetSBFrame->Draw();
 
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.62, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
 
   c1_up->RedrawAxis();
   c1_dw->cd()->SetLogy(0);
@@ -285,9 +287,9 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   biasFrame->getAttText()->SetTextSize(0.025);
   biasFrame->SetTitle("");  
   biasFrame->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.72, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
   c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
   c.Clear();
@@ -295,9 +297,9 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   pullFrame->getAttText()->SetTextSize(0.025);
   pullFrame->SetTitle("");
   pullFrame->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.75, 0.85, Form("%s  %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.72, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
   c.Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
