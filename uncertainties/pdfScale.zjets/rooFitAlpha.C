@@ -35,7 +35,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   int iw = N-1;
   float alphaScale[11][N], alphaCentral[11];
 
-  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp([1]*x+[2]/x)/TMath::Exp([3]*x+[4]/x)", 800, 4000);
+  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 800, 4000);
      
   for( int nw = last; nw >= first; --nw ){
     
@@ -60,61 +60,52 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   
     // Alpha ratio part
 
-    // Fit ZH mass in side band 
+    // set fit parameters // [a,b][min,max]
 
-    float bmin, bmax;
+    float sbVar[2][2], sgVar[2][2];
 
-    if( channel == "ele" ){
-      bmin = (catcut=="1") ?  700. : 200.;
-      bmax = (catcut=="1") ? 1200. : 700.;
+    //if( catcut == "1" ){
+
+      sbVar[0][0] = 100;   sbVar[0][1] = 400;
+      sbVar[1][0] = 0;  sbVar[1][1] = 100;
+
+      sgVar[0][0] = 100;    sgVar[0][1] = 400;
+      sgVar[1][0] = 0;  sgVar[1][1] = 100;
+
+      //}
+    /*
+    else if( catcut == "2" ){
+
+      sbVar[0][0] = 100;   sbVar[0][1] = 400;
+      sbVar[1][0] = 0;  sbVar[1][1] = 1;
+
+      sgVar[0][0] = 100;    sgVar[0][1] = 400;
+      sgVar[1][0] = 0;  sgVar[1][1] = 1;
+
     }
+    */
+    RooRealVar sbVara("sbVara", "sbVara", sbVar[0][0], sbVar[0][1]);
+    RooRealVar sbVarb("sbVarb", "sbVarb", sbVar[1][0], sbVar[1][1]);
+    RooRealVar sgVara("sgVara", "sgVara", sgVar[0][0], sgVar[0][1]);
+    RooRealVar sgVarb("sgVarb", "sgVarb", sgVar[1][0], sgVar[1][1]);
 
-    else if( channel == "mu" ){
-      bmin = (catcut=="1") ?  900. : 1900.; 
-      bmax = (catcut=="1") ? 1400. : 2400.;
-    }
-    
-    RooRealVar a("a", "a", -0.002, -0.005, 0.);
-    RooRealVar b("b", "b", (bmin+bmax)*0.5, bmin, bmax);
+    // Fit ZH mass in side band
 
-    RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,a,b));
+    RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-
     ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-    float p0 = a.getVal();
-    float p1 = b.getVal();
 
     // Fit ZH mass in signal region
 
-    float dmin, dmax;
-    
-    if( channel == "ele" ){
-      dmin = (catcut=="1") ? 2600. :  1.;
-      dmax = (catcut=="1") ? 3100. : 10.;
-    }
-    
-    else if( channel == "mu" ){
-      dmin = (catcut=="1") ?  500. :  1.;
-      dmax = (catcut=="1") ? 2000. : 100.;
-    }
-    
-    RooRealVar c("c", "c", -0.002, -0.005, 0.);
-    RooRealVar d("d", "d", (dmin+dmax)*0.5, dmin, dmax);
-
-    RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(@1*@0+@2/@0)", RooArgSet(mZH,c,d));
+    RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-    
     ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-    float p2 = c.getVal();
-    float p3 = d.getVal();
- 
     // Set the model of alpha ratio
 
-    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(a,b)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(c,d)))->Integral(800,4000);
+    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(sbVara,sbVarb)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(sgVara,sgVarb)))->Integral(800,4000);
 
-    f_alpha->SetParameters(normConst,p2,p3,p0,p1);
+    f_alpha->SetParameters(normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal());
 
     int mzh = 800;
     for( int im = 0; im < 11; ++im ){
@@ -130,7 +121,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
     --iw;
 
-    fprintf(stdout, "weight=%i\t(sb)p0=%f\tp1=%f\t(sg)p2=%f\tp3=%f\n", nw, p0, p1, p2, p3);
+    fprintf(stdout, "weight=%i\t(sb)p0=%f\tp1=%f\t(sg)p2=%f\tp3=%f\n", nw, sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal());
 
   } // end of weight loop
 
