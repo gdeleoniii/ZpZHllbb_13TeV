@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/readFitParam.h"
 using namespace RooFit;
 
 void rooFitAlpha(string channel, string catcut){
@@ -59,21 +60,12 @@ void rooFitAlpha(string channel, string catcut){
   
     // Alpha ratio part
 
-    // set fit parameters // [a,b][min,max]
+    // set fit parameters
 
-    float sgVaraMin, sgVaraMax;
-
-    if( channel == "ele" ){
-      sgVaraMin = 10; sgVaraMax = 50;
-    }
-    else{ 
-      sgVaraMin = 300; sgVaraMax = 350; 
-    }
-
-    RooRealVar sbVara("sbVara", "sbVara", 225., 150., 300.);
-    RooRealVar sbVarb("sbVarb", "sbVarb", 0.025, 0.01, 0.10);
-    RooRealVar sgVara("sgVara", "sgVara", 0.5*(sgVaraMin+sgVaraMax), sgVaraMin, sgVaraMax);
-    RooRealVar sgVarb("sgVarb", "sgVarb", 0.05, 0.0001, 0.1);
+    RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
+    RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
+    RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
+    RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
 
     // Fit ZH mass in side band
 

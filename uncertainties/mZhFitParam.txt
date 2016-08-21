@@ -1,0 +1,5 @@
+flavor	btag	sbVaraMin	sbVaraMax	sbVarbMin	sbVarbMax	sgVaraMin	sgVaraMax	sgVarbMin sgVarbMax
+ele	1	100	400	0.01	0.10	20	100	0.01	0.10	  
+ele	2	250	350	0.01	0.10	250	350	0.01	0.10
+mu	1	150	350	0.01	0.10	200	400	0.001	0.10
+mu	2	50	250	0.01	0.10	250	450	0.001	0.10
