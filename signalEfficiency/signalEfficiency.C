@@ -21,49 +21,49 @@ void signalEfficiency(){
   TGraph *g_eff_muc1 = new TGraph(11, mzh, y_eff_muc1);
   TGraph *g_eff_muc2 = new TGraph(11, mzh, y_eff_muc2);
 
+  g_eff_elc1->GetXaxis()->SetLimits(600,4200);
   g_eff_elc1->SetMinimum(0);
-  g_eff_elc1->SetMaximum(0.2);
+  g_eff_elc1->SetMaximum(0.4);
   g_eff_elc1->SetTitle("");
   g_eff_elc1->GetXaxis()->SetTitle("m_{ZH} (GeV)");
   g_eff_elc1->GetYaxis()->SetTitle("Acceptance #times efficiency");  
   g_eff_elc1->GetYaxis()->SetTitleOffset(1.3);
+  g_eff_elc1->SetLineStyle(3);
   g_eff_elc1->SetLineWidth(2);
-  g_eff_elc1->SetLineColor(kBlue);
-  g_eff_elc1->SetMarkerColor(kBlue);
+  g_eff_elc1->SetLineColor(kGreen+1);
+  g_eff_elc1->SetMarkerColor(kGreen+1);
   g_eff_elc1->SetMarkerStyle(8);
 
-  g_eff_elc2->SetLineStyle(3);
   g_eff_elc2->SetLineWidth(2);
-  g_eff_elc2->SetLineColor(kBlue);
-  g_eff_elc2->SetMarkerColor(kBlue);
+  g_eff_elc2->SetLineColor(kGreen+1);
+  g_eff_elc2->SetMarkerColor(kGreen+1);
   g_eff_elc2->SetMarkerStyle(8);
 
+  g_eff_muc1->SetLineStyle(3);
   g_eff_muc1->SetLineWidth(2);
-  g_eff_muc1->SetLineColor(kRed);
-  g_eff_muc1->SetMarkerColor(kRed);
+  g_eff_muc1->SetLineColor(kBlue);
+  g_eff_muc1->SetMarkerColor(kBlue);
   g_eff_muc1->SetMarkerStyle(8);
 
-  g_eff_muc2->SetLineStyle(3);
   g_eff_muc2->SetLineWidth(2);
-  g_eff_muc2->SetLineColor(kRed);
-  g_eff_muc2->SetMarkerColor(kRed);
+  g_eff_muc2->SetLineColor(kBlue);
+  g_eff_muc2->SetMarkerColor(kBlue);
   g_eff_muc2->SetMarkerStyle(8);
   
-  TLegend leg(0.60, 0.70, 0.90, 0.87);
+  TLegend leg(0.65, 0.70, 0.90, 0.87);
 
   leg.SetBorderSize(0);
   leg.SetFillColor(0);
   leg.SetFillStyle(0);
   leg.SetTextSize(0.04);
-  leg.AddEntry(g_eff_elc1, "Z #rightarrow ee, 1 b-tag", "lp");
-  leg.AddEntry(g_eff_elc2, "Z #rightarrow ee, 2 b-tag", "lp");
-  leg.AddEntry(g_eff_muc1, "Z #rightarrow #mu#mu, 1 b-tag", "lp");
-  leg.AddEntry(g_eff_muc2, "Z #rightarrow #mu#mu, 2 b-tag", "lp");
+  leg.AddEntry(g_eff_elc1, "2e, 1 b-tag", "lp");
+  leg.AddEntry(g_eff_elc2, "2e, 2 b-tag", "lp");
+  leg.AddEntry(g_eff_muc1, "2#mu, 1 b-tag", "lp");
+  leg.AddEntry(g_eff_muc2, "2#mu, 2 b-tag", "lp");
 
   TLatex lar;
 
-  lar.SetNDC(kTRUE);
-  lar.SetTextSize(0.04);
+  lar.SetTextSize(0.03);
   lar.SetLineWidth(5);
 
   TCanvas c("c", "", 0, 0, 800, 600);
@@ -75,10 +75,10 @@ void signalEfficiency(){
   g_eff_muc1->Draw("3lpsame");
   g_eff_muc2->Draw("3lpsame");
   leg.Draw();
-  lar.DrawLatex(0.15, 0.83, "CMS");
-  lar.DrawLatex(0.15, 0.79, "#it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   c.Print("signalEfficiency.pdf");
 
-  gSystem->Exec("mv *pdf $HOME/www");
+  gSystem->Exec("mv signalEfficiency.pdf $HOME/www");
 
 }

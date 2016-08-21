@@ -19,6 +19,7 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
   // Histogram to store total events 
 
   TH1F h_totalEv("h_totalEv", "totalEvents", 1, -1, 1);
+  TH1F h_genLepEv("h_genLepEv", "generatorEventsWtLepFlavor", 1, -1, 1);
 
   // Clone tree and add a new branch
 
@@ -48,6 +49,24 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
 
     h_totalEv.Fill(0., (!isData ? ((mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt))) : 1));
 
+    // for signal MC only: save generated events according lepton flavor
+
+    if( outputFile.find("ZprimeToZhToZlephbb") != string::npos ){
+
+      Int_t lepId = 0;
+
+      if( channel == "electron" )  lepId = 11;
+      else if( channel == "muon" ) lepId = 13;
+ 
+      for( Int_t nGen = 0; nGen < nGenPar; ++nGen ){
+      
+	if( abs((*genParId)[nGen]) == lepId && (*genMomParId)[nGen] == 23 && (*genParSt)[nGen] == 1 )
+	  h_genLepEv.Fill(0., (mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt)));
+      
+      }
+
+    }
+    
     // Remove event which is no hard interaction (noise)
     
     if( nVtx <= 0 ) continue;
@@ -70,6 +89,7 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
 
   }
 
+  h_genLepEv.Write();
   h_totalEv.Write();
   newtree->AutoSave();
 

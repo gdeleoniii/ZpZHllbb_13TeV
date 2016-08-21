@@ -70,6 +70,8 @@ float jetEnergyScale(string inputFile, string js, string channel, int cat, int m
     else if( jes == "down" ) JES = -1;
 
     if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
+    if( (*thisLep+*thatLep).DeltaPhi(*thisJet) < 2.5 ) continue;
+    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 

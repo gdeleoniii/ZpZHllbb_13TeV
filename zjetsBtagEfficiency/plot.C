@@ -69,7 +69,6 @@ void plot(string channel, string flavor){
   }
 
   h.Write(Form("%s_%sflavor",channel.data(),flavor.data()));
-  f.Write();
 
   TLegend leg(0.60, 0.70, 0.90, 0.87);
 

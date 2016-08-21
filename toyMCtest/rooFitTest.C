@@ -75,8 +75,8 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
   // Fit is converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima
 
-  TH1F* h_bias = new TH1F("h_bias", "", 40, -10, 10);
-  TH1F* h_pull = new TH1F("h_pull", "", 40, -10, 10);
+  TH1F* h_bias = new TH1F("h_bias", "", 19, -9.5, 9.5);
+  TH1F* h_pull = new TH1F("h_pull", "", 19, -9.5, 9.5);
 
   for( int ntoy = 1000; ntoy > 0; --ntoy ){
 
@@ -125,17 +125,17 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   } // End of ntoy loop
 
-  RooRealVar bias("bias", "Bias", -10, 10);
-  RooRealVar pull("pull", "Pull", -10, 10);
+  RooRealVar bias("bias", "Bias", -9.5, 9.5);
+  RooRealVar pull("pull", "Pull", -9.5, 9.5);
 
   RooDataHist hbias("hbias", "", bias, Import(*h_bias));
   RooDataHist hpull("hpull", "", pull, Import(*h_pull));
 
-  RooRealVar gbmean("gbmean", "mean", 0, -10, 10);
-  RooRealVar gbsigma("gbsigma", "sigma", 3, 0.1, 10);
+  RooRealVar gbmean("gbmean", "mean", 0.0, -5.0, 5.0);
+  RooRealVar gbsigma("gbsigma", "sigma", 1.0, 0.1, 4.0);
 
-  RooRealVar gpmean("gpmean", "mean", 0, -10, 10);
-  RooRealVar gpsigma("gpsigma", "sigma", 3, 0.1, 10);
+  RooRealVar gpmean("gpmean", "mean", 0.0, -5.0, 5.0);
+  RooRealVar gpsigma("gpsigma", "sigma", 1.0, 0.1, 4.0);
 
   RooGaussian gb("gb", "gauss", bias, gbmean, gbsigma);
   RooGaussian gp("gp", "gauss", pull, gpmean, gpsigma);
@@ -143,7 +143,13 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   gb.fitTo(hbias);
   gp.fitTo(hpull);
 
-  //Plot the results to a frame 
+  // Another toy MC study using RooMCStudy 
+
+  RooMCStudy* mcstudy = new RooMCStudy(model, mJet, Binned(false), Silence(true), Extended(true), FitOptions(Save(1), PrintEvalErrors(false)));
+  
+  mcstudy->generateAndFit(1000, dataSet.sumEntries());
+
+  // Plot the results on frame 
 
   RooPlot* mJetFrame   = mJet.frame();
   RooPlot* mJetSBFrame = mJet.frame();
@@ -163,14 +169,15 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   hbias.plotOn(biasFrame);
   gb.plotOn(biasFrame);
-  gb.paramOn(biasFrame,Layout(0.675,0.9,0.8));
+  gb.paramOn(biasFrame,Layout(0.65,0.9,0.8));
 
   hpull.plotOn(pullFrame);
   gp.plotOn(pullFrame);
-  gp.paramOn(pullFrame,Layout(0.675,0.9,0.8));
+  gp.paramOn(pullFrame,Layout(0.65,0.9,0.8));
 
   RooPlot* mJetPullFrame = mJet.frame();
   RooPlot* mJetSBPullFrame = mJet.frame();
+  RooPlot* mcstudyPullFrame = mcstudy->plotPull(lamda, FrameRange(-9.5,9.5), Bins(19), FitGauss(true));
 
   // Output results
 
@@ -231,7 +238,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   c0.Draw();
   c0.Print(Form("rooFit_toyMC_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
-
   TCanvas c1("c1","",0,0,1000,800);
   TLegend leg1(0.60,0.62,0.85,0.80);
 
@@ -283,6 +289,13 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   
   TCanvas c("c","",0,0,1000,800);
 
+  c.cd();
+  mcstudyPullFrame->getAttText()->SetTextSize(0.025);
+  mcstudyPullFrame->SetTitle("");
+  mcstudyPullFrame->Draw();
+  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
+
+  c.Clear();
   c.cd();
   biasFrame->getAttText()->SetTextSize(0.025);
   biasFrame->SetTitle("");  

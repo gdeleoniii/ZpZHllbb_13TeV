@@ -35,7 +35,7 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
   
   TFile f(inputFile.data());
 
-  float totalEvent = ((TH1D*)f.Get("h_totalEv"))->Integral();
+  float totalEvent = ((TH1D*)f.Get("h_genLepEv"))->Integral();
   float passEvent  = 0.;
 
   // begin of event loop
@@ -69,6 +69,8 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
     if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
+    if( (*thisLep+*thatLep).DeltaPhi(*thisJet) < 2.5 ) continue;
+    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
 
     // b-tag cut
 
@@ -80,9 +82,9 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
     if( cat == 2 && nsubBjet != 2 ) continue;
 
     passEvent += eventWeight * btagWeight;
-
+    
   } // end of event loop
-  
+
   return passEvent/totalEvent;
 
 }

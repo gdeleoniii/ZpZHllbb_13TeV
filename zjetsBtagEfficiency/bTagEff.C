@@ -11,8 +11,8 @@ void bTagEff(string inputFile, string outputFile, string channel){
 
   // Declare the histogram
 
-  TFile* f = new TFile(inputFile.data());
-  TH1D* h_totalEvents = (TH1D*)f->Get("h_totalEv");
+  TFile f(inputFile.data());
+  TH1D* h_totalEvents = (TH1D*)f.Get("h_totalEv");
 
   float varBinslight[] = {30,50,70,100,140,200,300,670,1000,2000};
   float varBins[] = {30,50,70,100,140,200,300,670,2000};
@@ -71,6 +71,8 @@ void bTagEff(string inputFile, string outputFile, string channel){
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
     if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
+    if( (*thisLep+*thatLep).DeltaPhi(*thisJet) < 2.5 ) continue;
+    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
 
     // b-tag efficiency part
 
@@ -128,7 +130,6 @@ void bTagEff(string inputFile, string outputFile, string channel){
   
   outFile->Write();
 
-  delete f;
   delete outFile;
 
 }

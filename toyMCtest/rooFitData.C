@@ -122,8 +122,6 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   float normFactor = nSBDataEvents.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
  
-  fprintf(stdout, "The normalization factor is %g\n", normFactor);
- 
   // Alpha ratio part
   
   // set fit parameters // [a,b][min,max]
@@ -185,7 +183,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
   RooProdPdf model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
 
-  // Plot the results to a frame 
+  // Plot the results on frame 
 
   RooPlot* mcSBmZhFrame    = mZH.frame();
   RooPlot* mcSGmZhFrame    = mZH.frame();
@@ -224,6 +222,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooPlot* mcSBmZhPullFrame = mZH.frame();
   RooPlot* mcSGmZhPullFrame = mZH.frame();
   RooPlot* dataSBmZhPullFrame = mZH.frame();
+  RooPlot* dataSBmJetPullFrame = mJet.frame();
 
   // Output the results
 
@@ -367,6 +366,51 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   c2.Draw();
   c2.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
+  TCanvas c3("c3","",0,0,1000,800);
+  
+  c3.Divide(1,2);
+
+  TPad* c3_up = (TPad*)c3.GetListOfPrimitives()->FindObject("c3_1");
+  TPad* c3_dw = (TPad*)c3.GetListOfPrimitives()->FindObject("c3_2"); 
+
+  c3_up->SetPad(0,1-up_height,1,1);
+  c3_dw->SetPad(0,0,1,dw_height);
+  c3_dw->SetBottomMargin(0.25);
+  c3_up->cd()->SetLogy(1);
+
+  dataSBmJetFrame->SetTitle("");
+  dataSBmJetFrame->SetMinimum(1e-2);
+  dataSBmJetFrame->SetMaximum(50);
+  dataSBmJetFrame->GetXaxis()->SetTitle("");
+  dataSBmJetFrame->GetXaxis()->SetLabelOffset(999);
+  dataSBmJetFrame->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
+  lar.DrawLatexNDC(0.15, 0.78, Form("Normalization factor: %.3f", normFactor));
+  
+  c3_up->RedrawAxis();
+
+  c3_dw->cd()->SetLogy(0);
+
+  dataSBmJetPullFrame->addObject(dataSBmJetFrame->pullHist(), "P");
+  dataSBmJetPullFrame->SetTitle("");
+  dataSBmJetPullFrame->GetYaxis()->SetTitle("Pulls");
+  dataSBmJetPullFrame->GetYaxis()->SetTitleOffset(0.25);
+  dataSBmJetPullFrame->GetXaxis()->SetLabelSize(0.125);
+  dataSBmJetPullFrame->GetXaxis()->SetTitleSize(0.125);
+  dataSBmJetPullFrame->GetYaxis()->SetLabelSize(0.125);
+  dataSBmJetPullFrame->GetYaxis()->SetTitleSize(0.125);
+  dataSBmJetPullFrame->GetYaxis()->SetNdivisions(505);
+  dataSBmJetPullFrame->SetMinimum(-4);
+  dataSBmJetPullFrame->SetMaximum(4);
+  dataSBmJetPullFrame->Draw();
+
+  c3.Draw();
+  c3.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
   TCanvas cv("cv","",0,0,1000,800);
   TLegend leg(0.60,0.70,0.85,0.80);
 
@@ -383,17 +427,6 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  cv.Clear();
-  cv.cd()->SetLogy(0);
-  dataSBmJetFrame->SetTitle("");
-  dataSBmJetFrame->SetMinimum(0);
-  dataSBmJetFrame->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
   cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   cv.Clear();

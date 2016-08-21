@@ -23,7 +23,7 @@ void bTagEff(string channel, string flavor){
       g = bTagEff(Form("/data7/htong/skim_NCUGlobalTuples/skim_ele_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]),"ele",flavor.data());
     else if( channel == "mu" )
       g = bTagEff(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%d_13TeV-madgraph.root",mzh[i]),"mu",flavor.data());
-        
+    
     TH1F h("h", "", nvarBins, varBins);
 
     for( int n = 0; n < g->GetN(); ++n ){
@@ -35,8 +35,7 @@ void bTagEff(string channel, string flavor){
     }
 
     h.Write(Form("%s_%sflavor_m%i",channel.data(),flavor.data(),mzh[i]));
-    f.Write();
-
+   
     TLegend leg(0.60, 0.70, 0.90, 0.87);
 
     leg.SetBorderSize(0);

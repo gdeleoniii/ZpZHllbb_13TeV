@@ -22,12 +22,12 @@ void signalShape(string channel, string catcut){
     // Define all the variables from the trees
 
     RooRealVar cat ("cat", "", 0, 2);
-    RooRealVar mZH ("mllbb", "M_{ZH}", 800., 4000., "GeV");
+    RooRealVar mZH ("mllbb", "M_{ZH}", 600., 4500., "GeV");
     RooRealVar evWeight("evweight", "", 0., 1.e3);
 
-    mZH.setRange("fullRange", 800., 4000.);
+    mZH.setRange("fullRange", 600., 4500.);
 
-    RooBinning binsmZH(64, 800, 4000);
+    RooBinning binsmZH(78, 600, 4500);
 
     RooArgSet variables(cat, mZH, evWeight);
 
@@ -59,7 +59,7 @@ void signalShape(string channel, string catcut){
 
     fprintf(stdout, "mass=%i\tmean=%f\tsigma=%f\talpha=%f\tn=%f\n", mass[i], m.getVal(), s.getVal(), a.getVal(), n.getVal());
 
-    // Plot the results to a frame
+    // Plot the results on frame
 
     RooPlot* signalFrame = mZH.frame();
   
@@ -119,6 +119,8 @@ void signalShape(string channel, string catcut){
 
     c.Draw();
     c.Print(Form("signalShape_%s_%sbtag.pdf%s", channel.data(), catcut.data(), (i==0?"(":(i==9?")":""))));
+
+    delete treeSignal;
 
   }
 
