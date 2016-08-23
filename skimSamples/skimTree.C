@@ -60,7 +60,7 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
  
       for( Int_t nGen = 0; nGen < nGenPar; ++nGen ){
       
-	if( abs((*genParId)[nGen]) == lepId && (*genMomParId)[nGen] == 23 && (*genParSt)[nGen] == 1 )
+	if( abs((*genParId)[nGen]) == lepId && ( (*genMomParId)[nGen] == 23 || abs((*genMomParId)[nGen]) == lepId ) && (*genParSt)[nGen] == 1 )
 	  h_genLepEv.Fill(0., (mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt)));
       
       }

@@ -9,14 +9,16 @@ cat=(1 2)
 for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do
 	echo "Now running ==> channel: " ${channel[$i]} " category: " ${cat[$j]}
-	root -q -b -l rooFitNorm.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,true\)
+	root -q -b -l rooFitNorm.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"Vexp_wtJES\"\)
+	root -q -b -l rooFitNorm.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"Verfexp\"\,true\)
+	root -q -b -l rooFitNorm.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"Vexp_noRemoveMinor\"\,false\,false\)
     done
 done
 
-#mkdir dataJetEnScaleResults/
-#mv *pdf dataJetEnScaleResults/
-#rm -rf $HOME/www/dataJetEnScaleResults/
-#mv dataJetEnScaleResults/ $HOME/www/
+mkdir dataJetEnScaleResults/
+mv *pdf dataJetEnScaleResults/
+rm -rf $HOME/www/dataJetEnScaleResults/
+mv dataJetEnScaleResults/ $HOME/www/
 
 echo "All the jobs are finished."
 

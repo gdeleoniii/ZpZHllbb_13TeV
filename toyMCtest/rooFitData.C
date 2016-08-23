@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/readFitParam.h"
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut, bool removeMinor=true){
@@ -124,21 +125,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
  
   // Alpha ratio part
   
-  // set fit parameters // [a,b][min,max]
+  // set fit parameters
 
-  float sgVaraMin, sgVaraMax;
-
-  if( channel == "ele" ){
-    sgVaraMin = 10; sgVaraMax = 50;
-  }
-  else{ 
-    sgVaraMin = 300; sgVaraMax = 350; 
-  }
-
-  RooRealVar sbVara("sbVara", "sbVara", 225., 150., 300.);
-  RooRealVar sbVarb("sbVarb", "sbVarb", 0.025, 0.01, 0.10);
-  RooRealVar sgVara("sgVara", "sgVara", 0.5*(sgVaraMin+sgVaraMax), sgVaraMin, sgVaraMax);
-  RooRealVar sgVarb("sgVarb", "sgVarb", 0.05, 0.0001, 0.1);
+  RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
+  RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
+  RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
+  RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
 
   // Fit ZH mass in side band
 
@@ -158,23 +150,15 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Fit ZH mass in side band region (data)
 
-  float pd0Min, pd0Max;
-  if( channel == "ele" && catcut == "1"){
-    pd0Min = 550; pd0Max = 650;
-  }
-  else{
-    pd0Min = 80; pd0Max = 180;
-  }
+  RooRealVar daVara("daVara", "daVara", param(channel.data(),catcut.data(),"daVaraMin"), param(channel.data(),catcut.data(),"daVaraMax"));
+  RooRealVar daVarb("daVarb", "daVarb", param(channel.data(),catcut.data(),"daVarbMin"), param(channel.data(),catcut.data(),"daVarbMax"));
 
-  RooRealVar pd0("pd0", "pd0", 0.5*(pd0Min+pd0Max), pd0Min, pd0Max);
-  RooRealVar pd1("pd1", "pd1", 0.05, 0., 1.);
-
-  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,pd0,pd1));
+  RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,daVara,daVarb));
   RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
 
   RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-  fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\tpd0=%f\tpd1=%f\n\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal(), pd0.getVal(), pd1.getVal());
+  fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\tdaVara=%f\tdaVarb=%f\n\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal(), daVara.getVal(), daVarb.getVal());
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
@@ -416,7 +400,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   cv.cd();
   alphaFrame->SetTitle("");
-  alphaFrame->GetYaxis()->SetTitle("");
+  alphaFrame->GetYaxis()->SetTitle("Normalization");
+  alphaFrame->GetYaxis()->SetTitleOffset(1.3);
   alphaFrame->Draw();
   leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(0)), "bkg. fit in sidebands", "l");
   leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(1)), "bkg. fit in signal region", "l");

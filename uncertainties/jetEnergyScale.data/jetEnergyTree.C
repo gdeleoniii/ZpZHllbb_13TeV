@@ -73,11 +73,12 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
     data.GetEntry(ev);
 
-    Bool_t        isData      = data.GetBool("isData");
-    Float_t       eventWeight = data.GetFloat("ev_weight");
-    TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Bool_t        isData           = data.GetBool("isData");
+    Float_t       eventWeight      = data.GetFloat("ev_weight");
+    Float_t*      FATjetPRmassCorr = data.GetPtrFloat("FATjetPRmassL2L3Corr");
+    TClonesArray* muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray* eleP4            = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray* FATjetP4         = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good leptons
       

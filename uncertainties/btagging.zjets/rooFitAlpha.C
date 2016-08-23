@@ -144,7 +144,7 @@ void rooFitAlpha(string channel, string catcut){
   g_unc->GetYaxis()->SetTitleSize(0.1);
   g_unc->GetYaxis()->SetNdivisions(505);
   g_unc->SetMinimum(1e-3);
-  g_unc->SetMaximum(0.45);
+  g_unc->SetMaximum(1);
   g_unc->SetLineWidth(2);
   g_unc->SetMarkerStyle(8);
   g_unc->SetMarkerColor(kBlack);
@@ -170,9 +170,8 @@ void rooFitAlpha(string channel, string catcut){
 
   cv_up->cd()->SetLogy();
 
-  g_alpha->Draw("apz");
+  g_alpha->Draw("Xac");
   g_alpha->Draw("3same");
-  g_alpha->Draw("cxsame");
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");

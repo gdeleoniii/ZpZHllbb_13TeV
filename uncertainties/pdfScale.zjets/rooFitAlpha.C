@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/readFitParam.h"
 using namespace RooFit;
 
 void rooFitAlpha(string channel, string catcut, string type, int first, int last){
@@ -23,9 +24,10 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   RooRealVar cat("cat", "", 0, 2);
   RooRealVar mJet("prmass", "",  30.,  300.);
   RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
-  RooBinning mZHbin(32, 800., 4000.);
 
   mZH.setRange("fullRange", 800., 4000.);
+
+  RooBinning mZHbin(21, 800., 4000.);
 
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
@@ -39,7 +41,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
      
   for( int nw = last; nw >= first; --nw ){
     
-    RooRealVar evWeight(Form("evweight%02i",nw), "", -1.e10, 1.e10);
+    RooRealVar evWeight(Form("evweight%02i",nw), "", 0., 1.e3);
     RooArgSet variables(cat, mJet, mZH, evWeight);
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
@@ -60,60 +62,38 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   
     // Alpha ratio part
 
-    // set fit parameters // [a,b][min,max]
+    // set fit parameters
 
-    float sbVar[2][2], sgVar[2][2];
-
-    //if( catcut == "1" ){
-
-      sbVar[0][0] = 100;   sbVar[0][1] = 400;
-      sbVar[1][0] = 0;  sbVar[1][1] = 100;
-
-      sgVar[0][0] = 100;    sgVar[0][1] = 400;
-      sgVar[1][0] = 0;  sgVar[1][1] = 100;
-
-      //}
-    /*
-    else if( catcut == "2" ){
-
-      sbVar[0][0] = 100;   sbVar[0][1] = 400;
-      sbVar[1][0] = 0;  sbVar[1][1] = 1;
-
-      sgVar[0][0] = 100;    sgVar[0][1] = 400;
-      sgVar[1][0] = 0;  sgVar[1][1] = 1;
-
-    }
-    */
-    RooRealVar sbVara("sbVara", "sbVara", sbVar[0][0], sbVar[0][1]);
-    RooRealVar sbVarb("sbVarb", "sbVarb", sbVar[1][0], sbVar[1][1]);
-    RooRealVar sgVara("sgVara", "sgVara", sgVar[0][0], sgVar[0][1]);
-    RooRealVar sgVarb("sgVarb", "sgVarb", sgVar[1][0], sgVar[1][1]);
+    RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
+    RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
+    RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
+    RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
 
     // Fit ZH mass in side band
 
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
+
     ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     // Fit ZH mass in signal region
 
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+
     ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     // Set the model of alpha ratio
 
-    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH,RooArgList(sbVara,sbVarb)))->Integral(800,4000) / ((TF1*)ext_model_ZHSG.asTF(mZH,RooArgList(sgVara,sgVarb)))->Integral(800,4000);
+    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(800,4000)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(800,4000);
 
     f_alpha->SetParameters(normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal());
 
     int mzh = 800;
     for( int im = 0; im < 11; ++im ){
 
-      if( nw != first )
-	alphaScale[im][iw] = f_alpha->Eval(mzh);
-      else
-	alphaCentral[im] = f_alpha->Eval(mzh);
+      if( nw != first ) alphaScale[im][iw] = f_alpha->Eval(mzh);
+      if( nw == first )	alphaCentral[im]   = f_alpha->Eval(mzh);
 
       mzh += (mzh<2000) ? 200 : 500;
 
@@ -152,14 +132,13 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   g_alpha->GetXaxis()->SetLimits(800,4000);
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
-  g_alpha->SetMinimum(0);
-  g_alpha->SetMaximum(1.8);
+  g_alpha->SetMinimum(0.05);
+  g_alpha->SetMaximum(50);
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);
   g_alpha->SetMarkerColor(kBlue);
-  g_alpha->SetFillStyle(1001);
-  g_alpha->SetFillColor(kYellow);  
+  g_alpha->SetFillStyle(3002);
   
   TGraph* g_unc = new TGraph(11, Mzh, relativeUnc);
   
@@ -176,28 +155,21 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   g_unc->GetYaxis()->SetTitleSize(0.1);
   g_unc->GetYaxis()->SetNdivisions(505);
   g_unc->SetMinimum(1e-3);
-  g_unc->SetMaximum(0.45);
+  g_unc->SetMaximum(1);
   g_unc->SetLineWidth(2);
   g_unc->SetMarkerStyle(8);
   g_unc->SetMarkerColor(kBlack);
 
-  TLegend* leg = new TLegend(0.15,0.15,0.35,0.25);
+  TLatex lar;
 
-  leg->SetBorderSize(0);
-  leg->SetFillColor(0);
-  leg->SetFillStyle(0);
-  leg->SetTextSize(0.04);
+  lar.SetTextSize(0.03);
+  lar.SetLineWidth(5);
 
-  TLatex* lar = new TLatex();
-  
-  lar->SetTextSize(0.035);
-  lar->SetLineWidth(5);
-
-  float up_height     = 0.8;
-  float dw_correction = 1.375;
-  float dw_height     = (1-up_height)*dw_correction;
+  float up_height = 0.8;
+  float dw_height = (1-up_height)*1.375;
 
   TCanvas cv("cv","",0,0,1000,900);
+
   cv.Divide(1,2);
 
   TPad* cv_up = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_1");
@@ -207,16 +179,15 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   cv_dw->SetPad(0,0,1,dw_height);
   cv_dw->SetBottomMargin(0.25);
 
-  cv_up->cd();
+  cv_up->cd()->SetLogy();
 
-  g_alpha->Draw("apz");
+  g_alpha->Draw("Xac");
   g_alpha->Draw("3same");
-  g_alpha->Draw("cxsame");
-  leg->AddEntry(g_alpha, "alpha ratio with uncertainties", "lf");
-  leg->Draw();
-  lar->DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar->DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar->DrawLatexNDC(0.72, 0.80, Form("%s  %s btag", channel.data(), catcut.data()));
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, type=="pdf"?"PDF weight":"QCD scale factor");
 
   cv_up->RedrawAxis();
   cv_dw->cd()->SetLogy(1);

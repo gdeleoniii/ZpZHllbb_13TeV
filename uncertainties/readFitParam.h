@@ -6,14 +6,14 @@ float param(string flavor, string btag, string keyWord){
   ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/mZhFitParam.txt");
 
   string textFlavor, textBtag;
-  float  sbVaraMin, sbVaraMax, sbVarbMin, sbVarbMax, sgVaraMin, sgVaraMax, sgVarbMin, sgVarbMax;
+  float  sbVaraMin, sbVaraMax, sbVarbMin, sbVarbMax, sgVaraMin, sgVaraMax, sgVarbMin, sgVarbMax, daVaraMin, daVaraMax, daVarbMin, daVarbMax;
   float  thisParam;
 
   // ignore first line of text file
 
   textFile.ignore(1000,'\n');
 
-  while( textFile >> textFlavor >> textBtag >> sbVaraMin >> sbVaraMax >> sbVarbMin >> sbVarbMax >> sgVaraMin >> sgVaraMax >> sgVarbMin >> sgVarbMax ){
+  while( textFile >> textFlavor >> textBtag >> sbVaraMin >> sbVaraMax >> sbVarbMin >> sbVarbMax >> sgVaraMin >> sgVaraMax >> sgVarbMin >> sgVarbMax >> daVaraMin >> daVaraMax >> daVarbMin >> daVarbMax ){
   
     if( flavor == textFlavor && btag == textBtag ){
       
@@ -25,6 +25,10 @@ float param(string flavor, string btag, string keyWord){
       else if( keyWord == "sgVaraMax" ) thisParam = sgVaraMax;
       else if( keyWord == "sgVarbMin" ) thisParam = sgVarbMin;
       else if( keyWord == "sgVarbMax" ) thisParam = sgVarbMax;
+      else if( keyWord == "daVaraMin" ) thisParam = daVaraMin;
+      else if( keyWord == "daVaraMax" ) thisParam = daVaraMax;
+      else if( keyWord == "daVarbMin" ) thisParam = daVarbMin;
+      else if( keyWord == "daVarbMax" ) thisParam = daVarbMax;
       else thisParam = -999;
     
     }
