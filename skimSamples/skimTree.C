@@ -24,11 +24,13 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
   // Clone tree and add a new branch
 
   Float_t ev_weight;
+  Bool_t isTrueGenFlavor;
 
   fChain->LoadTree(0);
 
   TTree* newtree = fChain->GetTree()->CloneTree(0);
   newtree->Branch("ev_weight", &ev_weight, "ev_weight/F");
+  newtree->Branch("isTrueGenFlavor", &isTrueGenFlavor, "isTrueGenFlavor/O");
 
   Long64_t nPassEv = 0;
 
@@ -57,15 +59,22 @@ void skimTree::Loop(string channel, TF1* fewk_z, Int_t puScale){
 
       if( channel == "electron" )  lepId = 11;
       else if( channel == "muon" ) lepId = 13;
+
+      isTrueGenFlavor = false;
  
       for( Int_t nGen = 0; nGen < nGenPar; ++nGen ){
       
-	if( abs((*genParId)[nGen]) == lepId && ( (*genMomParId)[nGen] == 23 || abs((*genMomParId)[nGen]) == lepId ) && (*genParSt)[nGen] == 1 )
-	  h_genLepEv.Fill(0., (mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt)));
-      
-      }
+	if( (*genParId)[nGen] == lepId && ( (*genMomParId)[nGen] == 23 || (*genMomParId)[nGen] == lepId ) && (*genParSt)[nGen] == 1 ){
 
-    }
+	  h_genLepEv.Fill(0., (mcWeight > 0 ? 1 : -1)*(puWeight((Int_t)pu_nTrueInt)));
+	  isTrueGenFlavor = true;
+	  break;
+
+	} // end of if statement
+      
+      } // end of generator events loop
+
+    } // end of only signal MC
     
     // Remove event which is no hard interaction (noise)
     
