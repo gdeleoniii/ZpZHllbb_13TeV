@@ -7,7 +7,7 @@ void rooFitAlpha(string channel, string catcut){
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
 
   // Define all the variables from the trees
@@ -15,11 +15,10 @@ void rooFitAlpha(string channel, string catcut){
   RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "", 30., 300.);
   RooRealVar evWeight("evweight", "", 0., 1.e3);
-  RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
+  RooRealVar mZH("mllbb", "M_{ZH}", 750., 4300., "GeV");
  
-  mZH.setRange("fullRange", 800., 4000.);
+  mZH.setRange("fullRange", 750., 4300.);
  
-  RooBinning mZHbin(21, 800., 4000.);
   RooArgSet variables(cat, mJet, mZH, evWeight);
  
   TCut catCut = Form("cat==%s", catcut.c_str());
@@ -27,9 +26,8 @@ void rooFitAlpha(string channel, string catcut){
   TCut sigCut = "prmass>105 && prmass<135";
 
   string region[3] = {"central","up","down"};
-  float alpha[11][3];
-
-  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 800, 4000);
+  float alpha[13][3];
+  float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
 
   for(int nw = 2; nw >= 0; --nw){
 
@@ -83,28 +81,28 @@ void rooFitAlpha(string channel, string catcut){
 
     // Set the model of alpha ratio
 
-    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(800,4000)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(800,4000);
+    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(750,4300)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(750,4300);
+
+    TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 750, 4300);
 
     f_alpha->SetParameters(normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal());
 
-    int mzh = 800;
-    for( int im = 0; im < 11; ++im ){
-      alpha[im][nw] = f_alpha->Eval(mzh);
-      mzh += (mzh<2000) ? 200 : 500;
+    for( int im = 0; im < 13; ++im ){
+      alpha[im][nw] = f_alpha->Eval(Mzh[im]);
     }
 
     fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal());
 
     delete treeZjets;
+    delete f_alpha;
 
   } // end of weight loop
    
   // Calculate uncertainty of each mass bin
 
-  float Alpha[11], Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
-  float relativeUnc[11];
+  float Alpha[13], Unc[13], relativeUnc[13];
 
-  for( int im = 0; im < 11; ++im ){
+  for( int im = 0; im < 13; ++im ){
 
     Alpha[im] = alpha[im][0];
     Unc[im] = (fabs(alpha[im][1]-alpha[im][0])>fabs(alpha[im][2]-alpha[im][0])) ? fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
@@ -112,13 +110,13 @@ void rooFitAlpha(string channel, string catcut){
 
   } // end of mass points
   
-  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, Alpha, 0, Unc);
+  TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, Alpha, 0, Unc);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetTitle("");
   g_alpha->GetXaxis()->SetLabelOffset(999);
   g_alpha->GetXaxis()->SetLabelSize(0);
-  g_alpha->GetXaxis()->SetLimits(800,4000);
+  g_alpha->GetXaxis()->SetLimits(750,4300);
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->SetMinimum(0.05);
@@ -129,7 +127,7 @@ void rooFitAlpha(string channel, string catcut){
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(3002);
   
-  TGraph* g_unc = new TGraph(11, Mzh, relativeUnc);
+  TGraph* g_unc = new TGraph(13, Mzh, relativeUnc);
   
   g_unc->SetTitle("");
   g_unc->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -137,7 +135,7 @@ void rooFitAlpha(string channel, string catcut){
   g_unc->GetXaxis()->SetLabelOffset(0.005);
   g_unc->GetXaxis()->SetTitleSize(0.125);
   g_unc->GetXaxis()->SetTitleOffset(0.8);
-  g_unc->GetXaxis()->SetLimits(800,4000);
+  g_unc->GetXaxis()->SetLimits(750,4300);
   g_unc->GetYaxis()->SetTitle("Relative unc.");
   g_unc->GetYaxis()->SetTitleOffset(0.5);
   g_unc->GetYaxis()->SetLabelSize(0.1);

@@ -7,7 +7,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
@@ -23,11 +23,9 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
   RooRealVar cat("cat", "", 0, 2);
   RooRealVar mJet("prmass", "",  30.,  300.);
-  RooRealVar mZH("mllbb", "M_{ZH}", 800., 4000., "GeV");
+  RooRealVar mZH("mllbb", "M_{ZH}", 750., 4300., "GeV");
 
-  mZH.setRange("fullRange", 800., 4000.);
-
-  RooBinning mZHbin(21, 800., 4000.);
+  mZH.setRange("fullRange", 750., 4300.);
 
   TCut catCut = Form("cat==%s", catcut.c_str());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
@@ -35,10 +33,9 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
   int N = last-first;
   int iw = N-1;
-  float alphaScale[11][N], alphaCentral[11];
+  float alphaScale[13][N], alphaCentral[13];
+  float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
 
-  TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 800, 4000);
-     
   for( int nw = last; nw >= first; --nw ){
     
     RooRealVar evWeight(Form("evweight%02i",nw), "", 0., 1.e3);
@@ -85,17 +82,16 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
     // Set the model of alpha ratio
 
-    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(800,4000)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(800,4000);
+    float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(750,4300)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(750,4300);
+
+    TF1* f_alpha = new TF1("f_alpha", "[0]*TMath::Exp(-x/([1]+[2]*x))/TMath::Exp(-x/([3]+[4]*x))", 750, 4300);
 
     f_alpha->SetParameters(normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal());
 
-    int mzh = 800;
-    for( int im = 0; im < 11; ++im ){
+    for( int im = 0; im < 13; ++im ){
 
-      if( nw != first ) alphaScale[im][iw] = f_alpha->Eval(mzh);
-      if( nw == first )	alphaCentral[im]   = f_alpha->Eval(mzh);
-
-      mzh += (mzh<2000) ? 200 : 500;
+      if( nw != first ) alphaScale[im][iw] = f_alpha->Eval(Mzh[im]);
+      if( nw == first )	alphaCentral[im]   = f_alpha->Eval(Mzh[im]);
 
     }
 
@@ -103,14 +99,15 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
     fprintf(stdout, "weight=%i\t(sb)p0=%f\tp1=%f\t(sg)p2=%f\tp3=%f\n", nw, sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal());
 
+    delete f_alpha;
+
   } // end of weight loop
 
   // Calculate RMS value of each mass bin
 
-  float Unc[11], Mzh[11] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000};
-  float relativeUnc[11];
+  float Unc[13], relativeUnc[13];
 
-  for( int im = 0; im < 11; ++im ){
+  for( int im = 0; im < 13; ++im ){
 
     if( type == "mur1" )
       Unc[im] = ( fabs(alphaScale[im][1]-alphaCentral[im]) > fabs(alphaScale[im][0]-alphaCentral[im]) ) ?
@@ -123,13 +120,13 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
   } // end of mass points
 
-  TGraphErrors *g_alpha = new TGraphErrors(11, Mzh, alphaCentral, 0, Unc);
+  TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, alphaCentral, 0, Unc);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetTitle("");
   g_alpha->GetXaxis()->SetLabelOffset(999);
   g_alpha->GetXaxis()->SetLabelSize(0);
-  g_alpha->GetXaxis()->SetLimits(800,4000);
+  g_alpha->GetXaxis()->SetLimits(750,4300);
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->SetMinimum(0.05);
@@ -140,7 +137,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(3002);
   
-  TGraph* g_unc = new TGraph(11, Mzh, relativeUnc);
+  TGraph* g_unc = new TGraph(13, Mzh, relativeUnc);
   
   g_unc->SetTitle("");
   g_unc->GetXaxis()->SetTitle("m_{ZH} (GeV)");
@@ -148,7 +145,7 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   g_unc->GetXaxis()->SetLabelOffset(0.005);
   g_unc->GetXaxis()->SetTitleSize(0.125);
   g_unc->GetXaxis()->SetTitleOffset(0.8);
-  g_unc->GetXaxis()->SetLimits(800,4000);
+  g_unc->GetXaxis()->SetLimits(750,4300);
   g_unc->GetYaxis()->SetTitle("Relative unc.");
   g_unc->GetYaxis()->SetTitleOffset(0.45);
   g_unc->GetYaxis()->SetLabelSize(0.1);

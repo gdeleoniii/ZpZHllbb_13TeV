@@ -100,7 +100,7 @@ void alphaTree(string inputFile, string outputFile, string channel){
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
     if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( (*thisLep+*thatLep).DeltaPhi(*thisJet) < 2.5 ) continue;
+    if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) continue;
     if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
 
     // b-tag cut

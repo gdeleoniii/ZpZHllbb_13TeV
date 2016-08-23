@@ -7,7 +7,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
@@ -52,19 +52,19 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   RooRealVar cat ("cat", "", 0, 2);
   RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
-  RooRealVar mZH ("mllbb", "M_{ZH}", 800., 4000., "GeV");
+  RooRealVar mZH ("mllbb", "M_{ZH}", 750., 4300., "GeV");
   RooRealVar evWeight("evweight", "", 0., 1.e3);
 
   // Set the range in zh mass and in jet mass
 
-  mZH.setRange("fullRange", 800., 4000.);
+  mZH.setRange("fullRange", 750., 4300.);
 
   mJet.setRange("allRange", 30., 300.);
   mJet.setRange("lowSB",    30.,  65.);
   mJet.setRange("highSB",  135., 300.);
   mJet.setRange("signal",  105., 135.);
 
-  RooBinning binsmZH(64, 800, 4000);
+  RooBinning binsmZH(71, 750, 4300);
   RooBinning binsmJet(54, 30, 300);
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
@@ -107,7 +107,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Side band jet mass in data
 
-  RooRealVar lamda("lamda", "lamda", -0.025, -0.030, -0.005);
+  RooRealVar lamda("lamda", "lamda", -0.015, -0.04, -0.01);
 
   RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
   RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
@@ -162,7 +162,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(800,4000)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(800,4000);
+  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(750,4300)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(750,4300);
 
   RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
   RooProdPdf model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));

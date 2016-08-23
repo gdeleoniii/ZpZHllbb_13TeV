@@ -5,7 +5,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float jetEnergyScale(string inputFile, string jes, string channel, int cat, int mzh){
+float leptonScaleUnc(string inputFile, string channel, int cat, string region, int mzh){
 
   // setup calibration and reader
 
@@ -30,13 +30,13 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
   TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
 
   // read the ntuples (in pcncu)
-
-  TreeReader data(inputFile.data());
   
+  TreeReader data(inputFile.data());
+
   TFile f(inputFile.data());
 
   float totalEvent = ((TH1D*)f.Get("h_totalEv"))->Integral();
-  float passEvent  = 0.;
+  float passEvent = 0.;
 
   // begin of event loop
 
@@ -44,10 +44,10 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
 
     data.GetEntry(ev);
 
-    Float_t       eventWeight = data.GetFloat("ev_weight");
-    TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Float_t        eventWeight       = data.GetFloat("ev_weight");
+    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good reco level events     
     // select good leptons
@@ -64,12 +64,7 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
 
     int goodFATJetID = -1;
 
-    int JES = 0;
-
-    if     ( jes == "up"   ) JES =  1;
-    else if( jes == "down" ) JES = -1;
-
-    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep) ) continue;
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
@@ -85,11 +80,11 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
     
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
-
+        
     passEvent += eventWeight * btagWeight;
 
   } // end of event loop
-  
+
   return passEvent/totalEvent;
 
 }

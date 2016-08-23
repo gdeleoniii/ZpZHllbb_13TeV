@@ -6,7 +6,7 @@ void rooFitNorm(string channel, string catcut, string study, bool anotherModel=f
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
 
   // Define all the variables from the trees
@@ -78,7 +78,7 @@ void rooFitNorm(string channel, string catcut, string study, bool anotherModel=f
 
     if( !anotherModel ){ // using exponential function
     
-      RooRealVar lamda("lamda", "lamda", -0.025, -0.030, -0.005);
+      RooRealVar lamda("lamda", "lamda", -0.015, -0.04, -0.01);
 
       RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
       RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
