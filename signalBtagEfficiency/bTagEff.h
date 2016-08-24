@@ -29,9 +29,6 @@ TGraphAsymmErrors* bTagEff(string inputFile, string channel, string flavor){
     data.GetEntry(ev);
 
     Float_t        eventWeight     = data.GetFloat("ev_weight");
-    TClonesArray*  muP4            = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray*  eleP4           = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray*  FATjetP4        = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     Int_t          FATnJet         = data.GetInt("FATnJet");    
     Int_t*         FATnSubSDJet    = data.GetPtrInt("FATnSubSDJet");
     vector<float>* FATsubjetSDCSV  = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
@@ -49,20 +46,15 @@ TGraphAsymmErrors* bTagEff(string inputFile, string channel, string flavor){
     if( channel == "ele" && !isPassZee(data,goodLepID)   ) continue;
     if( channel == "mu"  && !isPassZmumu(data,goodLepID) ) continue;
 
-    TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[0]) : (TLorentzVector*)muP4->At(goodLepID[0]);
-    TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[1]) : (TLorentzVector*)muP4->At(goodLepID[1]);
-
     // select good FATjet
 
     int goodFATJetID = -1;
 
     if( !isPassJet(data, &goodFATJetID, thisLep, thatLep) ) continue;
 
-    TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
+    float mllbb;
 
-    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) continue;
-    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
+    noiseCleaning(data, channel, goodLepID[0], goodLepID[1], goodFATJetID, &mllbb);
 
     // b-tag efficiency part
 
