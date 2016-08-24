@@ -45,6 +45,24 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
 }
 
+void noiseCleaning(TreeReader& data, string channel, int thisGoodLepID, int thatGoodLepID, int goodFATJetID, float *mZH){
+
+  TClonesArray* muP4     = (TClonesArray*) data.GetPtrTObject("muP4");
+  TClonesArray* eleP4    = (TClonesArray*) data.GetPtrTObject("eleP4");
+  TClonesArray* FATjetP4 = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+
+  TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(thisGoodLepID) : (TLorentzVector*)muP4->At(thisGoodLepID);
+  TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(thatGoodLepID) : (TLorentzVector*)muP4->At(thatGoodLepID);
+  TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
+
+  if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) return;
+  if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) return;
+  if( (*thisLep+*thatLep+*thisJet).M() < 750 ) return;
+
+  *mZH = (*thisLep+*thatLep+*thisJet).M();
+
+}
+
 float bTagWeight(TreeReader& data, int goodFATJetID, int* nsubBjet, TH1F* h_l, TH1F* h_c, TH1F* h_b,
 		 BTagCalibrationReader& reader_l, BTagCalibrationReader& reader_c, BTagCalibrationReader& reader_b,
 		 string region="central"){
