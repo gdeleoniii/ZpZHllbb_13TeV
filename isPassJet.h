@@ -45,15 +45,7 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
 }
 
-void noiseCleaning(TreeReader& data, string channel, int thisGoodLepID, int thatGoodLepID, int goodFATJetID, float *mZH){
-
-  TClonesArray* muP4     = (TClonesArray*) data.GetPtrTObject("muP4");
-  TClonesArray* eleP4    = (TClonesArray*) data.GetPtrTObject("eleP4");
-  TClonesArray* FATjetP4 = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-
-  TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(thisGoodLepID) : (TLorentzVector*)muP4->At(thisGoodLepID);
-  TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(thatGoodLepID) : (TLorentzVector*)muP4->At(thatGoodLepID);
-  TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
+void noiseCleaning(float* mZH, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, TLorentzVector* thisJet=NULL){
 
   if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) return;
   if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) return;
