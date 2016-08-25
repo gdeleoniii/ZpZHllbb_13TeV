@@ -7,7 +7,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
 float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, int mzh){
-
+  cout << channel << endl;
   // setup calibration and reader
 
   BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
@@ -50,7 +50,7 @@ float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, in
 
   // begin of event loop
 
-  for( Long64_t ev = data.GetEntriesFast()-1; ev >= 0; --ev ){
+  for( Long64_t ev = 25/*data.GetEntriesFast()-1*/; ev >= 0; --ev ){
 
     data.GetEntry(ev);
 
@@ -77,20 +77,20 @@ float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, in
 
     if( channel == "ele" ){
     
-      thisLepWeight = leptonWeight(h2_ele, thisLep, lepScale);
-      thatLepWeight = leptonWeight(h2_ele, thatLep, lepScale);
+      thisLepWeight = leptonWeight(h2_ele, thisLep, false, lepScale);
+      thatLepWeight = leptonWeight(h2_ele, thatLep, false, lepScale);
 
     }
 
     else if( channel == "mu" ){
 
       if( isHighPtMuon[goodLepID[0]] ) 
-	thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep, lepScale) : leptonWeight(h2_muPt53, thisLep, lepScale);
+	thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep, true, lepScale) : leptonWeight(h2_muPt53, thisLep, true, lepScale);
       
       else thisLepWeight = 1;
       
       if( isHighPtMuon[goodLepID[1]] )
-	thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep, lepScale) : leptonWeight(h2_muPt53, thatLep, lepScale);
+	thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep, true, lepScale) : leptonWeight(h2_muPt53, thatLep, true, lepScale);
       
       else thatLepWeight = 1;
       
