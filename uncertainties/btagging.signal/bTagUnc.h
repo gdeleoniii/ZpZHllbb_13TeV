@@ -44,10 +44,10 @@ float btagUnc(string inputFile, string channel, int cat, string region, int mzh)
 
     data.GetEntry(ev);
 
-    Float_t        eventWeight       = data.GetFloat("ev_weight");
-    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Float_t       eventWeight = data.GetFloat("ev_weight");
+    TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
 
     // select good reco level events     
     // select good leptons
@@ -68,9 +68,9 @@ float btagUnc(string inputFile, string channel, int cat, string region, int mzh)
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) continue;
-    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
+    float mllbb;
+
+    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
 
     // b-tag cut
 

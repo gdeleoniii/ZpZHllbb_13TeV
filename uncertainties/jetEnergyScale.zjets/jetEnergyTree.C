@@ -92,9 +92,7 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) continue;
-    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
+    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
 
     // b-tag cut
 
@@ -104,9 +102,8 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
     if     ( nsubBjet == 1 ) cat = 1;
     else if( nsubBjet == 2 ) cat = 2;      
-    else                     cat = 0;
-    
-    mllbb    = (*thisLep+*thatLep+*thisJet).M(); 
+    else continue;
+ 
     prmass   = FATjetPRmassCorr[goodFATJetID];
     evweight = eventWeight * scale * btagWeight;
 

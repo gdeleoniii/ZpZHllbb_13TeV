@@ -83,9 +83,9 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    if( (*thisLep+*thatLep+*thisJet).M() < 750 ) continue;
-    if( fabs( (*thisLep+*thatLep).DeltaPhi(*thisJet) ) < 2.5 ) continue;
-    if( fabs( (*thisLep+*thatLep).Eta() - (*thisJet).Eta() ) > 5 ) continue;
+    float mllbb; 
+
+    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
 
     // b-tag cut
 
@@ -96,7 +96,7 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
     
-    h_mZprime->Fill((*thisLep+*thatLep+*thisJet).M(), eventWeight*btagWeight);
+    h_mZprime->Fill(mllbb, eventWeight*btagWeight);
 
   } // end of event loop
 
