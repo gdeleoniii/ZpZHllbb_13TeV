@@ -58,6 +58,7 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
     TClonesArray* muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
     TClonesArray* eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
     TClonesArray* FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    vector<bool>& isHighPtMuon = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
 
     // select good reco level events     
     // select good leptons
