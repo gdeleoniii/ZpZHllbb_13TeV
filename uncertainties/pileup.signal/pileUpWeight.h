@@ -3,6 +3,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonWeight.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
 float pileUpWeight(string inputFile, string channel, int cat, int mzh){
@@ -28,6 +29,15 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
   TH1F* h_l = (TH1F*)(f_l->Get(Form("%s_udsgflavor",  channel.data())));
   TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",     channel.data())));
   TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
+
+  // to read lepton scale factor
+
+  TFile* f_ele = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
+  TFile* f_mu  = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
+
+  TH2F* h2_ele    = (TH2F*)(f_ele->Get("EGamma_SF2D"));
+  TH2F* h2_muPt20 = (TH2F*)(f_mu->Get("HighPtID_PtEtaBins_Pt20/abseta_pTtuneP_ratio"));
+  TH2F* h2_muPt53 = (TH2F*)(f_mu->Get("HighPtID_PtEtaBins_Pt53/abseta_pTtuneP_ratio"));
 
   // read the ntuples (in pcncu)
 
@@ -60,6 +70,31 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
     TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[0]) : (TLorentzVector*)muP4->At(goodLepID[0]);
     TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[1]) : (TLorentzVector*)muP4->At(goodLepID[1]);
 
+    // calculate lepton weight
+    
+    float thisLepWeight, thatLepWeight;
+
+    if( channel == "ele" ){
+    
+      thisLepWeight = leptonWeight(h2_ele, thisLep);
+      thatLepWeight = leptonWeight(h2_ele, thatLep);
+
+    }
+
+    else if( channel == "mu" ){
+
+      if( isHighPtMuon[goodLepID[0]] ) 
+	thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep) : leptonWeight(h2_muPt53, thisLep);
+      
+      else thisLepWeight = 1;
+      
+      if( isHighPtMuon[goodLepID[1]] )
+	thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep) : leptonWeight(h2_muPt53, thatLep);
+      
+      else thatLepWeight = 1;
+      
+    }
+
     // select good FATjet
 
     int goodFATJetID = -1;
@@ -81,7 +116,7 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
 
-    passEvent += eventWeight * btagWeight;
+    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight;
 
   } // end of event loop
   
