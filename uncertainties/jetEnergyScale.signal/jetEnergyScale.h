@@ -30,7 +30,7 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
   TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",     channel.data())));
   TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
 
-  // to read lepton scale factor
+  // to read lepton scale factor / trigger
 
   TFile* f_ele    = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
   TFile* f_muScal = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
