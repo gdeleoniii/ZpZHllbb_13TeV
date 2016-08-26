@@ -98,25 +98,11 @@ float leptonTriggerUnc(string inputFile, string channel, int cat, int trigScale,
       
     }
 
-    // calculate trigger weight
-    // In 2015 analysis, the trigger uncertainty on electron is flat, hence, only process muon channel.
+    // calculate trigger weight for muon
 
-    float thisTrigWeight, thatTrigWeight;
-
-    if( channel == "mu" ){
-
-      thisTrigWeight = leptonWeight(h2_muRunD, thisLep, true, trigScale);
-      thatTrigWeight = leptonWeight(h2_muRunD, thatLep, true, trigScale);
-
-    }
-
-    else{
-
-      thisTrigWeight = 1;
-      thatTrigWeight = 1;
-
-    }
-
+    float thisTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thisLep, true, trigScale) : 1;
+    float thatTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thatLep, true, trigScale) : 1;
+    
     // select good FATjet
 
     int goodFATJetID = -1;

@@ -32,7 +32,7 @@ float bTaggingUnc(string inputFile, string channel, int cat, string region, int 
 
   // to read lepton scale factor
 
-  TFile* f_ele = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
+  TFile* f_ele    = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
   TFile* f_muScal = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
   TFile* f_muTrig = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/SingleMuonTrigger_Z_RunCD_Reco74X_Dec1.root");
 
@@ -100,21 +100,8 @@ float bTaggingUnc(string inputFile, string channel, int cat, string region, int 
 
     // calculate trigger weight for muon
 
-    float thisTrigWeight, thatTrigWeight;
-
-    if( channel == "mu" ){
-
-      thisTrigWeight = leptonWeight(h2_muRunD, thisLep);
-      thatTrigWeight = leptonWeight(h2_muRunD, thatLep);
-
-    }
-
-    else{
-
-      thisTrigWeight = 1;
-      thatTrigWeight = 1;
-
-    }
+    float thisTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thisLep) : 1;
+    float thatTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thatLep) : 1;
 
     // select good FATjet
 
