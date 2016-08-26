@@ -107,8 +107,18 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
 
     // calculate trigger weight for muon
 
-    float thisTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thisLep) : 1;
-    float thatTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thatLep) : 1;
+    float muTrigWeight;
+
+    if( channel=="mu" ){
+
+      if( thisLep->Pt() > thatLep->Pt() )
+	muTrigWeight = (fabs(thisLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thisLep) : 1;
+      else 
+	muTrigWeight = (fabs(thatLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thatLep) : 1;
+
+    }
+
+    else muTrigWeight = 1;
 
     // select good FATjet
 
@@ -133,7 +143,7 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
         
     int iw = N-1;
     for( int nw = last; nw >= first; --nw ){
-      passEvent[iw] += (pdfscaleSysWeight[nw]/pdfscaleSysWeight[first]) * eventWeight * btagWeight * thisLepWeight * thatLepWeight * thisTrigWeight * thatTrigWeight;
+      passEvent[iw] += (pdfscaleSysWeight[nw]/pdfscaleSysWeight[first]) * eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
       --iw;
     }
 

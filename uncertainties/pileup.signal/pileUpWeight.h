@@ -100,8 +100,18 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
 
     // calculate trigger weight for muon
 
-    float thisTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thisLep) : 1;
-    float thatTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thatLep) : 1;
+    float muTrigWeight;
+
+    if( channel=="mu" ){
+
+      if( thisLep->Pt() > thatLep->Pt() )
+	muTrigWeight = (fabs(thisLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thisLep) : 1;
+      else 
+	muTrigWeight = (fabs(thatLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thatLep) : 1;
+
+    }
+
+    else muTrigWeight = 1;
 
     // select good FATjet
 
@@ -124,7 +134,7 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
 
-    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * thisTrigWeight * thatTrigWeight;
+    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
 
   } // end of event loop
   

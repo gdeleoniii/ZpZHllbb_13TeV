@@ -1,34 +1,24 @@
-R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone_cpp.so)
+#include <vector>
+#include <string>
+#include <iostream>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TClonesArray.h>
+#include <TLorentzVector.h>
+#include <TGraphAsymmErrors.h>
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonWeight.h"
-#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float signalEfficiency(string inputFile, string channel, int cat, int mzh){
-
-  // setup calibration and reader
-
-  BTagCalibration calib("csvv1", "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/CSVV1.csv");
-
-  BTagCalibrationReader reader_l(BTagEntry::OP_LOOSE, "central");
-  BTagCalibrationReader reader_c(BTagEntry::OP_LOOSE, "central");
-  BTagCalibrationReader reader_b(BTagEntry::OP_LOOSE, "central");
-
-  reader_l.load(calib, BTagEntry::FLAV_UDSG, "comb");
-  reader_c.load(calib, BTagEntry::FLAV_C,    "mujets");
-  reader_b.load(calib, BTagEntry::FLAV_B,    "mujets");
-
-  // to read b-tag effinciency 
-
-  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_cflavor_zjetsBtagEff.root",    channel.data()));
-  TFile* f_b = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_signalBtagEff.root",   channel.data()));
+TGraphAsymmErrors* btaggingEff(string inputFile, string channel){
   
-  TH1F* h_l = (TH1F*)(f_l->Get(Form("%s_udsgflavor",  channel.data())));
-  TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",     channel.data())));
-  TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
+  float varBins[] = {30,50,70,100,140,200,300,670,2000};
+  int   nvarBins  = sizeof(varBins)/sizeof(varBins[0])-1;
+
+  TH1F* h_jetPtnoCSV = new TH1F("h_jetPtnoCSV", "", nvarBins, varBins);
+  TH1F* h_jetPtwtCSV = new TH1F("h_jetPtwtCSV", "", nvarBins, varBins);
 
   // to read lepton scale factor / trigger
 
@@ -44,11 +34,6 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
   // read the ntuples (in pcncu)
 
   TreeReader data(inputFile.data());
-  
-  TFile f(inputFile.data());
-
-  float totalEvent = ((TH1D*)f.Get("h_genLepEv"))->Integral();
-  float passEvent  = 0.;
 
   // begin of event loop
 
@@ -56,16 +41,19 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
 
     data.GetEntry(ev);
 
-    Bool_t        isTrueGenFlavor = data.GetBool("isTrueGenFlavor");
-    Float_t       eventWeight     = data.GetFloat("ev_weight");
-    TClonesArray* muP4            = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray* eleP4           = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray* FATjetP4        = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-    vector<bool>& isHighPtMuon    = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
-
-    // remove the fake lepton flavor events
-
-    if( !isTrueGenFlavor ) continue;
+    Float_t        eventWeight     = data.GetFloat("ev_weight");
+    TClonesArray*  muP4            = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  eleP4           = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray*  FATjetP4        = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Int_t          FATnJet         = data.GetInt("FATnJet");    
+    Int_t*         FATnSubSDJet    = data.GetPtrInt("FATnSubSDJet");
+    vector<float>* FATsubjetSDCSV  = data.GetPtrVectorFloat("FATsubjetSDCSV", FATnJet);
+    vector<float>* FATsubjetSDPx   = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
+    vector<float>* FATsubjetSDPy   = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
+    vector<float>* FATsubjetSDPz   = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
+    vector<float>* FATsubjetSDE    = data.GetPtrVectorFloat("FATsubjetSDE", FATnJet);
+    vector<int>*   FATsubjetFlavor = data.GetPtrVectorInt("FATsubjetSDHadronFlavor", FATnJet);
+    vector<bool>&  isHighPtMuon    = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
 
     // select good reco level events     
     // select good leptons
@@ -80,7 +68,7 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
 
     // calculate lepton weight
     
-    float thisLepWeight, thatLepWeight;
+    float thisLepWeight=1, thatLepWeight=1;
 
     if( channel == "ele" ){
     
@@ -105,7 +93,7 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
 
     // calculate trigger weight for muon
 
-    float muTrigWeight;
+    float muTrigWeight=1;
 
     if( channel=="mu" ){
 
@@ -129,20 +117,43 @@ float signalEfficiency(string inputFile, string channel, int cat, int mzh){
     float mllbb;
 
     noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+
+    // b-tag efficiency part (b flavor only)
+
+    for( int is = 0; is < FATnSubSDJet[goodFATJetID]; ++is ){
+      
+      if( FATsubjetFlavor[goodFATJetID][is] != 5 ) continue;
+ 
+      TLorentzVector thisSubJet;
+
+      thisSubJet.SetPxPyPzE(FATsubjetSDPx[goodFATJetID][is],
+			    FATsubjetSDPy[goodFATJetID][is],
+			    FATsubjetSDPz[goodFATJetID][is],
+			    FATsubjetSDE[goodFATJetID][is]);
+ 
+      h_jetPtnoCSV->Fill(thisSubJet.Pt(), eventWeight*thisLepWeight*thatLepWeight*muTrigWeight);     
     
-    // b-tag cut
+      if( FATsubjetSDCSV[goodFATJetID][is] > 0.605 )
+	h_jetPtwtCSV->Fill(thisSubJet.Pt(), eventWeight*thisLepWeight*thatLepWeight*muTrigWeight);
+ 
+    } // end of subjet loop                           
 
-    int nsubBjet = 0;
-
-    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
-
-    if( cat == 1 && nsubBjet != 1 ) continue;
-    if( cat == 2 && nsubBjet != 2 ) continue;
-
-    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
-    
   } // end of event loop
+  
+  // Divide two histograms to get the efficiency
 
-  return passEvent/totalEvent;
+  TGraphAsymmErrors* g_bTagEff = new TGraphAsymmErrors();
+
+  g_bTagEff->BayesDivide(h_jetPtwtCSV, h_jetPtnoCSV, "B");
+  g_bTagEff->SetMarkerStyle(8);
+  g_bTagEff->SetMinimum(0);
+  g_bTagEff->SetMaximum(1.3);
+  g_bTagEff->GetYaxis()->SetTitle("Efficiency");  
+  g_bTagEff->GetXaxis()->SetTitle("p_{T SubJet} [GeV]");
+
+  delete h_jetPtwtCSV;
+  delete h_jetPtnoCSV;
+
+  return g_bTagEff;
 
 }
