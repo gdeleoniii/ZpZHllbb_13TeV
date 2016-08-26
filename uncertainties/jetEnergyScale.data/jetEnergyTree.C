@@ -92,12 +92,11 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
     // select good FATjet
 
-    int goodFATJetID = -1;
-
-    int JES = 0;
+    int goodFATJetID = -1, JES;
 
     if     ( jes == "up"   ) JES =  1;
     else if( jes == "down" ) JES = -1;
+    else                     JES =  0;
 
     if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
 

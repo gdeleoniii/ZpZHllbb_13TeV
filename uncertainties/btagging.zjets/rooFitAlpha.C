@@ -93,6 +93,15 @@ void rooFitAlpha(string channel, string catcut){
 
     fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal());
 
+    // predicted background model --> histogram
+
+    RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
+    RooProdPdf model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
+
+
+
+
+
     delete treeZjets;
     delete f_alpha;
 
