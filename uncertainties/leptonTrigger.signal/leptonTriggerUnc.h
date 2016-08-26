@@ -100,9 +100,19 @@ float leptonTriggerUnc(string inputFile, string channel, int cat, int trigScale,
 
     // calculate trigger weight for muon
 
-    float thisTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thisLep, true, trigScale) : 1;
-    float thatTrigWeight = channel=="mu" ? leptonWeight(h2_muRunD, thatLep, true, trigScale) : 1;
-    
+    float muTrigWeight;
+
+    if( channel=="mu" ){
+
+      if( thisLep->Pt() > thatLep->Pt() )
+	muTrigWeight = (fabs(thisLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thisLep, true, trigScale) : 1;
+      else 
+	muTrigWeight = (fabs(thatLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thatLep, true, trigScale) : 1;
+
+    }
+
+    else muTrigWeight = 1;
+
     // select good FATjet
 
     int goodFATJetID = -1;
@@ -124,7 +134,7 @@ float leptonTriggerUnc(string inputFile, string channel, int cat, int trigScale,
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
         
-    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * thisTrigWeight * thatTrigWeight;
+    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
 
   } // end of event loop
 
