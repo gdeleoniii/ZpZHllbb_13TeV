@@ -6,7 +6,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonWeight.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float jetEnergyScale(string inputFile, string jes, string channel, int cat, int mzh){
+float jetEnergyScale(string inputFile, string channel, int cat, int mzh, int jes){
 
   // setup calibration and reader
 
@@ -117,12 +117,7 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
 
     int goodFATJetID = -1;
 
-    int JES = 0;
-
-    if     ( jes == "up"   ) JES =  1;
-    else if( jes == "down" ) JES = -1;
-
-    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, JES) ) continue;
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, true, jes) ) continue;
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
