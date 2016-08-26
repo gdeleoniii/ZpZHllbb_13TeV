@@ -14,6 +14,7 @@ void leptonScaleUnc(){
 
     float lepScale0e[11], lepScaleUpe[11], lepScaleDwe[11], lepScaleUnce[11];
     float lepScale0m[11], lepScaleUpm[11], lepScaleDwm[11], lepScaleUncm[11];
+    float finalUncm[11];
 
     for( int i = 0; i < 11; ++i ){
 
@@ -29,8 +30,12 @@ void leptonScaleUnc(){
     
       lepScaleUncm[i] = TMath::Max(lepScaleUpm[i],lepScaleDwm[i])/lepScale0m[i];
 
+      // additional uncertainties (1% for ID, 0.5% for Iso), only for muon channel in 2015 analysis
+
+      finalUncm[i] = TMath::Sqrt(lepScaleUncm[i]*lepScaleUncm[i] + 0.01*0.01 + 0.005*0.005);
+
       fprintf(fe, "%i\t%.3f\t%.3f\n", (int)mzh[i], lepScale0e[i], lepScaleUnce[i]);
-      fprintf(fm, "%i\t%.3f\t%.3f\n", (int)mzh[i], lepScale0m[i], lepScaleUncm[i]);
+      fprintf(fm, "%i\t%.3f\t%.3f\n", (int)mzh[i], lepScale0m[i], finalUncm[i]);
 
     }
 

@@ -6,7 +6,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonWeight.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, int mzh){
+float leptonTriggerUnc(string inputFile, string channel, int cat, int trigScale, int mzh){
 
   // setup calibration and reader
 
@@ -30,14 +30,16 @@ float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, in
   TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",     channel.data())));
   TH1F* h_b = (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
 
-  // to read lepton scale factor
+  // to read lepton scale factor / trigger
 
-  TFile* f_ele = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
-  TFile* f_mu  = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
+  TFile* f_ele    = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
+  TFile* f_muScal = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
+  TFile* f_muTrig = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/SingleMuonTrigger_Z_RunCD_Reco74X_Dec1.root");
 
   TH2F* h2_ele    = (TH2F*)(f_ele->Get("EGamma_SF2D"));
-  TH2F* h2_muPt20 = (TH2F*)(f_mu->Get("HighPtID_PtEtaBins_Pt20/abseta_pTtuneP_ratio"));
-  TH2F* h2_muPt53 = (TH2F*)(f_mu->Get("HighPtID_PtEtaBins_Pt53/abseta_pTtuneP_ratio"));
+  TH2F* h2_muPt20 = (TH2F*)(f_muScal->Get("HighPtID_PtEtaBins_Pt20/abseta_pTtuneP_ratio"));
+  TH2F* h2_muPt53 = (TH2F*)(f_muScal->Get("HighPtID_PtEtaBins_Pt53/abseta_pTtuneP_ratio"));
+  TH2F* h2_muRunD = (TH2F*)(f_muTrig->Get("runD_Mu45_eta2p1_PtEtaBins/abseta_pt_ratio"));
 
   // read the ntuples (in pcncu)
   
@@ -77,23 +79,42 @@ float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, in
 
     if( channel == "ele" ){
     
-      thisLepWeight = leptonWeight(h2_ele, thisLep, false, lepScale);
-      thatLepWeight = leptonWeight(h2_ele, thatLep, false, lepScale);
+      thisLepWeight = leptonWeight(h2_ele, thisLep, false);
+      thatLepWeight = leptonWeight(h2_ele, thatLep, false);
 
     }
 
     else if( channel == "mu" ){
 
       if( isHighPtMuon[goodLepID[0]] ) 
-	thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep, true, lepScale) : leptonWeight(h2_muPt53, thisLep, true, lepScale);
+	thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep) : leptonWeight(h2_muPt53, thisLep);
       
       else thisLepWeight = 1;
       
       if( isHighPtMuon[goodLepID[1]] )
-	thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep, true, lepScale) : leptonWeight(h2_muPt53, thatLep, true, lepScale);
+	thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep) : leptonWeight(h2_muPt53, thatLep);
       
       else thatLepWeight = 1;
       
+    }
+
+    // calculate trigger weight
+    // In 2015 analysis, the trigger uncertainty on electron is flat, hence, only process muon channel.
+
+    float thisTrigWeight, thatTrigWeight;
+
+    if( channel == "mu" ){
+
+      thisTrigWeight = leptonWeight(h2_muRunD, thisLep, true, trigScale);
+      thatTrigWeight = leptonWeight(h2_muRunD, thatLep, true, trigScale);
+
+    }
+
+    else{
+
+      thisTrigWeight = 1;
+      thatTrigWeight = 1;
+
     }
 
     // select good FATjet
@@ -117,7 +138,7 @@ float leptonScaleUnc(string inputFile, string channel, int cat, int lepScale, in
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
         
-    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight;
+    passEvent += eventWeight * btagWeight * thisLepWeight * thatLepWeight * thisTrigWeight * thatTrigWeight;
 
   } // end of event loop
 

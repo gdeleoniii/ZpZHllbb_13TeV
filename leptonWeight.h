@@ -1,3 +1,10 @@
+// This function calculate and return the efficiency/trigger scale factor of each lepton.
+// Input arguments: 
+//    h2_lep   -> the 2d scale factor histogram provided by POG. 
+//    thisLep  -> 4-vector of this lepton.
+//    absEta   -> take the absolute of eta in default (false for electron)
+//    lepScale -> scale the weight to [central=0(default), up=1, down=-1]
+
 float leptonWeight(TH2F* h2_lep, TLorentzVector* thisLep=NULL, bool absEta=true, int lepScale=0){
 
   float thisLepPt, thisLepEta;
@@ -20,8 +27,6 @@ float leptonWeight(TH2F* h2_lep, TLorentzVector* thisLep=NULL, bool absEta=true,
   int thisEtaBin = h2_lep->GetXaxis()->FindBin(thisLepEta);
 
   float thisWeight = h2_lep->GetBinContent(thisEtaBin, thisPtBin) + ( lepScale * h2_lep->GetBinError(thisEtaBin, thisPtBin));
-
-  if(thisLepPt<50) cout << thisLepPt << "\t" << lepScale << "\t" << thisWeight << endl;
 
   return thisWeight;
   

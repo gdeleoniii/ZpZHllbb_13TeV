@@ -77,8 +77,8 @@ float pileUpWeight(string inputFile, string channel, int cat, int mzh){
 
     if( channel == "ele" ){
     
-      thisLepWeight = leptonWeight(h2_ele, thisLep);
-      thatLepWeight = leptonWeight(h2_ele, thatLep);
+      thisLepWeight = leptonWeight(h2_ele, thisLep, false);
+      thatLepWeight = leptonWeight(h2_ele, thatLep, false);
 
     }
 

@@ -77,8 +77,8 @@ float jetEnergyScale(string inputFile, string jes, string channel, int cat, int 
 
     if( channel == "ele" ){
     
-      thisLepWeight = leptonWeight(h2_ele, thisLep);
-      thatLepWeight = leptonWeight(h2_ele, thatLep);
+      thisLepWeight = leptonWeight(h2_ele, thisLep, false);
+      thatLepWeight = leptonWeight(h2_ele, thatLep, false);
 
     }
 
