@@ -14,13 +14,17 @@ diboson=$5
 zh=$6
 ttbar=$7
 signal=$8
-
 pwd=$PWD
-cmsswdr=/afs/cern.ch/work/h/htong/CMSSW_7_4_15/src
-cd $cmsswdr
-export SCRAM_ARCH=slc6_amd64_gcc481
-eval `scramv1 runtime -sh`
-cd $pwd
+
+#Do cmsenv:
+#cmsswdr=/afs/cern.ch/work/h/htong/CMSSW_7_1_5/src
+#cd $cmsswdr
+#export SCRAM_ARCH=slc6_amd64_gcc481
+#eval `scramv1 runtime -sh`
+#cd $pwd
+
+source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6-gcc49-opt/setup.sh
+source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.04.10/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
 
 samplePath=/data7/htong/skim_NCUGlobalTuples
 

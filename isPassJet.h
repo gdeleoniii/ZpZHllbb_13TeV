@@ -20,21 +20,30 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
 
   for( int ij = 0; ij < FATnJet; ++ij ){
 
+    Float_t myJetMass = FATjetPRmassCorr[ij];
     TLorentzVector* myJet = (TLorentzVector*)FATjetP4->At(ij);
 
-    if( jetScale == 1 ) 
-      *myJet *= 1+FATjetCorrUncUp[ij];
-    else if( jetScale == -1 )
-      *myJet *= 1-FATjetCorrUncDown[ij];
-    else
-      *myJet *= 1;
+    if( jetScale == 1 ){
+      *myJet    *= 1+FATjetCorrUncUp[ij];
+      myJetMass *= 1+FATjetCorrUncUp[ij];
+    }
+    
+    else if( jetScale == -1 ){
+      *myJet    *= 1-FATjetCorrUncDown[ij];
+      myJetMass *= 1-FATjetCorrUncDown[ij];
+    }
+
+    else{
+      *myJet    *= 1;
+      myJetMass *= 1;
+    }
 
     if( myJet->Pt() < 200 ) continue;
     if( fabs(myJet->Eta()) > 2.4 ) continue;
     if( !FATjetPassIDLoose[ij] ) continue;
     if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
-    if( isSignal && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
-    if( isSideBand && (FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 135) ) continue;
+    if( isSignal && (myJetMass < 105 || myJetMass > 135) ) continue;
+    if( isSideBand && (myJetMass > 65 && myJetMass < 135) ) continue;
 
     *goodFATJetID = ij;
     findJet = true;

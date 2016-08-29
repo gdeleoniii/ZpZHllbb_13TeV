@@ -135,13 +135,13 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Fit ZH mass in MC side band
 
   RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
-  RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
+  RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
   RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Fit ZH mass in MC signal region
 
   RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
-  RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+  RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
   RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Fit ZH mass in data side band
@@ -203,7 +203,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
   model_sigData.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kRed+1));
-  ext_model_sigData.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent),LineColor(kGreen+1));
+  ext_model_sigData.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kGreen+1));
 
   RooPlot* mcSBmZhPullFrame = mZH.frame();
   RooPlot* mcSGmZhPullFrame = mZH.frame();

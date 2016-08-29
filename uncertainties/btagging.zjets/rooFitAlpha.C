@@ -168,7 +168,7 @@ void rooFitAlpha(string channel, string catcut){
     RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
     RooExtendPdf  ext_model_sigData("ext_model_sigData", "ext_model_sigData", model_sigData, normFactor);
 
-    h_shape[nw] = ext_model_sigData.createHistogram("h_shape", mZH, Binning(binsmZH), Extended(true));
+    h_shape[nw] = ext_model_sigData.createHistogram(Form("h_shape%i",nw), mZH, Binning(binsmZH), Extended(true));
 
     delete treeZjets;
     delete f_alpha;

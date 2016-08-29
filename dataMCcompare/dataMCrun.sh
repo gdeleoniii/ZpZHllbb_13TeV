@@ -1,29 +1,25 @@
 #!/bin/sh
 
+source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6-gcc49-opt/setup.sh
+source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.04.10/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
+
 pwd=$PWD
-cmsswdr=/afs/cern.ch/work/h/htong/CMSSW_7_4_15/src
-cd $cmsswdr
-export SCRAM_ARCH=slc6_amd64_gcc481
-eval `scramv1 runtime -sh`
-cd $pwd
-
 processEle=(Barrel Endcap Zjet)
-cd $pwd/ele
-
-for ((j=0; j<${#processEle[@]}; j++)); do
-
-    /bin/bash $pwd/globalRun.sh ele${processEle[$j]}Variable ele 1 1 1 1 1 0
-    mv *root output_ele${processEle[$j]}Variable
-    root -q -b -l $pwd/dataMCplots.C+\(\"Electron\"\,\"output_ele${processEle[$j]}Variable\"\,\"ele${processEle[$j]}Variable\"\)
-
-done
-
-rm -f *.pcm *.d *.so
-mv *pdf /afs/cern.ch/user/h/htong/www/dataMCcompare
-
 processMu=(HighPt Tracker Zjet)
-cd $pwd/mu
 
+cd $pwd/ele
+#for ((j=0; j<${#processEle[@]}; j++)); do
+
+#    /bin/bash $pwd/globalRun.sh ele${processEle[$j]}Variable ele 1 1 1 1 1 0
+#    mv *root output_ele${processEle[$j]}Variable
+#    root -q -b -l $pwd/dataMCplots.C+\(\"Electron\"\,\"output_ele${processEle[$j]}Variable\"\,\"ele${processEle[$j]}Variable\"\)
+
+#done
+
+#rm -f *.pcm *.d *.so
+#mv *pdf /afs/cern.ch/user/h/htong/www/dataMCcompare
+
+cd $pwd/mu
 for ((j=0; j<${#processMu[@]}; j++)); do
 
     /bin/bash $pwd/globalRun.sh mu${processMu[$j]}Variable mu 1 1 1 1 1 0
