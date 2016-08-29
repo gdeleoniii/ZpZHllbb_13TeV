@@ -44,25 +44,25 @@ void rooFitAlpha(string channel, string catcut){
     
     if( channel == "ele" ){
 
-      treeData->Add(Form("data/SingleElectron-Run2015D-v1_%sMiniTree.root", channel.data()));
-      treeData->Add(Form("data/SingleElectron-Run2015D-v4_%sMiniTree.root", channel.data()));
+      treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v1_%sMiniTree.root", channel.data()));
+      treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v4_%sMiniTree.root", channel.data()));
 
     }
 
     else if( channel == "mu" ){
 
-      treeData->Add(Form("data/SingleMuon-Run2015D-v1_%sMiniTree.root", channel.data()));
-      treeData->Add(Form("data/SingleMuon-Run2015D-v4_%sMiniTree.root", channel.data()));
+      treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v1_%sMiniTree.root", channel.data()));
+      treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v4_%sMiniTree.root", channel.data()));
 
     }
 
     // To remove minor background contribution in data set (weight is -1)
 
-    treeData->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
+    treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+    treeData->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
 
     // Z+jets background
 
@@ -177,11 +177,11 @@ void rooFitAlpha(string channel, string catcut){
 
   // Store histograms in root file (for shape analysis)
 
-  TFile f_shape(".root", "recreate");
+  TFile f_shape("histo_mZH_bTagUnc.root", "recreate");
 
-  h_shape[0]->Write("");
-  h_shape[1]->Write();
-  h_shape[2]->Write();
+  h_shape[0]->Write("h_mZH_bTag_central");
+  h_shape[1]->Write("h_mZH_bTag_up");
+  h_shape[2]->Write("h_mZH_bTag_down");
    
   // Calculate uncertainty of each mass bin
 
@@ -193,15 +193,15 @@ void rooFitAlpha(string channel, string catcut){
     Unc[im] = (fabs(alpha[im][1]-alpha[im][0])>fabs(alpha[im][2]-alpha[im][0])) ? fabs(alpha[im][1]-alpha[im][0]) : fabs(alpha[im][2]-alpha[im][0]);
     relativeUnc[im] = Unc[im]/Alpha[im];
 
+    fprintf(stdout, "massPoint=%i\trelativeUnc=%f\n", (int)Mzh[im], relativeUnc[im]);
+
   } // end of mass points
   
   TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, Alpha, 0, Unc);
 
   g_alpha->SetTitle("");
-  g_alpha->GetXaxis()->SetTitle("");
-  g_alpha->GetXaxis()->SetLabelOffset(999);
-  g_alpha->GetXaxis()->SetLabelSize(0);
   g_alpha->GetXaxis()->SetLimits(750,4300);
+  g_alpha->GetXaxis()->SetTitle("m_{ZH}(GeV)");
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
   g_alpha->SetMinimum(0.05);
@@ -212,46 +212,14 @@ void rooFitAlpha(string channel, string catcut){
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(3002);
   
-  TGraph* g_unc = new TGraph(13, Mzh, relativeUnc);
-  
-  g_unc->SetTitle("");
-  g_unc->GetXaxis()->SetTitle("m_{ZH} (GeV)");
-  g_unc->GetXaxis()->SetLabelSize(0.1);
-  g_unc->GetXaxis()->SetLabelOffset(0.005);
-  g_unc->GetXaxis()->SetTitleSize(0.125);
-  g_unc->GetXaxis()->SetTitleOffset(0.8);
-  g_unc->GetXaxis()->SetLimits(750,4300);
-  g_unc->GetYaxis()->SetTitle("Relative unc.");
-  g_unc->GetYaxis()->SetTitleOffset(0.5);
-  g_unc->GetYaxis()->SetLabelSize(0.1);
-  g_unc->GetYaxis()->SetTitleSize(0.1);
-  g_unc->GetYaxis()->SetNdivisions(505);
-  g_unc->SetMinimum(1e-3);
-  g_unc->SetMaximum(1);
-  g_unc->SetLineWidth(2);
-  g_unc->SetMarkerStyle(8);
-  g_unc->SetMarkerColor(kBlack);
-
   TLatex lar;
 
   lar.SetTextSize(0.03);
   lar.SetLineWidth(5);
 
-  float up_height = 0.8;
-  float dw_height = (1-up_height)*1.375;
-
   TCanvas cv("cv","",0,0,1000,900);
 
-  cv.Divide(1,2);
-
-  TPad* cv_up = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_1");
-  TPad* cv_dw = (TPad*)cv.GetListOfPrimitives()->FindObject("cv_2"); 
-
-  cv_up->SetPad(0,1-up_height,1,1);
-  cv_dw->SetPad(0,0,1,dw_height);
-  cv_dw->SetBottomMargin(0.25);
-
-  cv_up->cd()->SetLogy();
+  cv.cd()->SetLogy();
 
   g_alpha->Draw("Xac");
   g_alpha->Draw("3same");
@@ -260,11 +228,6 @@ void rooFitAlpha(string channel, string catcut){
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "b-tagging scale factor");
-
-  cv_up->RedrawAxis();
-  cv_dw->cd()->SetLogy(1);
-
-  g_unc->Draw();
 
   cv.Draw();
   cv.Print(Form("alpha_bTagScale_%s_cat%s.pdf", channel.data(), catcut.data()));
