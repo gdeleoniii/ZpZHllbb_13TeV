@@ -13,6 +13,8 @@
    5.1 The BTagCalibrationStandalone.h in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead
    5.2 The CSVV1.csv in                   https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/CSVV1.csv
    5.3 The b-tag efficiency root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
+   5.4 The lepton and trigger scale factor root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/leptonSFroot
+   5.5 Other header files can be found in https://github.com/henrytongCMS/ZpZHllbb_13TeV
 
 6. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
 
