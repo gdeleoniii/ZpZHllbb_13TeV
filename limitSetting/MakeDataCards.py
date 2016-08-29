@@ -26,37 +26,38 @@ imax    1        number of channels
 jmax    *        number of backgrounds
 kmax    *        number of nuisance parameters (sources of systematical uncertainties)
 
--------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
 
--------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 bin              ZPTOZHMM
 observation      DATARATE
 
--------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
-bin              ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM   ZPTOZHMM
-process          SIGNAL      DYJETS      TTBAR       WW          WZ          ZZ         ZH
+bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM   ZPTOZHMM
+process                      SIGNAL       DYJETS       TTBAR       WW          WZ          ZZ         ZH
+process                      0            1            2           3           4           5          6
+rate                         SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE      WZRATE      ZZRATE     ZHRATE
 
--------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
-process          0            1            2           3        4        5        6
-rate             SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE   WZRATE   ZZRATE   ZHRATE
-
--------------------------------------------------------------------------------------------------------
-
-lumi_13TeV       lnN          1.1        1.1        1.1        1.1        1.1        1.1        1.1
-bgnorm           lnN          1.00       1.07       1.07       1.07       1.07       1.07       1.07
-jec              lnN          1.08       1.08       1.08       1.08       1.08       1.08       1.08
-CSV              lnN          1.1        1.1        1.1        1.1        1.1        1.1        1.1
-pu               lnN          1.02       1.02       1.02       1.02       1.02       1.02       1.02
-lepIDsf          lnN          1.0008     1.001      1.0005     1.0006     1.0007     1.0006     1.006
-bjetRatio        lnN          -          1.002      -          -          -          -          -
-dibXsec          lnN          -          -          -          1.055      -          -          -
-PDF              lnN          1.15       -          -          -          -          -          -
-
+Alpha_bTag      shape        -          1.07       -          -          -          -          -   
+Alpha_QCD       shape        -          1.07       -          -          -          -          -   
+Alpha_PDF       shape        -          1.07       -          -          -          -          -   
+Alpha_JES       shape        -          1.07       -          -          -          -          -   
+SigEf_bTag      lnN          1.10       -          -          -          -          -          -
+SigEf_QCD       lnN          1.10       -          -          -          -          -          -
+SigEf_PDF       lnN          1.10       -          -          -          -          -          -
+SigEf_PU        lnN          1.10       -          -          -          -          -          -
+SigEf_Lep       lnN          1.10       -          -          -          -          -          -
+SigEf_Trig      lnN          1.10       -          -          -          -          -          -
+NormF_JES       lnN          1.15       -          -          -          -          -          -
+NormF_model     lnN          1.15       -          -          -          -          -          -
+lumi_13TeV      lnN          1.10       1.10       1.10       1.10       1.10       1.10       1.10
+crossSction     lnN          1.10       1.10       1.10       1.10       1.10       1.10       1.10
 '''
 
 ## template datacard ends here 
