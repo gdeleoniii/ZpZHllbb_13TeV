@@ -78,21 +78,16 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooDataSet dataSetData   ("dataSetData",    "dataSetData",    variables, Cut(catCut),           WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
   RooDataSet dataSetDataSG ("dataSetDataSG",  "dataSetDataSG",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetZjets  ("dataSetZjets",   "dataSetZjets",   variables, Cut(catCut),           WeightVar(evWeight), Import(*treeZjets));
   RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
   RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
   // Total events number
 
-  RooRealVar nMcEvents    ("nMcEvents",     "nMcEvents",     0., 1.e10);
   RooRealVar nSBMcEvents  ("nSBMcEvents",   "nSBMcEvents",   0., 1.e10);
   RooRealVar nSGMcEvents  ("nSGMcEvents",   "nSGMcEvents",   0., 1.e10);
   RooRealVar nDataEvents  ("nDataEvents",   "nDataEvents",   0., 1.e10);
   RooRealVar nSBDataEvents("nSBDataEvents", "nSBDataEvents", 0., 1.e10);
 
-  nMcEvents.setVal(dataSetZjets.sumEntries());
-  nMcEvents.setConstant(true);
-  
   nSBMcEvents.setVal(dataSetZjetsSB.sumEntries());
   nSBMcEvents.setConstant(true);
   

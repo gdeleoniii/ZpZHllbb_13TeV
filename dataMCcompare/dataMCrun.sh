@@ -7,7 +7,7 @@ export SCRAM_ARCH=slc6_amd64_gcc481
 eval `scramv1 runtime -sh`
 cd $pwd
 
-processEle=(Barrel Endcap Z Jet)
+processEle=(Barrel Endcap Zjet)
 cd $pwd/ele
 
 for ((j=0; j<${#processEle[@]}; j++)); do
@@ -21,7 +21,7 @@ done
 rm -f *.pcm *.d *.so
 mv *pdf /afs/cern.ch/user/h/htong/www/dataMCcompare
 
-processMu=(HighPt Tracker Z Jet)
+processMu=(HighPt Tracker Zjet)
 cd $pwd/mu
 
 for ((j=0; j<${#processMu[@]}; j++)); do

@@ -6,7 +6,8 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/untuplizer.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
-bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, bool jetMassCut=true, int jetScale=0){
+bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL, TLorentzVector* thatLep=NULL, 
+	       bool isSignal=true, bool isSideBand=false, int jetScale=0){
 
   Int_t         FATnJet           = data.GetInt("FATnJet");    
   Float_t*      FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
@@ -32,7 +33,8 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
     if( fabs(myJet->Eta()) > 2.4 ) continue;
     if( !FATjetPassIDLoose[ij] ) continue;
     if( myJet->DeltaR(*thisLep) < 0.8 || myJet->DeltaR(*thatLep) < 0.8 ) continue;
-    if( jetMassCut && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
+    if( isSignal && (FATjetPRmassCorr[ij] < 105 || FATjetPRmassCorr[ij] > 135) ) continue;
+    if( isSideBand && (FATjetPRmassCorr[ij] > 65 && FATjetPRmassCorr[ij] < 135) ) continue;
 
     *goodFATJetID = ij;
     findJet = true;
