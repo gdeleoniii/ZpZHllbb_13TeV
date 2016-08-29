@@ -1,30 +1,45 @@
+Before you running the code, you should prepare some files and do some environment setting:
+
+1. Run the two command below:
+   1.1 source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6-gcc49-opt/setup.sh
+   1.2 source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.04.10/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
+
+2. Prepare the files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead , run the command in root environment:
+   2.1 .L BTagCalibrationStandalone.cpp++
+
+3. Before using RooFit, you also need to prepare the files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/PDFs , run the commands in root environment:
+   3.1 .L PdfDiagonalizer.cc++
+   3.2 .L HWWLVJRooPdfs.cxx++
+
+4. Prepare the header files:
+   4.1 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/untuplizer.h
+   4.2 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/isPassZee.h
+   4.3 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/isPassZmumu.h
+   4.4 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/isPassJet.h
+   4.5 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/leptonWeight.h
+   4.6 https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/bTagCalhead/BTagCalibrationStandalone.h
+
+5. Prepare the needed input root files:
+   5.1 b-tagging efficiency for b-tagging scale factor: https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
+   5.2 lepton weight and trigger: https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/leptonSFroot
+
+6. Now you are ready to run the codes.
+
 *** For uncertainty study on signal efficiency ***
 
-1. The format of folders in this directory is uncertaintySource.onWhichSamples
+1. All the uncertainty studies on signal efficiency are located in uncertaintySource.signal folders, which contain a .C file and a .h file.
 
-2. All the uncertainty studies on signal efficiency are located in *.signal folders.
+2. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
 
-3. Inside each *.signal forders, you can see a .C file and a .h file. 
+3. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
 
-4. The .h file is the analysis code, which read the skimmed samples and specific some parameters like lepton channel or number of b-tag . The function in these .h files always return the signal efficiency according to this mass point.
-
-5. The .h files read some neccessary files. Make sure that you have everything before running the codes.
-   
-   5.1 The BTagCalibrationStandalone.h in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagCalhead
-   5.2 The CSVV1.csv in                   https://github.com/henrytongCMS/ZpZHllbb_13TeV/blob/master/CSVV1.csv
-   5.3 The b-tag efficiency root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/bTagEffroot
-   5.4 The lepton and trigger scale factor root files in https://github.com/henrytongCMS/ZpZHllbb_13TeV/tree/master/leptonSFroot
-   5.5 Other header files can be found in https://github.com/henrytongCMS/ZpZHllbb_13TeV
-
-6. The .C file using the numbers from .h file to do uncertainty study and output the numbers to a text file.
-
-7. In summary, the usage is simple, just run this command and it will do anything for you: root -q -b -l codeName.C\(\)
+4. Run this command and it will do anything for you: root -q -b -l codeName.C\(\)
 
 *** For uncertainty study on alpha ratio ***
 
-1. All the uncertainty studies on alpha ratio are located in *.zjets folders. Please create a folder named "Zjets" first.
+1. All the uncertainty studies on alpha ratio are located in uncertaintySource.zjets folders, which contain two .C files and two .sh files.
 
-2. Inside each *.zjets folders, you can see two .C files and two .sh files. 
+2. Please create a folder named "Zjets" first.
 
 3. The *Tree.C file analyze the skimmed samples and create a mini tree for RooFit (will be saved in "Zjets" folder). This code can be run easily with ./runTree.sh
 
