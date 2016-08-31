@@ -46,10 +46,12 @@ void test(){
   RooEffProd modelY("modelY", "model*modelB", model, modelB);
 
 
+  modelY.Print("t");
+
   RooAbsReal* intModel = model.createIntegral(x);
 
-  cout << "model.getVal(x): " << model.getVal(x) << endl;
-  cout << "model.getVal(): " <<  model.getVal() << endl;
+  cout << "model.getVal(x): " << model.getVal(x) << endl; // this is equal to model.getVal()/model.createIntegral(x) but what is the physical meaning?
+  cout << "model.getVal(): " <<  model.getVal() << endl;  // OK so this is actually the return of exp(-2.5) = 0.082085
   cout << "model.createIntegral(x): " << intModel->getVal() << endl;
   cout << "model.getVal()/model.createIntegral(x): " << model.getVal()/intModel->getVal() << endl;
 
@@ -64,11 +66,13 @@ void test(){
 
   // if modelY is absoutely correct, the line below is to convert the modelY to histogram (see manual: page 126)
 
-  // seems the argument ConditionalObservables(x) must be added, BUT this will give an error
+  // seems the argument ConditionalObservables(x) must be added, BUT this will give an error (is it harmless?):
   // ERROR:InputArguments -- RooArgSet::checkForDup: ERROR argument with name modelY is already in this set
 
   // now the histogram is correct: if you integral exp(-x)*(2x+3) in range [0,0.5] by hand, the answer is 1.36. 
   // back to the histogram, you can see that the sum of first two bin is 1.36 
+
+
 
   TH1* htest = modelY.createHistogram("htest", x, Binning(binsX), ConditionalObservables(x));
 
