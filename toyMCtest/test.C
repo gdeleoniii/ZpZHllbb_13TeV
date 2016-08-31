@@ -8,9 +8,15 @@ void test(){
   n.setVal(800);
   n.setConstant(true);
 
+  RooBinning binsX(20, 0, 5);
+
+
   RooRealVar x("x", "x", 0, 5);
   RooRealVar lamda("lamda", "lamda", -1, -4, -0.1);
   lamda.setConstant(true);
+
+
+
   RooExponential model("model", "model", x, lamda);
   //  RooExtendPdf extmodel("extmodel", "extmodel", model, n);
 
@@ -28,14 +34,12 @@ void test(){
 
   RooAbsReal* intModelX = modelY.createIntegral(x);
   cout << intModelX->getVal() << endl;
-  /*
-  TH1* htest = ext_model_sigData.createHistogram("htest", mZH, Binning(binsmZH), Extended(true));
-  htest->SetMinimum(1e-4);
-  htest->SetMaximum(10);
-  */
-  //  cout << normFactor.getVal() << "\t" << htest->Integral() <<  "\t" << (model_sigData.createIntegral(RooArgSet(mZH), Range("fullRange")))->getVal() << "\t" << ext_model_sigData.createIntegral(RooArgSet(mZH), Range("fullRange"))->getVal() << endl;
 
-  // Plot the results on frame 
+
+  // this line is to convert the model to histogram
+
+  TH1* htest = modelY.createHistogram("htest", x, Binning(binsX), Extended(false));
+
 
   RooPlot* fframe = x.frame();
 
@@ -50,7 +54,11 @@ void test(){
 
   cv.cd();
   fframe->Draw();
-  cv.Print("test.pdf");
+  cv.Print("test.pdf(");
 
+  cv.Clear();
+  cv.cd();
+  htest->Draw();
+  cv.Print("test.pdf)");
 
 }
