@@ -10,7 +10,7 @@ void test(){
 
 
   RooRealVar n("n","n",0,1000);
-  n.setVal(800);
+  n.setVal(1);
   n.setConstant(true);
 
   RooBinning binsX(20, 0, 5);
@@ -31,13 +31,12 @@ void test(){
   // If everything below can be solve, let's open this extended pdf and study its behaviour
   // Also can convert RooEffProd to extended
 
-  // RooExtendPdf extmodel("extmodel", "extmodel", model, n);
+  RooExtendPdf extmodel("extmodel", "extmodel", model, n);
 
   // What is exactly RooProdPdf? when multiply to functions with same observable x, what will be the output? still 2D ?
 
   RooGenericPdf modelA("modelA", "modelA", "2*@0+3", x);
   RooProdPdf    modelX("modelX", "model*modelA", RooArgList(model, modelA));
-
 
   // Using RooEffProd with RooFormulaVar maybe is a correct way
   // What is the difference between RooGenericPdf and RooFormulaVar? Will they have same behavior?
@@ -82,17 +81,23 @@ void test(){
   cout << "Integral of modelY: " << modelY.createIntegral(x)->getVal() << endl;
   cout << "Integral of hist: " << htest->Integral() << endl;
 
-  // Now the probem is, model and modelY didn't have correct normalization when display in frame. 
-  // when x=0, model should return 1, modelY should return 3
-
   RooPlot* fframe = x.frame();
 
-  // model.plotOn(fframe, LineColor(kGreen+1));
-  // modelA.plotOn(fframe, Normalization(1.0,RooAbsReal::NumEvent), LineColor(kRed+1));
+  // If plotting the pdf on empty frame, the normalization is always 0.05 (why?)
+  // But you can set normalization by using the integration of pdf (if true).
+  // The additional argument RooAbsReal::Raw is used. (RooAbsReal::NumEvent failed. why?)
+
+  model.plotOn(fframe, Normalization(model.createIntegral(x)->getVal(), RooAbsReal::Raw), LineColor(kGreen+1));
+  // extmodel.plotOn(fframe, LineColor(kBlue+1));
+  // modelA.plotOn(fframe, ,LineColor(kRed+1));
   // modelX.plotOn(fframe,LineColor(kOrange+1) );
   // modelB.plotOn(fframe, LineStyle(2), LineColor(kRed+1));
-  modelY.plotOn(fframe,LineStyle(2),LineColor(kOrange+1) );
+  modelY.plotOn(fframe, Normalization(modelY.createIntegral(x)->getVal(), RooAbsReal::Raw), LineStyle(2),LineColor(kOrange+1) );
     
+
+  //fframe->Print("v");
+  fframe->getNormVars()->Print("1");
+
   TCanvas cv("cv","",0,0,1000,800);
 
   cv.cd();
