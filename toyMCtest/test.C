@@ -13,6 +13,9 @@ void test(){
   RooBinning binsX(20, 0, 5);
 
   RooRealVar x("x", "x", 0, 5);
+  RooRealVar y("y", "y", 0, 5);
+
+
   RooRealVar lamda("lamda", "lamda", -1, -4, -0.1);
 
   lamda.setConstant(true);
@@ -30,15 +33,31 @@ void test(){
   // What is exactly RooProdPdf? when multiply to functions with same observable x, what will be the output? still 2D ?
 
   RooGenericPdf modelA("modelA", "modelA", "2*@0+3", x);
-  RooProdPdf    modelX("modelX", "model*modelA", RooArgList(model, modelA));
+  RooProdPdf    modelX("modelX", "modelX", RooArgList(model, modelA)); //[model*modelA]
+
+  // Hard to understand what is RooProdPdf when two input models have same observables
+
+
+
 
   // Using RooEffProd with RooFormulaVar maybe is a correct way
   // What is the difference between RooGenericPdf and RooFormulaVar? Will they have same behavior?
 
   RooFormulaVar modelB("modelB","2*x+3",x);
-  RooEffProd modelY("modelY", "model*modelB", model, modelB);
+  RooEffProd modelY("modelY", "modelY", model, modelB); //[model*modelB]
 
-  // modelY.Print("t");
+  // A closer look to RooEffPdf, creade modelB with observable y and see what happend
+
+  RooFormulaVar modelB2("modelB2","2*y+3",y);
+  RooEffProd modelY2("modelY2", "modelY2", model, modelB2); //[model*modelB2]
+
+  modelY2.Print("t");
+
+  TH1* h2dtest = modelY2.createHistogram("h2dtest", x, Binning(50), YVar(y, Binning(50)));
+
+  // output function become 2y*exp(-x)+3*exp(-x)
+  // 2D histogram seems reasonable (by eye)
+  // now what is the meaning of modelY2.createIntegral(y)->getVal() and the its plot on frame?
 
   RooExtendPdf extmodelY("extmodelY", "extmodelY", modelY, n);
 
@@ -76,6 +95,9 @@ void test(){
   cout << "Integral of modelY: " << modelY.createIntegral(x)->getVal() << endl;
   cout << "Integral of hist: " << htest->Integral() << endl;
 
+
+  cout << "Integral of modelY2: " << modelY2.createIntegral(y)->getVal() << endl;
+
   RooPlot* fframe = x.frame();
 
   // If plotting the pdf on empty frame, the normalization is always 0.05 (why?)
@@ -88,8 +110,10 @@ void test(){
   // modelX.plotOn(fframe,LineColor(kOrange+1) );
   // modelB.plotOn(fframe, LineStyle(2), LineColor(kRed+1));
   modelY.plotOn(fframe, Normalization(modelY.createIntegral(x)->getVal(), RooAbsReal::Raw), LineStyle(2),LineColor(kOrange+1) );
+  modelY2.plotOn(fframe, Normalization(modelY2.createIntegral(y)->getVal(), RooAbsReal::Raw), LineStyle(2),LineColor(kCyan+1) );
 
-  //fframe->Print("v");
+
+  fframe->Print("v");
   fframe->getNormVars()->Print("1");
 
   TCanvas cv("cv","",0,0,1000,800);
@@ -97,7 +121,12 @@ void test(){
   cv.cd();
   fframe->Draw();
   cv.Print("test.pdf(");
-
+    
+  cv.Clear();
+  cv.cd();
+  h2dtest->Draw("LEGO");
+  cv.Print("test.pdf");
+  
   cv.Clear();
   cv.cd();
   htest->Draw();
