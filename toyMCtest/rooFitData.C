@@ -1,6 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
-#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/readFitParam.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut, bool removeMinor=true){
@@ -83,31 +83,20 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   
   // Total events number
 
-  RooRealVar nSBMcEvents  ("nSBMcEvents",   "nSBMcEvents",   0., 1.e10);
-  RooRealVar nSGMcEvents  ("nSGMcEvents",   "nSGMcEvents",   0., 1.e10);
-  RooRealVar nDataEvents  ("nDataEvents",   "nDataEvents",   0., 1.e10);
-  RooRealVar nSBDataEvents("nSBDataEvents", "nSBDataEvents", 0., 1.e10);
+  RooRealVar nSBMcEvents  ("nSBMcEvents",   "nSBMcEvents",   0., 1.e9);
+  RooRealVar nSGMcEvents  ("nSGMcEvents",   "nSGMcEvents",   0., 1.e9);
+  RooRealVar nSBDataEvents("nSBDataEvents", "nSBDataEvents", 0., 1.e9);
 
   nSBMcEvents.setVal(dataSetZjetsSB.sumEntries());
-  nSBMcEvents.setConstant(true);
-  
   nSGMcEvents.setVal(dataSetZjetsSG.sumEntries());
-  nSGMcEvents.setConstant(true);
-  
-  nDataEvents.setVal(dataSetData.sumEntries());
-  nDataEvents.setConstant(true);
-
   nSBDataEvents.setVal(dataSetDataSB.sumEntries());
-  nSBDataEvents.setConstant(true);
 
   // Side band jet mass in data
 
-  RooRealVar lamda("lamda", "lamda", -0.015, -0.04, -0.01);
-
+  RooRealVar     lamda("lamda", "lamda", -0.015, -0.04, -0.01);
   RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
-  RooExtendPdf ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
-
-  RooFitResult* mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooExtendPdf   ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
+  RooFitResult*  mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   fprintf(stdout, "lamda value is %g\n", lamda.getVal());
 
@@ -115,11 +104,9 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   RooAbsReal* nSIGFit = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
   RooAbsReal* nSBFit  = ext_model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
- 
-  RooRealVar normFactor("normFactor", "normFactor", 0., 1.e9);
 
+  RooRealVar normFactor("normFactor", "normFactor", 0., 1.e9);
   normFactor.setVal(nSBDataEvents.getVal()*(nSIGFit->getVal()/nSBFit->getVal()));
-  normFactor.setConstant(true);
 
   // Alpha ratio part
   
@@ -147,26 +134,18 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Fit ZH mass in data side band
 
   RooGenericPdf model_ZH("model_ZH", "model_ZH", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,daVara,daVarb));
-  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nDataEvents);
+  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nSBDataEvents);
   RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   fprintf(stdout, "sbVara=%f\tsbVarb=%f\tsgVara=%f\tsgVarb=%f\tdaVara=%f\tdaVarb=%f\n\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal(), daVara.getVal(), daVarb.getVal());
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  float normConst = ((TF1*)ext_model_ZHSB.asTF(mZH, RooArgList(sbVara, sbVarb)))->Integral(750,4300)/((TF1*)ext_model_ZHSG.asTF(mZH, RooArgList(sgVara, sgVarb)))->Integral(750,4300);
+  float constant = ext_model_ZHSB.createIntegral(mZH)->getVal()/ext_model_ZHSG.createIntegral(mZH)->getVal();
 
-  RooGenericPdf model_alpha("model_alpha", "model_alpha", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", normConst, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
-  RooProdPdf    model_sigData("model_sigData", "ext_model_ZH*model_alpha", RooArgList(ext_model_ZH,model_alpha));
-  RooExtendPdf  ext_model_sigData("ext_model_sigData", "ext_model_sigData", model_sigData, normFactor);
-
-
-
-  TH1* htest = ext_model_sigData.createHistogram("htest", mZH, Binning(binsmZH), Extended(true));
-  htest->SetMinimum(1e-4);
-  htest->SetMaximum(10);
-
-  //  cout << normFactor.getVal() << "\t" << htest->Integral() <<  "\t" << (model_sigData.createIntegral(RooArgSet(mZH), Range("fullRange")))->getVal() << "\t" << ext_model_sigData.createIntegral(RooArgSet(mZH), Range("fullRange"))->getVal() << endl;
+  RooGenericPdf alpha_display("alpha_display", "alpha_display", Form("%f*TMath::Exp(-@0/(%f+%f*@0))/TMath::Exp(-@0/(%f+%f*@0))", constant, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), RooArgSet(mZH));
+  RooFormulaVar model_alpha("model_alpha", Form("%f*TMath::Exp(-mllbb/(%f+%f*mllbb))/TMath::Exp(-mllbb/(%f+%f*mllbb))", constant, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), mZH);
+  RooEffProd    model_predicted("model_predicted", "model_predicted", model_ZH, model_alpha);
 
   // Plot the results on frame 
 
@@ -189,7 +168,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   
   ext_model_ZHSB.plotOn(alphaFrame, LineColor(kBlue));
   ext_model_ZHSG.plotOn(alphaFrame, LineColor(kRed));
-  model_alpha   .plotOn(alphaFrame, LineColor(kBlack));
+  alpha_display .plotOn(alphaFrame, LineColor(kBlack));
 
   dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
   ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result,1,false), FillStyle(3002));
@@ -201,9 +180,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
-  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
-  model_sigData.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kRed+1));
-  ext_model_sigData.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kGreen+1));
+  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH)); // Using RooAbsReal::NumEvent or RooAbsReal::Raw ??
+  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::Raw), LineColor(kRed+1));
 
   RooPlot* mcSBmZhPullFrame = mZH.frame();
   RooPlot* mcSGmZhPullFrame = mZH.frame();
@@ -233,7 +211,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   mcSBmZhFrame->SetTitle("");
   mcSBmZhFrame->SetMinimum(1e-4);
-  mcSBmZhFrame->SetMaximum(catcut=="1"?100:10);
+  mcSBmZhFrame->SetMaximum(catcut=="1"?1000:100);
   mcSBmZhFrame->GetXaxis()->SetTitle("");
   mcSBmZhFrame->GetXaxis()->SetLabelOffset(999);
   mcSBmZhFrame->Draw();
@@ -278,7 +256,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   mcSGmZhFrame->SetTitle("");
   mcSGmZhFrame->SetMinimum(1e-4);
-  mcSGmZhFrame->SetMaximum(10);
+  mcSGmZhFrame->SetMaximum(catcut=="1"?100:10);
   mcSGmZhFrame->GetXaxis()->SetTitle("");
   mcSGmZhFrame->GetXaxis()->SetLabelOffset(999);
   mcSGmZhFrame->Draw();
@@ -322,7 +300,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   dataSBmZhFrame->SetTitle("");
   dataSBmZhFrame->SetMinimum(1e-4);
-  dataSBmZhFrame->SetMaximum(100);
+  dataSBmZhFrame->SetMaximum(catcut=="1"?100:10);
   dataSBmZhFrame->GetXaxis()->SetTitle("");
   dataSBmZhFrame->GetXaxis()->SetLabelOffset(999);
   dataSBmZhFrame->Draw();
@@ -366,7 +344,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   dataSBmJetFrame->SetTitle("");
   dataSBmJetFrame->SetMinimum(1e-2);
-  dataSBmJetFrame->SetMaximum(50);
+  dataSBmJetFrame->SetMaximum(100);
   dataSBmJetFrame->GetXaxis()->SetTitle("");
   dataSBmJetFrame->GetXaxis()->SetLabelOffset(999);
   dataSBmJetFrame->Draw();
@@ -420,17 +398,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   cv.cd()->SetLogy(1);
   expectedFrame->SetTitle("");
   expectedFrame->SetMinimum(1e-4);
-  expectedFrame->SetMaximum(10);
+  expectedFrame->SetMaximum(catcut=="1"?100:10);
   expectedFrame->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
-  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  cv.Clear();
-  cv.cd()->SetLogy(1);
-  htest->Draw();
   cv.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

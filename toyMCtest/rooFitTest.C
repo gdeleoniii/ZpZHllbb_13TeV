@@ -50,24 +50,21 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
 
   nMcEvents.setVal(dataSet.sumEntries());
-  nMcEvents.setConstant(true);
-
   nSBMcEvents.setVal(dataSetSB.sumEntries());
-  nSBMcEvents.setConstant(true);
 
   // ALL RANGE
 
-  RooRealVar lamda("lamda", "lamda", -0.025, -0.04, -0.01);
+  RooRealVar     lamda("lamda", "lamda", -0.025, -0.04, -0.01);
   RooExponential model("model", "Exponential function for Z+jets mass", mJet, lamda);
-  RooExtendPdf ext_model("ext_model", "ext_model", model, nMcEvents);
-  RooFitResult* mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Extended(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooExtendPdf   ext_model("ext_model", "ext_model", model, nMcEvents);
+  RooFitResult*  mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Extended(true), Range("allRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // SIDE BAND
 
-  RooRealVar lamdaSB("lamdaSB", "lamda", -0.025, -0.04, -0.01);
+  RooRealVar     lamdaSB("lamdaSB", "lamda", -0.025, -0.04, -0.01);
   RooExponential modelSB("modelSB", "Exponential function for Z+jets mass", mJet, lamdaSB);
-  RooExtendPdf ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
-  RooFitResult* mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooExtendPdf   ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
+  RooFitResult*  mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   fprintf(stdout, "lamda=%f\tlamdaSB=%f\n", lamda.getVal(), lamdaSB.getVal());
 
@@ -84,12 +81,11 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     RooArgSet mjet(mJet);
 
-    RooDataSet* setToyMC = model.generate(mjet, dataSet.sumEntries());
+    RooDataSet* setToyMC = ext_model.generate(mjet);
     RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
-    RooRealVar  nToyMcEvents("nToyMcEvents", "nToyMcEvents", 0., 1.e10);
 
+    RooRealVar  nToyMcEvents("nToyMcEvents", "nToyMcEvents", 0., 1.e10);
     nToyMcEvents.setVal(thisToyMC.sumEntries());
-    nToyMcEvents.setConstant(true);
 
     RooRealVar     lamda_toyMC("lamda_toyMC", "lamda", -0.025, -0.04, -0.01);
     RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
@@ -115,10 +111,8 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     RooFormulaVar formula("formula", "events in signal region of toyMC", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
 
-    float fitUnc = formula.getPropagatedError(*toyMC_result);
-
     h_bias->Fill((toyNormFactor - toyNormHiste)/toyNormHiste);
-    h_pull->Fill((toyNormFactor - toyNormHiste)/fitUnc);
+    h_pull->Fill((toyNormFactor - toyNormHiste)/formula.getPropagatedError(*toyMC_result));
 
   } // End of ntoy loop
 
