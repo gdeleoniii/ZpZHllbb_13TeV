@@ -58,7 +58,6 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Set the range in zh mass and in jet mass
 
   mZH.setRange("fullRange", 750., 4300.);
-
   mJet.setRange("allRange", 30., 300.);
   mJet.setRange("lowSB",    30.,  65.);
   mJet.setRange("highSB",  135., 300.);
@@ -110,7 +109,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   // Alpha ratio part
   
-  // set fit parameters
+  // Set fit parameters
 
   RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
   RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
@@ -180,7 +179,7 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
-  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH)); // Using RooAbsReal::NumEvent or RooAbsReal::Raw ??
+  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
   model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::Raw), LineColor(kRed+1));
 
   RooPlot* mcSBmZhPullFrame = mZH.frame();
