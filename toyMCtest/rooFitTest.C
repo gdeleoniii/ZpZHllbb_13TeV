@@ -8,6 +8,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
+  gROOT->ProcessLine("gErrorIgnoreLevel=kWarning;");
 
   // Input files and sum all backgrounds
 
@@ -35,7 +36,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   RooArgSet variables(cat, mJet, evWeight);
 
-  TCut catCut = Form("cat==%s", catcut.c_str());
+  TCut catCut = Form("cat==%s", catcut.data());
   TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut sigCut = "prmass>105 && prmass<135";
 
@@ -142,20 +143,28 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   // Plot the results on frame 
 
-  RooPlot* mJetFrame   = mJet.frame();
-  RooPlot* mJetSBFrame = mJet.frame();
-  RooPlot* biasFrame = bias.frame();
-  RooPlot* pullFrame = pull.frame();
+  RooPlot* mJetFrame        = mJet.frame();
+  RooPlot* mJetSBFrame      = mJet.frame();
+  RooPlot* biasFrame        = bias.frame();
+  RooPlot* pullFrame        = pull.frame();
+  RooPlot* mJetPullFrame    = mJet.frame();
+  RooPlot* mJetSBPullFrame  = mJet.frame();
+  RooPlot* mcstudyPullFrame = mcstudy->plotPull(lamda, FrameRange(-9.5,9.5), Bins(19), FitGauss(true));
 
-  dataSet.plotOn(mJetFrame, Binning(binsmJet)); 
-  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), VisualizeError(*mJet_result,1,false), FillStyle(3002));
-  dataSet.plotOn(mJetFrame, Binning(binsmJet));
-  ext_model.plotOn(mJetFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent));
+  dataSet  .plotOn(mJetFrame, Binning(binsmJet)); 
+  ext_model.plotOn(mJetFrame, VisualizeError(*mJet_result,1,false), FillStyle(3002));
+  dataSet  .plotOn(mJetFrame, Binning(binsmJet));
+  ext_model.plotOn(mJetFrame);
 
-  dataSetSB.plotOn(mJetSBFrame, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetSBFrame, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
-  dataSetSB.plotOn(mJetSBFrame, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetSBFrame, Normalization(dataSetSB.sumEntries(),RooAbsReal::NumEvent), Range("allRange"));
+  mJetPullFrame->addObject(mJetFrame->pullHist(), "P");
+
+  dataSetSB  .plotOn(mJetSBFrame, Binning(binsmJet));
+  ext_modelSB.plotOn(mJetSBFrame, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
+  dataSetSB  .plotOn(mJetSBFrame, Binning(binsmJet));
+  ext_modelSB.plotOn(mJetSBFrame, Range("allRange"));
+
+  mJetSBPullFrame->addObject(mJetSBFrame->pullHist(), "P");
+
   ext_model.plotOn(mJetSBFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), LineStyle(7), LineColor(kRed));
 
   hbias.plotOn(biasFrame);
@@ -165,10 +174,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   hpull.plotOn(pullFrame);
   gp.plotOn(pullFrame);
   gp.paramOn(pullFrame,Layout(0.65,0.9,0.8));
-
-  RooPlot* mJetPullFrame = mJet.frame();
-  RooPlot* mJetSBPullFrame = mJet.frame();
-  RooPlot* mcstudyPullFrame = mcstudy->plotPull(lamda, FrameRange(-9.5,9.5), Bins(19), FitGauss(true));
 
   // Output results
 
@@ -213,7 +218,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   c0_dw->cd()->SetLogy(0);
 
-  mJetPullFrame->addObject(mJetFrame->pullHist(), "P");
   mJetPullFrame->SetTitle("");
   mJetPullFrame->GetYaxis()->SetTitle("Pulls");
   mJetPullFrame->GetYaxis()->SetTitleOffset(0.25);
@@ -262,7 +266,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   c1_up->RedrawAxis();
   c1_dw->cd()->SetLogy(0);
 
-  mJetSBPullFrame->addObject(mJetSBFrame->pullHist(), "P");
   mJetSBPullFrame->SetTitle("");
   mJetSBPullFrame->GetYaxis()->SetTitle("Pulls");
   mJetSBPullFrame->GetYaxis()->SetTitleOffset(0.25);
