@@ -4,16 +4,17 @@ import os
 #ROOT.gROOT.SetBatch(True)  
 #from DataSetInfo import *
 
-if len(sys.argv) < 4 :
+if len(sys.argv) < 5 :
     print "insufficient options provided see help function "
     exit (1)
 
-if len(sys.argv) == 4 :
+if len(sys.argv) == 5 :
     print ('You are making datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[3])
 
 inputtextfilename=sys.argv[1]
 inputrootfilename=sys.argv[2]
 dirtosave=sys.argv[3]
+inputuncertaintyfile=sys.argv[4]
 
 os.system('mkdir -p '+dirtosave)
 
@@ -44,20 +45,23 @@ rate                         SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE      W
 
 -----------------------------------------------------------------------------------------------------------------
 
-Alpha_bTag      shape        -          1.07       -          -          -          -          -   
-Alpha_QCD       shape        -          1.07       -          -          -          -          -   
-Alpha_PDF       shape        -          1.07       -          -          -          -          -   
-Alpha_JES       shape        -          1.07       -          -          -          -          -   
-SigEf_bTag      lnN          1.10       -          -          -          -          -          -
-SigEf_QCD       lnN          1.10       -          -          -          -          -          -
-SigEf_PDF       lnN          1.10       -          -          -          -          -          -
-SigEf_PU        lnN          1.10       -          -          -          -          -          -
-SigEf_Lep       lnN          1.10       -          -          -          -          -          -
-SigEf_Trig      lnN          1.10       -          -          -          -          -          -
-NormF_JES       lnN          1.15       -          -          -          -          -          -
-NormF_model     lnN          1.15       -          -          -          -          -          -
-lumi_13TeV      lnN          1.10       1.10       1.10       1.10       1.10       1.10       1.10
-crossSction     lnN          1.10       1.10       1.10       1.10       1.10       1.10       1.10
+Alpha_bTag      shape        -          1.00       -          -          -          -          -   
+Alpha_QCD       shape        -          1.00       -          -          -          -          -   
+Alpha_PDF       shape        -          1.00       -          -          -          -          -   
+Alpha_JES       shape        -          1.00       -          -          -          -          -   
+SigEf_bTag      lnN          SIGBTAG    -          -          -          -          -          -
+SigEf_QCD       lnN          SIGQCD     -          -          -          -          -          -
+SigEf_PDF       lnN          SIGPDF     -          -          -          -          -          -
+SigEf_JES       lnN          SIGJES     -          -          -          -          -          -
+SigEf_PU        lnN          SIGPU      -          -          -          -          -          -
+SigEf_Lep       lnN          SIGLEP     -          -          -          -          -          -
+SigEf_Trig      lnN          SIGTRIG    -          -          -          -          -          -
+NormF_JES       lnN          -          ?          -          -          -          -          -
+NormF_model     lnN          -          ?          -          -          -          -          -
+lumi_13TeV      lnN          -          -          -          -          -          -          -
+MinorBkg        lnN          -          -          -          -          -          -          - 
+Fit_Goodness    lnN          -          -          -          -          -          -          - 
+Fit_Deviation   lnN          -          -          -          -          -          -          - 
 '''
 
 ## template datacard ends here 
@@ -100,7 +104,6 @@ signalnameinnumber=[ 'M800',
 placeholder = [x + "RATE" for x in nameinnumber]
 ## print placeholder
 
-
 ## valuemap for background and signal with a default value
 valuemap = {
     "default" : 0.0
@@ -110,7 +113,7 @@ signalvaluemap = {
     "default" : 0.0
     }
 
-## Read the signal background numbers from plain TEXTFile
+## Read the signal background numbers from plain TEXT File
 ## this value map is used later to get the datacard by replacing the
 ## place holders with values stored in this map.
 numbers = open(inputtextfilename,'r')
@@ -143,10 +146,16 @@ print signalvaluemap
 #scaledsig = Normalize(sigEvent.GetBinContent(7), SignalXS['M1500'],sigTEvent.GetEntries())
 #print scaledsig
 
+# Read the uncertainty numbers according mass point and sources
+def uncValue(source):
+    myData = csv.DictReader(open(inputuncertaintyfile), delimiter="\t")
+    for row in myData:
+        if row['mass'] == masspoint:
+            return row[source]
+
 def MakeDataCard(masspoint):
     datacard = open('DataCard_MXXXGeV.txt','r')
     newdatacardname = dirtosave+'/DataCard_'+masspoint+'GeV_MonoHbb_13TeV.txt'
-#    os.system('rm '+newdatacardname)
     datacard600 = open(newdatacardname,'w')
     
     for line in datacard:
@@ -164,6 +173,15 @@ def MakeDataCard(masspoint):
         ## replace the signal names
         massname = 'SIG'+masspoint
         line = line.replace('SIGNAL', massname)
+
+        ## replace the uncertainty values
+        line = line.replace('SIGBTAG', uncValue('bTag'))
+        line = line.replace('SIGQCD',  uncValue('QCD'))
+        line = line.replace('SIGPDF',  uncValue('PDF'))
+        line = line.replace('SIGJES',  uncValue('JES'))
+        line = line.replace('SIGPU',   uncValue('pileUp'))
+        line = line.replace('SIGLEP',  uncValue('lepton'))
+        line = line.replace('SIGTRIG', uncValue('Trigger'))
 
         datacard600.write(line)
     datacard600.close()
