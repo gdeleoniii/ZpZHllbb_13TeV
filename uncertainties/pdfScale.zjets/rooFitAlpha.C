@@ -4,11 +4,11 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc
 using namespace RooFit;
 
 void rooFitAlpha(string channel, string catcut, string type, int first, int last){
-  if(catcut=="2" || type=="pdf")return;
+
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-  // RooMsgService::instance().setSilentMode(true);
+  RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
 
@@ -43,8 +43,8 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
 
-    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(/*catCut &&*/ sbCut),  WeightVar(evWeight), Import(*treeZjets));  
-    RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(/*catCut &&*/ sigCut), WeightVar(evWeight), Import(*treeZjets));
+    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
+    RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
   
     // Total event numbers
 
@@ -58,13 +58,20 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
     nSGMcEvents.setConstant(true);
   
     // Alpha ratio part
-
-    // set fit parameters
+    // Set fit parameters
 
     RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
     RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
     RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
     RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
+
+    // Fixing parameter "a"
+
+    sbVara.setVal(106);
+    sgVara.setVal(106);
+
+    sbVara.setConstant(true);
+    sgVara.setConstant(true);
 
     // Fit ZH mass in side band
 
