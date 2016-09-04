@@ -40,6 +40,21 @@ void test(){
 
 
 
+  /**********/
+
+  // Not related test: test if sumEntries is correct.
+
+  RooDataSet* dataset = model.generate(x, 1860);
+
+  cout << dataset->sumEntries() << endl;
+
+  RooRealVar ee("ee", "ee", 0, 500);
+  ee.setVal(174);
+  
+  cout << ee.getVal() << endl;
+
+  /**********/
+
   // Using RooEffProd with RooFormulaVar maybe is a correct way
   // What is the difference between RooGenericPdf and RooFormulaVar? Will they have same behavior?
 

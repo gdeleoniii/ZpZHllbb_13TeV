@@ -1,14 +1,14 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
-#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/readFitParam.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
 void rooFitAlpha(string channel, string catcut, string type, int first, int last){
-
+  if(catcut=="2" || type=="pdf")return;
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
-  RooMsgService::instance().setSilentMode(true);
+  // RooMsgService::instance().setSilentMode(true);
 
   // Input files and sum all backgrounds
 
@@ -39,12 +39,12 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
   for( int nw = last; nw >= first; --nw ){
     
     RooRealVar evWeight(Form("evweight%02i",nw), "", 0., 1.e3);
-    RooArgSet variables(cat, mJet, mZH, evWeight);
+    RooArgSet  variables(cat, mJet, mZH, evWeight);
 
     // Create a dataset from a tree -> to process unbinned likelihood fitting
 
-    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
-    RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
+    RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(/*catCut &&*/ sbCut),  WeightVar(evWeight), Import(*treeZjets));  
+    RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(/*catCut &&*/ sigCut), WeightVar(evWeight), Import(*treeZjets));
   
     // Total event numbers
 

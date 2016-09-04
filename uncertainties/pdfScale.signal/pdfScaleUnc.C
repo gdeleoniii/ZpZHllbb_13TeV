@@ -6,11 +6,17 @@ void pdfScaleUnc(){
 
   for( int cat = 1; cat <= 2; ++cat ){
 
-    FILE* fe = fopen(Form("ele_%ibtag_pdfScaleUnc.txt", cat), "w");
-    FILE* fm = fopen(Form("mu_%ibtag_pdfScaleUnc.txt", cat), "w");
+    FILE* fpe = fopen(Form("ele_%ibtag_pdfUnc.txt", cat), "w");
+    FILE* fpm = fopen(Form("mu_%ibtag_pdfUnc.txt", cat), "w");
 
-    fprintf(fe, "mass\tcentral\tpdfUnc\tscaleUnc\n");
-    fprintf(fm, "mass\tcentral\tpdfUnc\tscaleUnc\n");
+    FILE* fse = fopen(Form("ele_%ibtag_scaleUnc.txt", cat), "w");
+    FILE* fsm = fopen(Form("mu_%ibtag_scaleUnc.txt", cat), "w");
+
+    fprintf(fpe, "mass\tcentral\tPDF\n");
+    fprintf(fpm, "mass\tcentral\tPDF\n");
+
+    fprintf(fse, "mass\tcentral\tQCD\n");
+    fprintf(fsm, "mass\tcentral\tQCD\n");
 
     float centraleS[11], pdfUnce[11], scaleUnce[11];
     float centralmS[11], pdfUncm[11], scaleUncm[11];
@@ -25,17 +31,24 @@ void pdfScaleUnc(){
       scaleUncm[i] = pdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i], 0, 2);
       pdfUncm[i]   = pdfScaleUnc(Form("/data7/htong/skim_NCUGlobalTuples/skim_mu_crab_ZprimeToZhToZlephbb_narrow_M-%i_13TeV-madgraph.root", mzh[i]), "mu", cat, mzh[i], 9, 109);
 
-      fprintf(fe, "%i\t%.3f\t%.3f\t%.3f\n", mzh[i], centraleS[i], pdfUnce[i], scaleUnce[i]);      
-      fprintf(fm, "%i\t%.3f\t%.3f\t%.3f\n", mzh[i], centralmS[i], pdfUncm[i], scaleUncm[i]);
+      fprintf(fpe, "%i\t%.3f\t%.3f\n", mzh[i], centraleS[i], pdfUnce[i]+1);      
+      fprintf(fpm, "%i\t%.3f\t%.3f\n", mzh[i], centralmS[i], pdfUncm[i]+1);
     
+      fprintf(fse, "%i\t%.3f\t%.3f\n", mzh[i], centraleS[i], scaleUnce[i]+1);
+      fprintf(fsm, "%i\t%.3f\t%.3f\n", mzh[i], centralmS[i], scaleUncm[i]+1);
+
     }
 
-    fclose(fe);
-    fclose(fm);
+    fclose(fpe);
+    fclose(fpm);
+
+    fclose(fse);
+    fclose(fsm);
 
   }
 
-  gSystem->Exec("mkdir signalPdfScaleResults");
-  gSystem->Exec("mv *txt signalPdfScaleResults");
+  gSystem->Exec("mkdir signalPdfResults; mkdir signalScaleResults");
+  gSystem->Exec("mv *pdfUnc.txt signalPdfResults");
+  gSystem->Exec("mv *scaleUnc.txt signalScaleResults");
 
 }

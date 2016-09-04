@@ -40,7 +40,9 @@ for ((i=0; i<${#CHAN[@]}; i++)); do
 	echo -e "*** Make data cards for the combine tool by using: " $textfile " ***"
 	echo -e "*** Data cards move to: " $dataCarddr " ***"
 	
-	python MakeDataCards.py $textfile $rootfile ./$dataCarddr
+	uncertaintyfile=systUncOnSigEff/${CHAN[$i]}_${BTAG[$j]}btag_systUncOnSigEff.txt
+
+	python MakeDataCards.py $textfile $rootfile ./$dataCarddr $uncertaintyfile
 	
 	rm -f DataCard_MXXXGeV.txt
 	mv $rootfile $dataCarddr

@@ -167,9 +167,9 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
   ext_model_ZHSG.plotOn(mcSGmZhFrame, LineColor(kBlue));
   
-  ext_model_ZHSB.plotOn(alphaFrame, LineColor(kBlue));
-  ext_model_ZHSG.plotOn(alphaFrame, LineColor(kRed));
-  alpha_display .plotOn(alphaFrame, LineColor(kBlack));
+  ext_model_ZHSB.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
+  ext_model_ZHSG.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
+  alpha_display .plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlack));
 
   dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
   ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result,1,false), FillStyle(3002));
@@ -182,7 +182,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
   dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
-  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::Raw), LineColor(kRed+1));
+  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kRed+1));
+  // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
 
   // Output the results
 
