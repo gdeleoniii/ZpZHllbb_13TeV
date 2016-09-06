@@ -115,13 +115,29 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
 
   RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
   RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-  RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  //RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Fit ZH mass in MC signal region
 
   RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
   RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-  RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  //RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+  // Make category to fit signal and sideband
+
+  RooCategory mcSample("mcSample", "mcSample");
+
+  mcSample.defineType("sideband");
+  mcSample.defineType("signal");
+
+  RooDataSet dataSetCombine("dataSetCombine", "dataSetCombine", variables, Index(mcSample), Import("sideband", dataSetZjetsSB), Import("signal", dataSetZjetsSG), WeightVar(evWeight));
+
+  RooSimultaneous modelCombine("modelCombine", "modelCombine", mcSample);
+
+  modelCombine.addPdf(ext_model_ZHSB, "sideband");
+  modelCombine.addPdf(ext_model_ZHSG, "signal");
+
+  RooFitResult* combineResult = modelCombine.fitTo(dataSetCombine, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Fit ZH mass in data side band
 
@@ -167,19 +183,19 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooPlot* dataSBmZhPullFrame  = mZH.frame();
   RooPlot* dataSBmJetPullFrame = mJet.frame();
 
-  dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
-  ext_model_ZHSB.plotOn(mcSBmZhFrame, VisualizeError(*mZHSB_result,1,false), FillStyle(3002));
-  dataSetZjetsSB.plotOn(mcSBmZhFrame, Binning(binsmZH));
-  ext_model_ZHSB.plotOn(mcSBmZhFrame, LineColor(kBlue));
+  dataSetCombine.plotOn(mcSBmZhFrame, Cut("mcSample==mcSample::sideband"), Binning(binsmZH));
+  modelCombine  .plotOn(mcSBmZhFrame, Slice(mcSample, "sideband"), ProjWData(mcSample, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  dataSetCombine.plotOn(mcSBmZhFrame, Cut("mcSample==mcSample::sideband"), Binning(binsmZH));
+  modelCombine  .plotOn(mcSBmZhFrame, Slice(mcSample, "sideband"), ProjWData(mcSample, dataSetCombine), LineColor(kBlue));
 
-  dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
-  ext_model_ZHSG.plotOn(mcSGmZhFrame, VisualizeError(*mZHSG_result,1,false), FillStyle(3002));
-  dataSetZjetsSG.plotOn(mcSGmZhFrame, Binning(binsmZH));
-  ext_model_ZHSG.plotOn(mcSGmZhFrame, LineColor(kBlue));
+  dataSetCombine.plotOn(mcSGmZhFrame, Cut("mcSample==mcSample::signal"), Binning(binsmZH));
+  modelCombine  .plotOn(mcSGmZhFrame, Slice(mcSample, "signal"), ProjWData(mcSample, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  dataSetCombine.plotOn(mcSGmZhFrame, Cut("mcSample==mcSample::signal"), Binning(binsmZH));
+  modelCombine  .plotOn(mcSGmZhFrame, Slice(mcSample, "signal"), ProjWData(mcSample, dataSetCombine), LineColor(kBlue));
   
   ext_model_ZHSB.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
   ext_model_ZHSG.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
-  alpha_display .plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlack));
+  alpha_display .plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), /*VisualizeError(*combineResult, 1, false),*/ LineColor(kBlack));
 
   dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
   ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result,1,false), FillStyle(3002));
