@@ -94,12 +94,22 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   // Alpha ratio part  
   // Set fit parameters
 
-  RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
-  RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
-  RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
-  RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
-  RooRealVar daVara("daVara", "daVara", param(channel.data(),catcut.data(),"daVaraMin"), param(channel.data(),catcut.data(),"daVaraMax"));
-  RooRealVar daVarb("daVarb", "daVarb", param(channel.data(),catcut.data(),"daVarbMin"), param(channel.data(),catcut.data(),"daVarbMax"));
+  RooRealVar sbVara("sbVara", "sbVara", 1.00, 1.e4);
+  RooRealVar sbVarb("sbVarb", "sbVarb", 0.01, 0.09);
+  RooRealVar sgVara("sgVara", "sgVara", 1.00, 1.e4);
+  RooRealVar sgVarb("sgVarb", "sgVarb", 0.01, 0.09);
+  RooRealVar daVara("daVara", "daVara", 1.00, 1.e4);
+  RooRealVar daVarb("daVarb", "daVarb", 0.01, 0.09);
+
+  // Fix parameter "a"
+
+  sbVara.setVal(108.3);
+  sgVara.setVal(108.3);
+  daVara.setVal(164.5);  
+
+  sbVara.setConstant(true);
+  sgVara.setConstant(true);
+  daVara.setConstant(true);  
 
   // Fit ZH mass in MC side band
 

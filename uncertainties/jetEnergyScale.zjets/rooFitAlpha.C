@@ -120,8 +120,7 @@ void rooFitAlpha(string channel, string catcut){
     normFactor.setConstant(true);
   
     // Alpha ratio part
-
-    // set fit parameters
+    // Set fit parameters
 
     RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
     RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
@@ -129,6 +128,14 @@ void rooFitAlpha(string channel, string catcut){
     RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
     RooRealVar daVara("daVara", "daVara", param(channel.data(),catcut.data(),"daVaraMin"), param(channel.data(),catcut.data(),"daVaraMax"));
     RooRealVar daVarb("daVarb", "daVarb", param(channel.data(),catcut.data(),"daVarbMin"), param(channel.data(),catcut.data(),"daVarbMax"));
+
+    // Fixing parameter "a"
+
+    sbVara.setVal(106);
+    sgVara.setVal(106);
+
+    sbVara.setConstant(true);
+    sgVara.setConstant(true);
 
     // Fit ZH mass in MC side band
 
