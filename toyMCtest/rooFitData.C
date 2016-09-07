@@ -3,7 +3,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut, bool removeMinor=true){
+void rooFitData(string channel, string catcut, bool removeMinor=false){
 
   // Suppress all the INFO message
 
@@ -111,39 +111,38 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   sgVara.setConstant(true);
   daVara.setConstant(true);  
 
-  // Fit ZH mass in MC side band
+  // ZH mass in MC side band
 
   RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
   RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
-  //RooFitResult* mZHSB_result = ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-  // Fit ZH mass in MC signal region
+  // ZH mass in MC signal region
 
   RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
   RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
-  //RooFitResult* mZHSG_result = ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-  // Make category to fit signal and sideband
-
-  RooCategory mcSample("mcSample", "mcSample");
-
-  mcSample.defineType("sideband");
-  mcSample.defineType("signal");
-
-  RooDataSet dataSetCombine("dataSetCombine", "dataSetCombine", variables, Index(mcSample), Import("sideband", dataSetZjetsSB), Import("signal", dataSetZjetsSG), WeightVar(evWeight));
-
-  RooSimultaneous modelCombine("modelCombine", "modelCombine", mcSample);
-
-  modelCombine.addPdf(ext_model_ZHSB, "sideband");
-  modelCombine.addPdf(ext_model_ZHSG, "signal");
-
-  RooFitResult* combineResult = modelCombine.fitTo(dataSetCombine, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-  // Fit ZH mass in data side band
+  // ZH mass in data side band 
 
   RooGenericPdf model_ZH("model_ZH", "model_ZH", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,daVara,daVarb));
   RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nSBDataEvents);
-  RooFitResult* mZH_result = ext_model_ZH.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+  // Make category to fit signal and sideband
+
+  RooCategory samples("samples", "samples");
+
+  samples.defineType("mcSideband");
+  samples.defineType("mcSignal");
+  samples.defineType("dataSideband");
+
+  RooDataSet dataSetCombine("dataSetCombine", "dataSetCombine", variables, Index(samples), Import("mcSideband", dataSetZjetsSB), Import("mcSignal", dataSetZjetsSG), Import("dataSideband", dataSetDataSB), WeightVar(evWeight));
+
+  RooSimultaneous modelCombine("modelCombine", "modelCombine", samples);
+
+  modelCombine.addPdf(ext_model_ZHSB, "mcSideband");
+  modelCombine.addPdf(ext_model_ZHSG, "mcSignal");
+  modelCombine.addPdf(ext_model_ZH,   "dataSideband");
+
+  RooFitResult* combineResult = modelCombine.fitTo(dataSetCombine, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
@@ -183,31 +182,32 @@ void rooFitData(string channel, string catcut, bool removeMinor=true){
   RooPlot* dataSBmZhPullFrame  = mZH.frame();
   RooPlot* dataSBmJetPullFrame = mJet.frame();
 
-  dataSetCombine.plotOn(mcSBmZhFrame, Cut("mcSample==mcSample::sideband"), Binning(binsmZH));
-  modelCombine  .plotOn(mcSBmZhFrame, Slice(mcSample, "sideband"), ProjWData(mcSample, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  dataSetCombine.plotOn(mcSBmZhFrame, Cut("mcSample==mcSample::sideband"), Binning(binsmZH));
-  modelCombine  .plotOn(mcSBmZhFrame, Slice(mcSample, "sideband"), ProjWData(mcSample, dataSetCombine), LineColor(kBlue));
+  dataSetCombine.plotOn(mcSBmZhFrame, Cut("samples==samples::mcSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(mcSBmZhFrame, Slice(samples, "mcSideband"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  dataSetCombine.plotOn(mcSBmZhFrame, Cut("samples==samples::mcSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(mcSBmZhFrame, Slice(samples, "mcSideband"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
 
-  dataSetCombine.plotOn(mcSGmZhFrame, Cut("mcSample==mcSample::signal"), Binning(binsmZH));
-  modelCombine  .plotOn(mcSGmZhFrame, Slice(mcSample, "signal"), ProjWData(mcSample, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  dataSetCombine.plotOn(mcSGmZhFrame, Cut("mcSample==mcSample::signal"), Binning(binsmZH));
-  modelCombine  .plotOn(mcSGmZhFrame, Slice(mcSample, "signal"), ProjWData(mcSample, dataSetCombine), LineColor(kBlue));
+  dataSetCombine.plotOn(mcSGmZhFrame, Cut("samples==samples::mcSignal"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(mcSGmZhFrame, Slice(samples, "mcSignal"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  dataSetCombine.plotOn(mcSGmZhFrame, Cut("samples==samples::mcSignal"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(mcSGmZhFrame, Slice(samples, "mcSignal"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
   
   ext_model_ZHSB.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
   ext_model_ZHSG.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
-  alpha_display .plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), /*VisualizeError(*combineResult, 1, false),*/ LineColor(kBlack));
+  model_alpha .plotOn(alphaFrame, /*Normalization(1, RooAbsReal::NumEvent),*/ VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  model_alpha .plotOn(alphaFrame, /*Normalization(1, RooAbsReal::NumEvent),*/ LineColor(kBlack));
 
-  dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
-  ext_model_ZH .plotOn(dataSBmZhFrame, VisualizeError(*mZH_result,1,false), FillStyle(3002));
-  dataSetDataSB.plotOn(dataSBmZhFrame, Binning(binsmZH));
-  ext_model_ZH .plotOn(dataSBmZhFrame, LineColor(kBlue));
+  dataSetCombine.plotOn(dataSBmZhFrame, Cut("samples==samples::dataSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(dataSBmZhFrame, Slice(samples, "dataSideband"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  dataSetCombine.plotOn(dataSBmZhFrame, Cut("samples==samples::dataSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
+  modelCombine  .plotOn(dataSBmZhFrame, Slice(samples, "dataSideband"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
 
-  dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
+  dataSetDataSB   .plotOn(dataSBmJetFrame, DataError(RooAbsData::SumW2), Binning(binsmJet));
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
-  dataSetDataSB   .plotOn(dataSBmJetFrame, Binning(binsmJet));
+  dataSetDataSB   .plotOn(dataSBmJetFrame, DataError(RooAbsData::SumW2), Binning(binsmJet));
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
-  dataSetDataSG.plotOn(expectedFrame, Binning(binsmZH));
+  dataSetDataSG.plotOn(expectedFrame, DataError(RooAbsData::SumW2), Binning(binsmZH));
   model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kRed+1));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
 

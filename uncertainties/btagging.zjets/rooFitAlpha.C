@@ -131,8 +131,8 @@ void rooFitAlpha(string channel, string catcut){
 
     // Fixing parameter "a"
 
-    sbVara.setVal(106);
-    sgVara.setVal(106);
+    sbVara.setVal(108);
+    sgVara.setVal(108);
 
     sbVara.setConstant(true);
     sgVara.setConstant(true);
