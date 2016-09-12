@@ -94,22 +94,14 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   // Alpha ratio part  
   // Set fit parameters
 
-  RooRealVar sbVara("sbVara", "sbVara", 1.00, 1.e4);
-  RooRealVar sbVarb("sbVarb", "sbVarb", 0.01, 0.09);
-  RooRealVar sgVara("sgVara", "sgVara", 1.00, 1.e4);
-  RooRealVar sgVarb("sgVarb", "sgVarb", 0.01, 0.09);
-  RooRealVar daVara("daVara", "daVara", 1.00, 1.e4);
-  RooRealVar daVarb("daVarb", "daVarb", 0.01, 0.09);
+  param myVal(channel.data(), catcut.data());
 
-  // Fix parameter "a"
-
-  sbVara.setVal(108.3);
-  sgVara.setVal(108.3);
-  daVara.setVal(164.5);  
-
-  sbVara.setConstant(true);
-  sgVara.setConstant(true);
-  daVara.setConstant(true);  
+  RooRealVar sbVara("sbVara", "sbVara", myVal.value("sbVara"), myVal.value("sbVaraMin"), myVal.value("sbVaraMax"));
+  RooRealVar sbVarb("sbVarb", "sbVarb", myVal.value("sbVarb"), myVal.value("sbVarbMin"), myVal.value("sbVarbMax"));
+  RooRealVar sgVara("sgVara", "sgVara", myVal.value("sgVara"), myVal.value("sgVaraMin"), myVal.value("sgVaraMax"));
+  RooRealVar sgVarb("sgVarb", "sgVarb", myVal.value("sgVarb"), myVal.value("sgVarbMin"), myVal.value("sgVarbMax"));
+  RooRealVar daVara("daVara", "daVara", myVal.value("daVara"), myVal.value("daVaraMin"), myVal.value("daVaraMax"));
+  RooRealVar daVarb("daVarb", "daVarb", myVal.value("daVarb"), myVal.value("daVarbMin"), myVal.value("daVarbMax"));
 
   // ZH mass in MC side band
 
@@ -194,8 +186,8 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   
   ext_model_ZHSB.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
   ext_model_ZHSG.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
-  model_alpha .plotOn(alphaFrame, /*Normalization(1, RooAbsReal::NumEvent),*/ VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  model_alpha .plotOn(alphaFrame, /*Normalization(1, RooAbsReal::NumEvent),*/ LineColor(kBlack));
+  alpha_display .plotOn(alphaFrame, VisualizeError(*combineResult, 1, false), FillStyle(3002));
+  alpha_display .plotOn(alphaFrame, LineColor(kBlack));
 
   dataSetCombine.plotOn(dataSBmZhFrame, Cut("samples==samples::dataSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
   modelCombine  .plotOn(dataSBmZhFrame, Slice(samples, "dataSideband"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
@@ -208,7 +200,9 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
 
   dataSetDataSG.plotOn(expectedFrame, DataError(RooAbsData::SumW2), Binning(binsmZH));
-  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kRed+1));
+  model_predicted.plotOn(expectedFrame, VisualizeError(*combineResult, 1, false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
+  dataSetDataSG.plotOn(expectedFrame, DataError(RooAbsData::SumW2), Binning(binsmZH));
+  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
 
   // Output the results
