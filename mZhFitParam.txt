@@ -1,5 +1,5 @@
-flavor	btag	sbVara	sbVarb	sgVara	sgVarb daVara daVarb
-ele	1	85	0.05	95	0.05	158	0.05
-ele	2	142	0.05	78	0.06	321	0.01
-mu	1	100	0.04	133	0.04	135	0.04
-mu	2	205	0.03	314	0.01	372	0.01
+flavor	btag	a_domSb	b_domSb	a_domSg	b_domSg	a_subSb	b_subSb	a_subSg	b_subSg	a_datSb	b_datSb	lamda
+ele	1	84	0.045	97	0.047	152	0.066	267	0.004	157	0.048	0.014
+ele	2	142	0.047	84	0.055	404     0.004   197     0.003   338	0.003	0.040
+mu	1	100	0.043	134	0.041	260     0.002   296     0.003   134	0.043	0.017
+mu	2	203	0.025	329	0.003	362     0.004   31	0.027   390	0.002	0.010

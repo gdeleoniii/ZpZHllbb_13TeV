@@ -171,7 +171,7 @@ void rooFitData(string channel, string catcut){
 
   // Fit jet mass in data side band
 
-  RooRealVar     lamda("lamda", "lamda", -0.015, -0.04, -0.01);
+  RooRealVar     lamda("lamda", "lamda", myVal.value("lamda"), myVal.value("lamdaMin"), myVal.value("lamdaMax");
   RooExponential pdf_sbDataJet("pdf_sbDataJet", "pdf_sbDataJet", mJet, lamda);
   RooExtendPdf   ext_sbDataJet("ext_sbDataJet", "ext_sbDataJet", pdf_sbDataJet, nEv_sbData);
   RooFitResult*  res_sbDataJet = ext_sbDataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -186,7 +186,8 @@ void rooFitData(string channel, string catcut){
 
   RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nSIGFit, *nSBFit));
 
-  fprintf(stdout, "a_domSb=%f\nb_domSb=%f\na_domSg=%f\nb_domSg=%f\na_datSb=%f\nb_datSb=%f\nlamda=%f\n", a_domSb.getVal(), b_domSb.getVal(), a_domSg.getVal(), b_domSg.getVal(), a_datSb.getVal(), b_datSb.getVal(), lamda.getVal());
+  fprintf(stdout, "a_domSb=%f\nb_domSb=%f\na_domSg=%f\nb_domSg=%f\na_subSb=%f\nb_subSb=%f\na_subSg=%f\nb_subSg=%f\na_datSb=%f\nb_datSb=%f\nlamda=%f\n",
+	  a_domSb.getVal(), b_domSb.getVal(), a_domSg.getVal(), b_domSg.getVal(), a_subSb.getVal(), b_subSb.getVal(), a_subSg.getVal(), b_subSg.getVal(), a_datSb.getVal(), b_datSb.getVal(), lamda.getVal());
 
   // Plot the results on frame 
 
@@ -464,10 +465,6 @@ void rooFitData(string channel, string catcut){
   frm_sbSubZh->SetMinimum(1e-4);
   frm_sbSubZh->SetMaximum(catcut=="1"?100:10);
   frm_sbSubZh->Draw();
-  leg.Clear();
-  leg.AddEntry(frm_sbSubZh->findObject(frm_sbSubZh->nameOf(0)), "data", "lp");
-  leg.AddEntry(frm_sbSubZh->findObject(frm_sbSubZh->nameOf(1)), "subdominant", "lp");
-  leg.Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
@@ -480,10 +477,6 @@ void rooFitData(string channel, string catcut){
   frm_sgSubZh->SetMinimum(1e-4);
   frm_sgSubZh->SetMaximum(catcut=="1"?100:10);
   frm_sgSubZh->Draw();
-  leg.Clear();
-  leg.AddEntry(frm_sgSubZh->findObject(frm_sgSubZh->nameOf(0)), "data", "lp");
-  leg.AddEntry(frm_sgSubZh->findObject(frm_sgSubZh->nameOf(1)), "subdominant", "lp");
-  leg.Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));

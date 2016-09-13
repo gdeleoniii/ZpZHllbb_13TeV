@@ -60,32 +60,38 @@ void rooFitAlpha(string channel, string catcut, string type, int first, int last
     // Alpha ratio part
     // Set fit parameters
 
-    RooRealVar sbVara("sbVara", "sbVara", param(channel.data(),catcut.data(),"sbVaraMin"), param(channel.data(),catcut.data(),"sbVaraMax"));
-    RooRealVar sbVarb("sbVarb", "sbVarb", param(channel.data(),catcut.data(),"sbVarbMin"), param(channel.data(),catcut.data(),"sbVarbMax"));
-    RooRealVar sgVara("sgVara", "sgVara", param(channel.data(),catcut.data(),"sgVaraMin"), param(channel.data(),catcut.data(),"sgVaraMax"));
-    RooRealVar sgVarb("sgVarb", "sgVarb", param(channel.data(),catcut.data(),"sgVarbMin"), param(channel.data(),catcut.data(),"sgVarbMax"));
+    param myVal(channel.data(), catcut.data());
 
-    // Fixing parameter "a"
-
-    sbVara.setVal(108);
-    sgVara.setVal(108);
-
-    sbVara.setConstant(true);
-    sgVara.setConstant(true);
-
-    // Fit ZH mass in side band
+    RooRealVar sbVara("sbVara", "sbVara", myVal.value("sbVara"), myVal.value("sbVaraMin"), myVal.value("sbVaraMax"));
+    RooRealVar sbVarb("sbVarb", "sbVarb", myVal.value("sbVarb"), myVal.value("sbVarbMin"), myVal.value("sbVarbMax"));
+    RooRealVar sgVara("sgVara", "sgVara", myVal.value("sgVara"), myVal.value("sgVaraMin"), myVal.value("sgVaraMax"));
+    RooRealVar sgVarb("sgVarb", "sgVarb", myVal.value("sgVarb"), myVal.value("sgVarbMin"), myVal.value("sgVarbMax"));
+    
+    // ZH mass in side band
 
     RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
     RooExtendPdf ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
 
-    ext_model_ZHSB.fitTo(dataSetZjetsSB, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
-
-    // Fit ZH mass in signal region
+    // ZH mass in signal region
 
     RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "TMath::Exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
     RooExtendPdf ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
 
-    ext_model_ZHSG.fitTo(dataSetZjetsSG, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+    // Make category to fit signal and sideband
+
+    RooCategory samples("samples", "samples");
+
+    samples.defineType("mcSideband");
+    samples.defineType("mcSignal");
+
+    RooDataSet dataSetCombine("dataSetCombine", "dataSetCombine", variables, Index(samples), Import("mcSideband", dataSetZjetsSB), Import("mcSignal", dataSetZjetsSG), WeightVar(evWeight));
+
+    RooSimultaneous modelCombine("modelCombine", "modelCombine", samples);
+
+    modelCombine.addPdf(ext_model_ZHSB, "mcSideband");
+    modelCombine.addPdf(ext_model_ZHSG, "mcSignal");
+
+    modelCombine.fitTo(dataSetCombine, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     // Set the model of alpha ratio
 
