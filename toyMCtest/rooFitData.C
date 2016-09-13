@@ -171,7 +171,7 @@ void rooFitData(string channel, string catcut){
 
   // Fit jet mass in data side band
 
-  RooRealVar     lamda("lamda", "lamda", myVal.value("lamda"), myVal.value("lamdaMin"), myVal.value("lamdaMax");
+  RooRealVar     lamda("lamda", "lamda", myVal.value("lamda"), myVal.value("lamdaMin"), myVal.value("lamdaMax"));
   RooExponential pdf_sbDataJet("pdf_sbDataJet", "pdf_sbDataJet", mJet, lamda);
   RooExtendPdf   ext_sbDataJet("ext_sbDataJet", "ext_sbDataJet", pdf_sbDataJet, nEv_sbData);
   RooFitResult*  res_sbDataJet = ext_sbDataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
@@ -186,8 +186,17 @@ void rooFitData(string channel, string catcut){
 
   RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nSIGFit, *nSBFit));
 
-  fprintf(stdout, "a_domSb=%f\nb_domSb=%f\na_domSg=%f\nb_domSg=%f\na_subSb=%f\nb_subSb=%f\na_subSg=%f\nb_subSg=%f\na_datSb=%f\nb_datSb=%f\nlamda=%f\n",
-	  a_domSb.getVal(), b_domSb.getVal(), a_domSg.getVal(), b_domSg.getVal(), a_subSb.getVal(), b_subSb.getVal(), a_subSg.getVal(), b_subSg.getVal(), a_datSb.getVal(), b_datSb.getVal(), lamda.getVal());
+  fprintf(stdout, "a_domSb = %.3f +- %.3f\n", a_domSb.getVal(), a_domSb.getError());
+  fprintf(stdout, "b_domSb = %.3f +- %.3f\n", b_domSb.getVal(), b_domSb.getError());
+  fprintf(stdout, "a_domSg = %.3f +- %.3f\n", a_domSg.getVal(), a_domSg.getError());
+  fprintf(stdout, "b_domSg = %.3f +- %.3f\n", b_domSg.getVal(), b_domSg.getError());
+  fprintf(stdout, "a_subSb = %.3f +- %.3f\n", a_subSb.getVal(), a_subSb.getError());
+  fprintf(stdout, "b_subSb = %.3f +- %.3f\n", b_subSb.getVal(), b_subSb.getError());
+  fprintf(stdout, "a_subSg = %.3f +- %.3f\n", a_subSg.getVal(), a_subSg.getError());
+  fprintf(stdout, "b_subSg = %.3f +- %.3f\n", b_subSg.getVal(), b_subSg.getError());
+  fprintf(stdout, "a_datSb = %.3f +- %.3f\n", a_datSb.getVal(), a_datSb.getError());
+  fprintf(stdout, "b_datSb = %.3f +- %.3f\n", b_datSb.getVal(), b_datSb.getError());
+  fprintf(stdout, "lamda   = %.3f +- %.3f\n", lamda  .getVal(), lamda  .getError());
 
   // Plot the results on frame 
 
@@ -201,6 +210,8 @@ void rooFitData(string channel, string catcut){
   RooPlot* frm_sgSubZh       = mZH.frame(); 
   RooPlot* frm_sbDomZh_pull  = mZH.frame();
   RooPlot* frm_sgDomZh_pull  = mZH.frame();
+  RooPlot* frm_sbSubZh_pull  = mZH.frame();
+  RooPlot* frm_sgSubZh_pull  = mZH.frame();
   RooPlot* frm_sbDataZh_pull = mZH.frame();
   RooPlot* frm_sbDataJet_pull= mJet.frame();
 
@@ -354,7 +365,7 @@ void rooFitData(string channel, string catcut){
   c2_up->cd()->SetLogy(1);
 
   frm_sbDataZh->SetTitle("");
-  frm_sbDataZh->SetMinimum(1e-4);
+  frm_sbDataZh->SetMinimum(1e-1);
   frm_sbDataZh->SetMaximum(catcut=="1"?100:10);
   frm_sbDataZh->GetXaxis()->SetTitle("");
   frm_sbDataZh->GetXaxis()->SetLabelOffset(999);
@@ -397,7 +408,7 @@ void rooFitData(string channel, string catcut){
   c3_up->cd()->SetLogy(1);
 
   frm_sbDataJet->SetTitle("");
-  frm_sbDataJet->SetMinimum(1e-2);
+  frm_sbDataJet->SetMinimum(1e-1);
   frm_sbDataJet->SetMaximum(100);
   frm_sbDataJet->GetXaxis()->SetTitle("");
   frm_sbDataJet->GetXaxis()->SetLabelOffset(999);
@@ -428,6 +439,92 @@ void rooFitData(string channel, string catcut){
   c3.Draw();
   c3.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
+  TCanvas c4("c4","",0,0,1000,800);
+  
+  c4.Divide(1,2);
+
+  TPad* c4_up = (TPad*)c4.GetListOfPrimitives()->FindObject("c4_1");
+  TPad* c4_dw = (TPad*)c4.GetListOfPrimitives()->FindObject("c4_2"); 
+
+  c4_up->SetPad(0,1-up_height,1,1);
+  c4_dw->SetPad(0,0,1,dw_height);
+  c4_dw->SetBottomMargin(0.25);
+  c4_up->cd()->SetLogy(1);
+
+  frm_sbSubZh->SetTitle("");
+  frm_sbSubZh->SetMinimum(1e-4);
+  frm_sbSubZh->SetMaximum(10);
+  frm_sbSubZh->GetXaxis()->SetTitle("");
+  frm_sbSubZh->GetXaxis()->SetLabelOffset(999);
+  frm_sbSubZh->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "Subdominant background in sidebands");
+  
+  c4_up->RedrawAxis();
+  c4_dw->cd()->SetLogy(0);
+
+  frm_sbSubZh_pull->addObject(frm_sbSubZh->pullHist(), "P");
+  frm_sbSubZh_pull->SetTitle("");
+  frm_sbSubZh_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sbSubZh_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sbSubZh_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sbSubZh_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sbSubZh_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sbSubZh_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sbSubZh_pull->GetYaxis()->SetNdivisions(505);
+  frm_sbSubZh_pull->SetMinimum(-4);
+  frm_sbSubZh_pull->SetMaximum(4);
+  frm_sbSubZh_pull->Draw();
+
+  c4.Draw();
+  c4.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  TCanvas c5("c5","",0,0,1000,800);
+
+  c5.Divide(1,2);
+
+  TPad* c5_up = (TPad*)c5.GetListOfPrimitives()->FindObject("c5_1");
+  TPad* c5_dw = (TPad*)c5.GetListOfPrimitives()->FindObject("c5_2");
+
+  c5_up->SetPad(0,1-up_height,1,1);
+  c5_dw->SetPad(0,0,1,dw_height);
+  c5_dw->SetBottomMargin(0.25);
+  c5_up->cd()->SetLogy(1);
+
+  frm_sgSubZh->SetTitle("");
+  frm_sgSubZh->SetMinimum(1e-4);
+  frm_sgSubZh->SetMaximum(10);
+  frm_sgSubZh->GetXaxis()->SetTitle("");
+  frm_sgSubZh->GetXaxis()->SetLabelOffset(999);
+  frm_sgSubZh->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "Subdominant in signal region");
+
+  c5_up->RedrawAxis();
+  c5_dw->cd()->SetLogy(0);
+
+  frm_sgSubZh_pull->addObject(frm_sgSubZh->pullHist(), "P");
+  frm_sgSubZh_pull->SetTitle("");
+  frm_sgSubZh_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sgSubZh_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sgSubZh_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sgSubZh_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sgSubZh_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sgSubZh_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sgSubZh_pull->GetYaxis()->SetNdivisions(505);
+  frm_sgSubZh_pull->SetMinimum(-4);
+  frm_sgSubZh_pull->SetMaximum(4);
+  frm_sgSubZh_pull->Draw();
+
+  c5.Draw();
+  c5.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));  
+
   TCanvas cv("cv","",0,0,1000,800);
   TLegend leg(0.60,0.70,0.85,0.80);
 
@@ -450,37 +547,13 @@ void rooFitData(string channel, string catcut){
   cv.Clear();
   cv.cd()->SetLogy(1);
   frm_expected->SetTitle("");
-  frm_expected->SetMinimum(1e-4);
+  frm_expected->SetMinimum(1e-1);
   frm_expected->SetMaximum(catcut=="1"?100:10);
   frm_expected->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
-  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  cv.Clear();
-  cv.cd()->SetLogy(1);
-  frm_sbSubZh->SetTitle("");
-  frm_sbSubZh->SetMinimum(1e-4);
-  frm_sbSubZh->SetMaximum(catcut=="1"?100:10);
-  frm_sbSubZh->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "subdominant background in side band");
-  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  cv.Clear();
-  cv.cd()->SetLogy(1);
-  frm_sgSubZh->SetTitle("");
-  frm_sgSubZh->SetMinimum(1e-4);
-  frm_sgSubZh->SetMaximum(catcut=="1"?100:10);
-  frm_sgSubZh->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "subdominant background in signal region");
   cv.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
