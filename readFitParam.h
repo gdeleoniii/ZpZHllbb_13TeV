@@ -79,8 +79,8 @@ float param::value(string keyWord){
       else if( keyWord == "b_datSbMax" ) thisParam = b_datSb*1.5;
 
       else if( keyWord == "lamda"    ) thisParam = lamda;
-      else if( keyWord == "lamdaMin" ) thisParam = lamda*0.5;
-      else if( keyWord == "lamdaMax" ) thisParam = lamda*1.5;
+      else if( keyWord == "lamdaMin" ) thisParam = lamda*1.5;
+      else if( keyWord == "lamdaMax" ) thisParam = lamda*0.5;
 
       else thisParam = -999;
     
