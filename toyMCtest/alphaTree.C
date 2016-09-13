@@ -52,16 +52,6 @@ void alphaTree(string inputFile, string outputFile, string channel){
 
   float scale = 2512.*readHist::crossSection(outputFile.data())/((TH1F*)f.Get("h_totalEv"))->Integral();
 
-  // Mark minor backgounds
-
-  int minor = 1;
-
-  if( (inputFile.find("WW") != string::npos) ||
-      (inputFile.find("WZ") != string::npos) ||
-      (inputFile.find("ZZ") != string::npos) ||
-      (inputFile.find("ZH") != string::npos) ||
-      (inputFile.find("TT") != string::npos)  ) minor = -1;
-
   // begin of event loop
 
   fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
@@ -112,7 +102,7 @@ void alphaTree(string inputFile, string outputFile, string channel){
     else continue;
 
     prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = isData ? 1 : eventWeight * scale * btagWeight * minor;
+    evweight = isData ? 1 : eventWeight * scale * btagWeight;
 
     tree->Fill();
 

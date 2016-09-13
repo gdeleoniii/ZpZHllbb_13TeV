@@ -3,7 +3,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
-void rooFitData(string channel, string catcut, bool removeMinor=false){
+void rooFitData(string channel, string catcut){
 
   // Suppress all the INFO message
 
@@ -13,59 +13,58 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
 
   // Input files and sum all backgrounds
 
-  TChain* treeData  = new TChain("tree");
-  TChain* treeZjets = new TChain("tree");
+  TChain* tree_Data = new TChain("tree");
+  TChain* tree_Dom  = new TChain("tree");
+  TChain* tree_Sub  = new TChain("tree");
+
+  // Data
 
   if( channel == "ele" ){
 
-    treeData->Add("data/SingleElectron-Run2015D-v1_eleMiniTree.root");
-    treeData->Add("data/SingleElectron-Run2015D-v4_eleMiniTree.root");
+    tree_Data->Add("data/SingleElectron-Run2015D-v1_eleMiniTree.root");
+    tree_Data->Add("data/SingleElectron-Run2015D-v4_eleMiniTree.root");
 
   }
 
   else if( channel == "mu" ){
 
-    treeData->Add("data/SingleMuon-Run2015D-v1_muMiniTree.root");
-    treeData->Add("data/SingleMuon-Run2015D-v4_muMiniTree.root");
+    tree_Data->Add("data/SingleMuon-Run2015D-v1_muMiniTree.root");
+    tree_Data->Add("data/SingleMuon-Run2015D-v4_muMiniTree.root");
 
   }
 
-  else return;
+  // Dominant background
 
-  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
-  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
-  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
-  treeZjets->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
 
-  // To remove minor background contribution in data set (weight is -1)
+  // Subdominant background
 
-  if( removeMinor ){
-
-    treeData->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
-    treeData->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
-
-  }
+  tree_Sub->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
 
   // Define all the variables from the trees
 
-  RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
-  RooRealVar mZH ("mllbb", "M_{ZH}", 750., 4300., "GeV");
+  RooRealVar cat     ("cat", "", 0, 2);
+  RooRealVar mJet    ("prmass", "M_{jet}", 30., 300., "GeV");
+  RooRealVar mZH     ("mllbb", "M_{ZH}", 750., 4300., "GeV");
   RooRealVar evWeight("evweight", "", 0., 1.e3);
 
   // Set the range in zh mass and in jet mass
 
-  mZH .setRange("fullRange", 750., 4300.);
-  mJet.setRange("allRange", 30., 300.);
-  mJet.setRange("lowSB",    30.,  65.);
-  mJet.setRange("highSB",  135., 300.);
-  mJet.setRange("signal",  105., 135.);
+  mZH .setRange("all",    750., 4300.);
+  mJet.setRange("all",    30.,  300.);
+  mJet.setRange("lowSB",  30.,  65.);
+  mJet.setRange("highSB", 135.,  300.);
+  mJet.setRange("signal", 105.,  135.);
 
-  RooBinning binsmZH(71, 750, 4300);
-  RooBinning binsmJet(54, 30, 300);
+  RooBinning bin_mZH (71, 750, 4300);
+  RooBinning bin_mJet(54, 30, 300);
 
   RooArgSet variables(cat, mJet, mZH, evWeight);
 
@@ -75,139 +74,180 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
-  RooDataSet dataSetData   ("dataSetData",    "dataSetData",    variables, Cut(catCut),           WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetDataSB ("dataSetDataSB",  "dataSetDataSB",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetDataSG ("dataSetDataSG",  "dataSetDataSG",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeData));
-  RooDataSet dataSetZjetsSB("dataSetZjetsSB", "dataSetZjetsSB", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*treeZjets));  
-  RooDataSet dataSetZjetsSG("dataSetZjetsSG", "dataSetZjetsSG", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*treeZjets));
+  RooDataSet set_Data  ("set_Data",   "set_Data",   variables, Cut(catCut),           WeightVar(evWeight), Import(*tree_Data));
+  RooDataSet set_sbData("set_sbData", "set_sbData", variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*tree_Data));
+  RooDataSet set_sgData("set_sgData", "set_sgData", variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*tree_Data));
+  RooDataSet set_sbDom ("set_sbDom",  "set_sbDom",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*tree_Dom));  
+  RooDataSet set_sgDom ("set_sgDom",  "set_sgDom",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*tree_Dom));
+  RooDataSet set_sbSub ("set_sbSub",  "set_sbSub",  variables, Cut(catCut && sbCut),  WeightVar(evWeight), Import(*tree_Sub));
+  RooDataSet set_sgSub ("set_sgSub",  "set_sgSub",  variables, Cut(catCut && sigCut), WeightVar(evWeight), Import(*tree_Sub));
   
   // Total events number
 
-  RooRealVar nSBMcEvents  ("nSBMcEvents",   "nSBMcEvents",   0., 1.e9);
-  RooRealVar nSGMcEvents  ("nSGMcEvents",   "nSGMcEvents",   0., 1.e9);
-  RooRealVar nSBDataEvents("nSBDataEvents", "nSBDataEvents", 0., 1.e9);
+  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  0., 1.e9);
+  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  0., 1.e9);
+  RooRealVar nEv_sbSub ("nEv_sbSub",  "nEv_sbSub",  0., 1.e9);
+  RooRealVar nEv_sgSub ("nEv_sgSub",  "nEv_sgSub",  0., 1.e9);
+  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", 0., 1.e9);
 
-  nSBMcEvents.setVal(dataSetZjetsSB.sumEntries());
-  nSGMcEvents.setVal(dataSetZjetsSG.sumEntries());
-  nSBDataEvents.setVal(dataSetDataSB.sumEntries());
+  nEv_sbDom .setVal(set_sbDom.sumEntries());
+  nEv_sgDom .setVal(set_sbDom.sumEntries());
+  nEv_sbSub .setVal(set_sbSub .sumEntries());
+  nEv_sgSub .setVal(set_sgSub .sumEntries());
+  nEv_sbData.setVal(set_sbData.sumEntries());
 
-  // Alpha ratio part  
   // Set fit parameters
 
   param myVal(channel.data(), catcut.data());
 
-  RooRealVar sbVara("sbVara", "sbVara", myVal.value("sbVara"), myVal.value("sbVaraMin"), myVal.value("sbVaraMax"));
-  RooRealVar sbVarb("sbVarb", "sbVarb", myVal.value("sbVarb"), myVal.value("sbVarbMin"), myVal.value("sbVarbMax"));
-  RooRealVar sgVara("sgVara", "sgVara", myVal.value("sgVara"), myVal.value("sgVaraMin"), myVal.value("sgVaraMax"));
-  RooRealVar sgVarb("sgVarb", "sgVarb", myVal.value("sgVarb"), myVal.value("sgVarbMin"), myVal.value("sgVarbMax"));
-  RooRealVar daVara("daVara", "daVara", myVal.value("daVara"), myVal.value("daVaraMin"), myVal.value("daVaraMax"));
-  RooRealVar daVarb("daVarb", "daVarb", myVal.value("daVarb"), myVal.value("daVarbMin"), myVal.value("daVarbMax"));
+  RooRealVar a_domSb("a_domSb", "a_domSb", myVal.value("a_domSb"), myVal.value("a_domSbMin"), myVal.value("a_domSbMax"));
+  RooRealVar b_domSb("b_domSb", "b_domSb", myVal.value("b_domSb"), myVal.value("b_domSbMin"), myVal.value("b_domSbMax"));
+  RooRealVar a_domSg("a_domSg", "a_domSg", myVal.value("a_domSg"), myVal.value("a_domSgMin"), myVal.value("a_domSgMax"));
+  RooRealVar b_domSg("b_domSg", "b_domSg", myVal.value("b_domSg"), myVal.value("b_domSgMin"), myVal.value("b_domSgMax"));
+  RooRealVar a_subSb("a_subSb", "a_subSb", myVal.value("a_subSb"), myVal.value("a_subSbMin"), myVal.value("a_subSbMax"));
+  RooRealVar b_subSb("b_subSb", "b_subSb", myVal.value("b_subSb"), myVal.value("b_subSbMin"), myVal.value("b_subSbMax"));
+  RooRealVar a_subSg("a_subSg", "a_subSg", myVal.value("a_subSg"), myVal.value("a_subSgMin"), myVal.value("a_subSgMax"));
+  RooRealVar b_subSg("b_subSg", "b_subSg", myVal.value("b_subSg"), myVal.value("b_subSgMin"), myVal.value("b_subSgMax"));
+  RooRealVar a_datSb("a_datSb", "a_datSb", myVal.value("a_datSb"), myVal.value("a_datSbMin"), myVal.value("a_datSbMax"));
+  RooRealVar b_datSb("b_datSb", "b_datSb", myVal.value("b_datSb"), myVal.value("b_datSbMin"), myVal.value("b_datSbMax"));
 
-  // ZH mass in MC side band
+  // Create pdf for ZH mass
 
-  RooGenericPdf model_ZHSB("model_ZHSB", "model_ZHSB", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sbVara,sbVarb));
-  RooExtendPdf  ext_model_ZHSB("ext_model_ZHSB", "ext_model_ZHSB", model_ZHSB, nSBMcEvents);
+  RooGenericPdf pdf_sbDomZh ("pdf_sbDomZh",  "pdf_sbDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_domSb,b_domSb));
+  RooGenericPdf pdf_sgDomZh ("pdf_sgDomZh",  "pdf_sgDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_domSg,b_domSg));
+  RooGenericPdf pdf_sbSubZh ("pdf_sbSubZh",  "pdf_sbSubZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_subSb,b_subSb));
+  RooGenericPdf pdf_sgSubZh ("pdf_sgSubZh",  "pdf_sgSubZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_subSg,b_subSg));
+  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_datSb,b_datSb));
 
-  // ZH mass in MC signal region
+  // Extended pdf from RooGenericPdf
 
-  RooGenericPdf model_ZHSG("model_ZHSG", "model_ZHSG", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,sgVara,sgVarb));
-  RooExtendPdf  ext_model_ZHSG("ext_model_ZHSG", "ext_model_ZHSG", model_ZHSG, nSGMcEvents);
+  RooExtendPdf ext_sbDomZh ("ext_sbDomZh",  "ext_sbDomZh",  pdf_sbDomZh,  nEv_sbDom);
+  RooExtendPdf ext_sgDomZh ("ext_sgDomZh",  "ext_sgDomZh",  pdf_sgDomZh,  nEv_sgDom);
+  RooExtendPdf ext_sbSubZh ("ext_sbSubZh",  "ext_sbSubZh",  pdf_sbSubZh,  nEv_sbSub);
+  RooExtendPdf ext_sgSubZh ("ext_sgSubZh",  "ext_sgSubZh",  pdf_sgSubZh,  nEv_sgSub);
+  RooExtendPdf ext_sbDataZh("ext_sbDataZh", "ext_sbDataZh", pdf_sbDataZh, nEv_sbData);
 
-  // ZH mass in data side band 
+  // Make category to fit dominant background signal/sideband and data sideband
 
-  RooGenericPdf model_ZH("model_ZH", "model_ZH", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,daVara,daVarb));
-  RooExtendPdf  ext_model_ZH("ext_model_ZH", "ext_model_ZH", model_ZH, nSBDataEvents);
+  RooCategory cat_domData("cat_domData", "cat_domData");
 
-  // Make category to fit signal and sideband
+  cat_domData.defineType("dom_SB");
+  cat_domData.defineType("dom_SG");
+  cat_domData.defineType("data_SB");
 
-  RooCategory samples("samples", "samples");
+  RooDataSet cmb_domData("cmb_domData", "cmb_domData", variables, Index(cat_domData), Import("dom_SB", set_sbDom), Import("dom_SG", set_sgDom), Import("data_SB", set_sbData), WeightVar(evWeight));
 
-  samples.defineType("mcSideband");
-  samples.defineType("mcSignal");
-  samples.defineType("dataSideband");
+  RooSimultaneous pdf_domData("pdf_domData", "pdf_domData", cat_domData);
 
-  RooDataSet dataSetCombine("dataSetCombine", "dataSetCombine", variables, Index(samples), Import("mcSideband", dataSetZjetsSB), Import("mcSignal", dataSetZjetsSG), Import("dataSideband", dataSetDataSB), WeightVar(evWeight));
+  pdf_domData.addPdf(ext_sbDomZh, "dom_SB");
+  pdf_domData.addPdf(ext_sgDomZh, "dom_SG");
+  pdf_domData.addPdf(ext_sbDataZh,"data_SB");
 
-  RooSimultaneous modelCombine("modelCombine", "modelCombine", samples);
+  RooFitResult* res_domData = pdf_domData.fitTo(cmb_domData, SumW2Error(true), Extended(true), Range("all"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-  modelCombine.addPdf(ext_model_ZHSB, "mcSideband");
-  modelCombine.addPdf(ext_model_ZHSG, "mcSignal");
-  modelCombine.addPdf(ext_model_ZH,   "dataSideband");
+  // Make category to fit subdominant background signal/sideband
 
-  RooFitResult* combineResult = modelCombine.fitTo(dataSetCombine, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooCategory cat_sub("cat_sub", "cat_sub");
+
+  cat_sub.defineType("sub_SB");
+  cat_sub.defineType("sub_SG");
+
+  RooDataSet cmb_sub("cmb_sub", "cmb_sub", variables, Index(cat_sub), Import("sub_SB", set_sbSub), Import("sub_SG", set_sgSub), WeightVar(evWeight)); 
+
+  RooSimultaneous pdf_sub("pdf_sub", "pdf_sub", cat_sub);
+
+  pdf_sub.addPdf(ext_sbSubZh, "sub_SB");
+  pdf_sub.addPdf(ext_sgSubZh, "sub_SG");
+
+  RooFitResult* res_sub = pdf_sub.fitTo(cmb_sub, SumW2Error(true), Extended(true), Range("all"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
 
-  float constant = ext_model_ZHSB.createIntegral(mZH)->getVal()/ext_model_ZHSG.createIntegral(mZH)->getVal();
+  float constant = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
 
-  RooGenericPdf alpha_display("alpha_display", "alpha_display", Form("%f*exp(-@0/(%f+%f*@0))/exp(-@0/(%f+%f*@0))", constant, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), mZH);
-  RooFormulaVar model_alpha("model_alpha", Form("%f*exp(-mllbb/(%f+%f*mllbb))/exp(-mllbb/(%f+%f*mllbb))", constant, sgVara.getVal(), sgVarb.getVal(), sbVara.getVal(), sbVarb.getVal()), mZH);
-  RooEffProd    model_predicted("model_predicted", "model_predicted", model_ZH, model_alpha);
+  RooGenericPdf alpha_display("alpha_display", "alpha_display", Form("%f*exp(-@0/(@1+@2*@0))/exp(-@0/(@3+@4*@0))", constant), RooArgSet(mZH,a_domSg,b_domSg,a_domSb,b_domSb)); 
+  RooFormulaVar pdf_alpha("pdf_alpha", Form("%f*exp(-mllbb/(%f+%f*mllbb))/exp(-mllbb/(%f+%f*mllbb))", constant, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal()), mZH);
+  RooEffProd    pdf_predicted("pdf_predicted", "pdf_predicted", pdf_sbDataZh, pdf_alpha);
 
   // Fit jet mass in data side band
 
   RooRealVar     lamda("lamda", "lamda", -0.015, -0.04, -0.01);
-  RooExponential model_mJetSB("model_mJetSB", "model_mJetSB", mJet, lamda);
-  RooExtendPdf   ext_model_mJetSB("ext_model_mJetSB", "ext_model_mJetSB", model_mJetSB, nSBDataEvents);
-  RooFitResult*  mJetSB_result = ext_model_mJetSB.fitTo(dataSetDataSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooExponential pdf_sbDataJet("pdf_sbDataJet", "pdf_sbDataJet", mJet, lamda);
+  RooExtendPdf   ext_sbDataJet("ext_sbDataJet", "ext_sbDataJet", pdf_sbDataJet, nEv_sbData);
+  RooFitResult*  res_sbDataJet = ext_sbDataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("lowSB,highSB"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Normalize factor to normalize the background in signal region of data
 
-  RooAbsReal* nSIGFit = model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
-  RooAbsReal* nSBFit  = model_mJetSB.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
+  RooAbsReal* nSIGFit = ext_sbDataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("signal"));
+  RooAbsReal* nSBFit  = ext_sbDataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("lowSB,highSB"));
 
   RooRealVar normFactor("normFactor", "normFactor", 0., 1.e9);
-  normFactor.setVal(nSBDataEvents.getVal()*(nSIGFit->getVal()/nSBFit->getVal()));
+  normFactor.setVal(nEv_sbData.getVal()*(nSIGFit->getVal()/nSBFit->getVal()));
 
-  fprintf(stdout, "sbVara=%f\nsbVarb=%f\nsgVara=%f\nsgVarb=%f\ndaVara=%f\ndaVarb=%f\nlamda=%f\n", sbVara.getVal(), sbVarb.getVal(), sgVara.getVal(), sgVarb.getVal(), daVara.getVal(), daVarb.getVal(), lamda.getVal());
+  RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nSIGFit, *nSBFit));
+
+  fprintf(stdout, "a_domSb=%f\nb_domSb=%f\na_domSg=%f\nb_domSg=%f\na_datSb=%f\nb_datSb=%f\nlamda=%f\n", a_domSb.getVal(), b_domSb.getVal(), a_domSg.getVal(), b_domSg.getVal(), a_datSb.getVal(), b_datSb.getVal(), lamda.getVal());
 
   // Plot the results on frame 
 
-  RooPlot* mcSBmZhFrame        = mZH.frame();
-  RooPlot* mcSGmZhFrame        = mZH.frame();
-  RooPlot* alphaFrame          = mZH.frame();
-  RooPlot* dataSBmZhFrame      = mZH.frame();
-  RooPlot* dataSBmJetFrame     = mJet.frame();
-  RooPlot* expectedFrame       = mZH.frame(); 
-  RooPlot* mcSBmZhPullFrame    = mZH.frame();
-  RooPlot* mcSGmZhPullFrame    = mZH.frame();
-  RooPlot* dataSBmZhPullFrame  = mZH.frame();
-  RooPlot* dataSBmJetPullFrame = mJet.frame();
+  RooPlot* frm_sbDomZh       = mZH.frame();
+  RooPlot* frm_sgDomZh       = mZH.frame();
+  RooPlot* frm_alpha         = mZH.frame();
+  RooPlot* frm_sbDataZh      = mZH.frame();
+  RooPlot* frm_sbDataJet     = mJet.frame();
+  RooPlot* frm_expected      = mZH.frame();
+  RooPlot* frm_sbSubZh       = mZH.frame();
+  RooPlot* frm_sgSubZh       = mZH.frame(); 
+  RooPlot* frm_sbDomZh_pull  = mZH.frame();
+  RooPlot* frm_sgDomZh_pull  = mZH.frame();
+  RooPlot* frm_sbDataZh_pull = mZH.frame();
+  RooPlot* frm_sbDataJet_pull= mJet.frame();
 
-  dataSetCombine.plotOn(mcSBmZhFrame, Cut("samples==samples::mcSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(mcSBmZhFrame, Slice(samples, "mcSideband"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  dataSetCombine.plotOn(mcSBmZhFrame, Cut("samples==samples::mcSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(mcSBmZhFrame, Slice(samples, "mcSideband"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
+  cmb_domData.plotOn(frm_sbDomZh, Cut("cat_domData==cat_domData::dom_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sbDomZh, Slice(cat_domData,"dom_SB"), ProjWData(cat_domData,cmb_domData), VisualizeError(*res_domData,1,false), FillStyle(3002));
+  cmb_domData.plotOn(frm_sbDomZh, Cut("cat_domData==cat_domData::dom_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sbDomZh, Slice(cat_domData,"dom_SB"), ProjWData(cat_domData,cmb_domData), LineColor(kBlue));
 
-  dataSetCombine.plotOn(mcSGmZhFrame, Cut("samples==samples::mcSignal"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(mcSGmZhFrame, Slice(samples, "mcSignal"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  dataSetCombine.plotOn(mcSGmZhFrame, Cut("samples==samples::mcSignal"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(mcSGmZhFrame, Slice(samples, "mcSignal"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
+  cmb_domData.plotOn(frm_sgDomZh, Cut("cat_domData==cat_domData::dom_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sgDomZh, Slice(cat_domData,"dom_SG"), ProjWData(cat_domData,cmb_domData), VisualizeError(*res_domData,1,false), FillStyle(3002));
+  cmb_domData.plotOn(frm_sgDomZh, Cut("cat_domData==cat_domData::dom_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sgDomZh, Slice(cat_domData,"dom_SG"), ProjWData(cat_domData,cmb_domData), LineColor(kBlue));
+
+  alpha_display.plotOn(frm_alpha, VisualizeError(*res_domData,1,false), FillStyle(3002), FillColor(kBlack));
+  alpha_display.plotOn(frm_alpha, LineColor(kBlack));
+  ext_sbDomZh  .plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
+  ext_sgDomZh  .plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
   
-  ext_model_ZHSB.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
-  ext_model_ZHSG.plotOn(alphaFrame, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
-  alpha_display .plotOn(alphaFrame, VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  alpha_display .plotOn(alphaFrame, LineColor(kBlack));
-
-  dataSetCombine.plotOn(dataSBmZhFrame, Cut("samples==samples::dataSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(dataSBmZhFrame, Slice(samples, "dataSideband"), ProjWData(samples, dataSetCombine), VisualizeError(*combineResult, 1, false), FillStyle(3002));
-  dataSetCombine.plotOn(dataSBmZhFrame, Cut("samples==samples::dataSideband"), DataError(RooAbsData::SumW2), Binning(binsmZH));
-  modelCombine  .plotOn(dataSBmZhFrame, Slice(samples, "dataSideband"), ProjWData(samples, dataSetCombine), LineColor(kBlue));
-
-  dataSetDataSB   .plotOn(dataSBmJetFrame, DataError(RooAbsData::SumW2), Binning(binsmJet));
-  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
-  dataSetDataSB   .plotOn(dataSBmJetFrame, DataError(RooAbsData::SumW2), Binning(binsmJet));
-  ext_model_mJetSB.plotOn(dataSBmJetFrame, Range("allRange"));
-
-  dataSetDataSG.plotOn(expectedFrame, DataError(RooAbsData::SumW2), Binning(binsmZH));
-  model_predicted.plotOn(expectedFrame, VisualizeError(*combineResult, 1, false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
-  dataSetDataSG.plotOn(expectedFrame, DataError(RooAbsData::SumW2), Binning(binsmZH));
-  model_predicted.plotOn(expectedFrame, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
+  cmb_domData.plotOn(frm_sbDataZh, Cut("cat_domData==cat_domData::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sbDataZh, Slice(cat_domData,"data_SB"), ProjWData(cat_domData,cmb_domData), VisualizeError(*res_domData,1,false), FillStyle(3002));
+  cmb_domData.plotOn(frm_sbDataZh, Cut("cat_domData==cat_domData::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_domData.plotOn(frm_sbDataZh, Slice(cat_domData,"data_SB"), ProjWData(cat_domData,cmb_domData), LineColor(kBlue));
+  
+  set_sbData   .plotOn(frm_sbDataJet, DataError(RooAbsData::SumW2), Binning(bin_mJet));
+  ext_sbDataJet.plotOn(frm_sbDataJet, Range("all"), VisualizeError(*res_sbDataJet,1,false), FillStyle(3002));
+  set_sbData   .plotOn(frm_sbDataJet, DataError(RooAbsData::SumW2), Binning(bin_mJet));
+  ext_sbDataJet.plotOn(frm_sbDataJet, Range("all"));
+  
+  set_sgData   .plotOn(frm_expected, DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_predicted.plotOn(frm_expected, VisualizeError(*res_domData,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
+  set_sgData   .plotOn(frm_expected, DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_predicted.plotOn(frm_expected, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
+  
+  cmb_sub.plotOn(frm_sbSubZh, Cut("cat_sub==cat_sub::sub_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_sub.plotOn(frm_sbSubZh, Slice(cat_sub,"sub_SB"), ProjWData(cat_sub,cmb_sub), VisualizeError(*res_sub,1,false), FillStyle(3002));
+  cmb_sub.plotOn(frm_sbSubZh, Cut("cat_sub==cat_sub::sub_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_sub.plotOn(frm_sbSubZh, Slice(cat_sub,"sub_SB"), ProjWData(cat_sub,cmb_sub), LineColor(kBlue));
+ 
+  cmb_sub.plotOn(frm_sgSubZh, Cut("cat_sub==cat_sub::sub_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_sub.plotOn(frm_sgSubZh, Slice(cat_sub,"sub_SG"), ProjWData(cat_sub,cmb_sub), VisualizeError(*res_sub,1,false), FillStyle(3002));
+  cmb_sub.plotOn(frm_sgSubZh, Cut("cat_sub==cat_sub::sub_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
+  pdf_sub.plotOn(frm_sgSubZh, Slice(cat_sub,"sub_SG"), ProjWData(cat_sub,cmb_sub), LineColor(kBlue));
 
   // Output the results
 
   TLatex lar;
+
   lar.SetTextSize(0.03);
   lar.SetLineWidth(5);
 
@@ -226,12 +266,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c0_dw->SetBottomMargin(0.25);
   c0_up->cd()->SetLogy(1);
 
-  mcSBmZhFrame->SetTitle("");
-  mcSBmZhFrame->SetMinimum(1e-4);
-  mcSBmZhFrame->SetMaximum(catcut=="1"?1000:100);
-  mcSBmZhFrame->GetXaxis()->SetTitle("");
-  mcSBmZhFrame->GetXaxis()->SetLabelOffset(999);
-  mcSBmZhFrame->Draw();
+  frm_sbDomZh->SetTitle("");
+  frm_sbDomZh->SetMinimum(1e-4);
+  frm_sbDomZh->SetMaximum(catcut=="1"?1000:100);
+  frm_sbDomZh->GetXaxis()->SetTitle("");
+  frm_sbDomZh->GetXaxis()->SetLabelOffset(999);
+  frm_sbDomZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
@@ -241,18 +281,18 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c0_up->RedrawAxis();
   c0_dw->cd()->SetLogy(0);
 
-  mcSBmZhPullFrame->addObject(mcSBmZhFrame->pullHist(), "P");
-  mcSBmZhPullFrame->SetTitle("");
-  mcSBmZhPullFrame->GetYaxis()->SetTitle("Pulls");
-  mcSBmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
-  mcSBmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
-  mcSBmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
-  mcSBmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
-  mcSBmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
-  mcSBmZhPullFrame->GetYaxis()->SetNdivisions(505);
-  mcSBmZhPullFrame->SetMinimum(-4);
-  mcSBmZhPullFrame->SetMaximum(4);
-  mcSBmZhPullFrame->Draw();
+  frm_sbDomZh_pull->addObject(frm_sbDomZh->pullHist(), "P");
+  frm_sbDomZh_pull->SetTitle("");
+  frm_sbDomZh_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sbDomZh_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sbDomZh_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sbDomZh_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sbDomZh_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sbDomZh_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sbDomZh_pull->GetYaxis()->SetNdivisions(505);
+  frm_sbDomZh_pull->SetMinimum(-4);
+  frm_sbDomZh_pull->SetMaximum(4);
+  frm_sbDomZh_pull->Draw();
 
   c0.Draw();
   c0.Print(Form("rooFit_forData_%s_cat%s.pdf(", channel.data(), catcut.data()));
@@ -269,12 +309,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c1_dw->SetBottomMargin(0.25);
   c1_up->cd()->SetLogy(1);
 
-  mcSGmZhFrame->SetTitle("");
-  mcSGmZhFrame->SetMinimum(1e-4);
-  mcSGmZhFrame->SetMaximum(catcut=="1"?100:10);
-  mcSGmZhFrame->GetXaxis()->SetTitle("");
-  mcSGmZhFrame->GetXaxis()->SetLabelOffset(999);
-  mcSGmZhFrame->Draw();
+  frm_sgDomZh->SetTitle("");
+  frm_sgDomZh->SetMinimum(1e-4);
+  frm_sgDomZh->SetMaximum(catcut=="1"?100:10);
+  frm_sgDomZh->GetXaxis()->SetTitle("");
+  frm_sgDomZh->GetXaxis()->SetLabelOffset(999);
+  frm_sgDomZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
@@ -284,18 +324,18 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c1_up->RedrawAxis();
   c1_dw->cd()->SetLogy(0);
 
-  mcSGmZhPullFrame->addObject(mcSGmZhFrame->pullHist(), "P");
-  mcSGmZhPullFrame->SetTitle("");
-  mcSGmZhPullFrame->GetYaxis()->SetTitle("Pulls");
-  mcSGmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
-  mcSGmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
-  mcSGmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
-  mcSGmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
-  mcSGmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
-  mcSGmZhPullFrame->GetYaxis()->SetNdivisions(505);
-  mcSGmZhPullFrame->SetMinimum(-4);
-  mcSGmZhPullFrame->SetMaximum(4);
-  mcSGmZhPullFrame->Draw();
+  frm_sgDomZh_pull->addObject(frm_sgDomZh->pullHist(), "P");
+  frm_sgDomZh_pull->SetTitle("");
+  frm_sgDomZh_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sgDomZh_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sgDomZh_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sgDomZh_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sgDomZh_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sgDomZh_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sgDomZh_pull->GetYaxis()->SetNdivisions(505);
+  frm_sgDomZh_pull->SetMinimum(-4);
+  frm_sgDomZh_pull->SetMaximum(4);
+  frm_sgDomZh_pull->Draw();
 
   c1.Draw();
   c1.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));  
@@ -312,12 +352,12 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c2_dw->SetBottomMargin(0.25);
   c2_up->cd()->SetLogy(1);
 
-  dataSBmZhFrame->SetTitle("");
-  dataSBmZhFrame->SetMinimum(1e-4);
-  dataSBmZhFrame->SetMaximum(catcut=="1"?100:10);
-  dataSBmZhFrame->GetXaxis()->SetTitle("");
-  dataSBmZhFrame->GetXaxis()->SetLabelOffset(999);
-  dataSBmZhFrame->Draw();
+  frm_sbDataZh->SetTitle("");
+  frm_sbDataZh->SetMinimum(1e-4);
+  frm_sbDataZh->SetMaximum(catcut=="1"?100:10);
+  frm_sbDataZh->GetXaxis()->SetTitle("");
+  frm_sbDataZh->GetXaxis()->SetLabelOffset(999);
+  frm_sbDataZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
@@ -327,18 +367,18 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c2_up->RedrawAxis();
   c2_dw->cd()->SetLogy(0);
 
-  dataSBmZhPullFrame->addObject(dataSBmZhFrame->pullHist(), "P");
-  dataSBmZhPullFrame->SetTitle("");
-  dataSBmZhPullFrame->GetYaxis()->SetTitle("Pulls");
-  dataSBmZhPullFrame->GetYaxis()->SetTitleOffset(0.25);
-  dataSBmZhPullFrame->GetXaxis()->SetLabelSize(0.125);
-  dataSBmZhPullFrame->GetXaxis()->SetTitleSize(0.125);
-  dataSBmZhPullFrame->GetYaxis()->SetLabelSize(0.125);
-  dataSBmZhPullFrame->GetYaxis()->SetTitleSize(0.125);
-  dataSBmZhPullFrame->GetYaxis()->SetNdivisions(505);
-  dataSBmZhPullFrame->SetMinimum(-4);
-  dataSBmZhPullFrame->SetMaximum(4);
-  dataSBmZhPullFrame->Draw();
+  frm_sbDataZh_pull->addObject(frm_sbDataZh->pullHist(), "P");
+  frm_sbDataZh_pull->SetTitle("");
+  frm_sbDataZh_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sbDataZh_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sbDataZh_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sbDataZh_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sbDataZh_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sbDataZh_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sbDataZh_pull->GetYaxis()->SetNdivisions(505);
+  frm_sbDataZh_pull->SetMinimum(-4);
+  frm_sbDataZh_pull->SetMaximum(4);
+  frm_sbDataZh_pull->Draw();
 
   c2.Draw();
   c2.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
@@ -355,34 +395,34 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   c3_dw->SetBottomMargin(0.25);
   c3_up->cd()->SetLogy(1);
 
-  dataSBmJetFrame->SetTitle("");
-  dataSBmJetFrame->SetMinimum(1e-2);
-  dataSBmJetFrame->SetMaximum(100);
-  dataSBmJetFrame->GetXaxis()->SetTitle("");
-  dataSBmJetFrame->GetXaxis()->SetLabelOffset(999);
-  dataSBmJetFrame->Draw();
+  frm_sbDataJet->SetTitle("");
+  frm_sbDataJet->SetMinimum(1e-2);
+  frm_sbDataJet->SetMaximum(100);
+  frm_sbDataJet->GetXaxis()->SetTitle("");
+  frm_sbDataJet->GetXaxis()->SetLabelOffset(999);
+  frm_sbDataJet->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
-  lar.DrawLatexNDC(0.15, 0.78, Form("Normalization factor: %.3f", normFactor.getVal()));
+  lar.DrawLatexNDC(0.15, 0.78, Form("Normalization factor: %.3f#pm%.3f", normFactor.getVal(), normFormula.getPropagatedError(*res_sbDataJet)));
   
   c3_up->RedrawAxis();
   c3_dw->cd()->SetLogy(0);
 
-  dataSBmJetPullFrame->addObject(dataSBmJetFrame->pullHist(), "P");
-  dataSBmJetPullFrame->SetTitle("");
-  dataSBmJetPullFrame->GetYaxis()->SetTitle("Pulls");
-  dataSBmJetPullFrame->GetYaxis()->SetTitleOffset(0.25);
-  dataSBmJetPullFrame->GetXaxis()->SetLabelSize(0.125);
-  dataSBmJetPullFrame->GetXaxis()->SetTitleSize(0.125);
-  dataSBmJetPullFrame->GetYaxis()->SetLabelSize(0.125);
-  dataSBmJetPullFrame->GetYaxis()->SetTitleSize(0.125);
-  dataSBmJetPullFrame->GetYaxis()->SetNdivisions(505);
-  dataSBmJetPullFrame->SetMinimum(-4);
-  dataSBmJetPullFrame->SetMaximum(4);
-  dataSBmJetPullFrame->Draw();
+  frm_sbDataJet_pull->addObject(frm_sbDataJet->pullHist(), "P");
+  frm_sbDataJet_pull->SetTitle("");
+  frm_sbDataJet_pull->GetYaxis()->SetTitle("Pulls");
+  frm_sbDataJet_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_sbDataJet_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_sbDataJet_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_sbDataJet_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_sbDataJet_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_sbDataJet_pull->GetYaxis()->SetNdivisions(505);
+  frm_sbDataJet_pull->SetMinimum(-4);
+  frm_sbDataJet_pull->SetMaximum(4);
+  frm_sbDataJet_pull->Draw();
 
   c3.Draw();
   c3.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
@@ -391,16 +431,16 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
   TLegend leg(0.60,0.70,0.85,0.80);
 
   cv.cd();
-  alphaFrame->SetTitle("");
-  alphaFrame->GetYaxis()->SetTitle("Normalization");
-  alphaFrame->GetYaxis()->SetTitleOffset(1.3);
-  alphaFrame->Draw();
-  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(0)), "bkg. fit in sidebands", "l");
-  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(1)), "bkg. fit in signal region", "l");
-  leg.AddEntry(alphaFrame->findObject(alphaFrame->nameOf(2)), "#alpha function (y=exp(#frac{-x}{a+bx}))", "l");
+  frm_alpha->SetTitle("");
+  frm_alpha->GetYaxis()->SetTitle("Normalization");
+  frm_alpha->GetYaxis()->SetTitleOffset(1.3);
+  frm_alpha->Draw();
+  leg.AddEntry(frm_alpha->findObject(frm_alpha->nameOf(2)), "bkg. fit in sidebands", "l");
+  leg.AddEntry(frm_alpha->findObject(frm_alpha->nameOf(3)), "bkg. fit in signal region", "l");
+  leg.AddEntry(frm_alpha->findObject(frm_alpha->nameOf(1)), "#alpha function (y=exp(#frac{-x}{a+bx}))", "l");
   leg.SetBorderSize(0);
   leg.Draw();
-  alphaFrame->addObject(&leg);
+  frm_alpha->addObject(&leg);
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
@@ -408,14 +448,46 @@ void rooFitData(string channel, string catcut, bool removeMinor=false){
 
   cv.Clear();
   cv.cd()->SetLogy(1);
-  expectedFrame->SetTitle("");
-  expectedFrame->SetMinimum(1e-4);
-  expectedFrame->SetMaximum(catcut=="1"?100:10);
-  expectedFrame->Draw();
+  frm_expected->SetTitle("");
+  frm_expected->SetMinimum(1e-4);
+  frm_expected->SetMaximum(catcut=="1"?100:10);
+  frm_expected->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  cv.Clear();
+  cv.cd()->SetLogy(1);
+  frm_sbSubZh->SetTitle("");
+  frm_sbSubZh->SetMinimum(1e-4);
+  frm_sbSubZh->SetMaximum(catcut=="1"?100:10);
+  frm_sbSubZh->Draw();
+  leg.Clear();
+  leg.AddEntry(frm_sbSubZh->findObject(frm_sbSubZh->nameOf(0)), "data", "lp");
+  leg.AddEntry(frm_sbSubZh->findObject(frm_sbSubZh->nameOf(1)), "subdominant", "lp");
+  leg.Draw();
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "subdominant background in side band");
+  cv.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  cv.Clear();
+  cv.cd()->SetLogy(1);
+  frm_sgSubZh->SetTitle("");
+  frm_sgSubZh->SetMinimum(1e-4);
+  frm_sgSubZh->SetMaximum(catcut=="1"?100:10);
+  frm_sgSubZh->Draw();
+  leg.Clear();
+  leg.AddEntry(frm_sgSubZh->findObject(frm_sgSubZh->nameOf(0)), "data", "lp");
+  leg.AddEntry(frm_sgSubZh->findObject(frm_sgSubZh->nameOf(1)), "subdominant", "lp");
+  leg.Draw();
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "subdominant background in signal region");
   cv.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
