@@ -71,15 +71,15 @@ void rooFitData(string channel, string catcut){
 
   // Create a dataset from a tree to process an unbinned likelihood fitting
 
-  RooDataSet set_Data  ("set_Data",   "set_Data",   RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut),           Import(*tree_Data));
-  RooDataSet set_sbData("set_sbData", "set_sbData", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Data));
-  RooDataSet set_sgData("set_sgData", "set_sgData", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Data));
-  RooDataSet set_sbDom ("set_sbDom",  "set_sbDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Dom));  
-  RooDataSet set_sgDom ("set_sgDom",  "set_sgDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Dom));
-  RooDataSet set_sbSub1("set_sbSub1", "set_sbSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Sub1));
-  RooDataSet set_sgSub1("set_sgSub1", "set_sgSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Sub1));
-  RooDataSet set_sbSub2("set_sbSub2", "set_sbSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Sub2));
-  RooDataSet set_sgSub2("set_sgSub2", "set_sgSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Sub2));  
+  RooDataSet set_Data  ("set_Data",   "set_Data",   RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut),           Import(*tree_Data), WeightVar(evWeight));
+  RooDataSet set_sbData("set_sbData", "set_sbData", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Data), WeightVar(evWeight));
+  RooDataSet set_sgData("set_sgData", "set_sgData", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Data), WeightVar(evWeight));
+  RooDataSet set_sbDom ("set_sbDom",  "set_sbDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Dom),  WeightVar(evWeight));  
+  RooDataSet set_sgDom ("set_sgDom",  "set_sgDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Dom),  WeightVar(evWeight));
+  RooDataSet set_sbSub1("set_sbSub1", "set_sbSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Sub1), WeightVar(evWeight));
+  RooDataSet set_sgSub1("set_sgSub1", "set_sgSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Sub1), WeightVar(evWeight));
+  RooDataSet set_sbSub2("set_sbSub2", "set_sbSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sbCut),  Import(*tree_Sub2), WeightVar(evWeight));
+  RooDataSet set_sgSub2("set_sgSub2", "set_sgSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(catCut && sigCut), Import(*tree_Sub2), WeightVar(evWeight));  
 
   // Total events number
 
@@ -173,10 +173,6 @@ void rooFitData(string channel, string catcut){
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
 
-  float constant = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
-
-  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*exp(-@0/(@1+@2*@0))/exp(-@0/(@3+@4*@0))", constant), RooArgSet(mZH,a_domSg,b_domSg,a_domSb,b_domSb)); 
-
   RooArgSet myArgSet(mZH);
 
   myArgSet.add(a_dataSb);
@@ -190,7 +186,12 @@ void rooFitData(string channel, string catcut){
   myArgSet.add(a_sub1Sg);
   myArgSet.add(a_sub2Sg);
 
-  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(exp(-@0/(@1+@2*@0))-exp(-@0/@3)-exp(-@0/@4))*%f*exp(-@0/(@5+@6*@0))/exp(-@0/(@7+@8*@0))+exp(-@0/@9)+exp(-@0/@10)",constant), myArgSet);
+  float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
+
+  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*exp(-@0/(@1+@2*@0))/exp(-@0/(@3+@4*@0))", alpConst), RooArgSet(mZH,a_domSg,b_domSg,a_domSb,b_domSb));
+
+  //RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("%f*exp(-@0/(@1+@2*@0))*%f*exp(-@0/(@5+@6*@0))/exp(-@0/(@7+@8*@0))", nEv_sbData.getVal(),alpConst), myArgSet);
+  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(%f*exp(-@0/(@1+@2*@0))-%f*exp(-@0/@3)-%f*exp(-@0/@4))*%f*exp(-@0/(@5+@6*@0))/exp(-@0/(@7+@8*@0))+%f*exp(-@0/@9)+%f*exp(-@0/@10)", nEv_sbData.getVal(), nEv_sbSub1.getVal(), nEv_sbSub2.getVal(), alpConst, nEv_sgSub1.getVal(), nEv_sgSub2.getVal()), myArgSet);
 
   // Fit jet mass in data side band
 
@@ -209,17 +210,24 @@ void rooFitData(string channel, string catcut){
 
   RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nSIGFit, *nSBFit));
 
-  fprintf(stdout, "a_domSb  = %.3f +- %.3f\n", a_domSb .getVal(), a_domSb .getError());
-  fprintf(stdout, "b_domSb  = %.3f +- %.3f\n", b_domSb .getVal(), b_domSb .getError());
-  fprintf(stdout, "a_domSg  = %.3f +- %.3f\n", a_domSg .getVal(), a_domSg .getError());
-  fprintf(stdout, "b_domSg  = %.3f +- %.3f\n", b_domSg .getVal(), b_domSg .getError());
-  fprintf(stdout, "a_dataSb = %.3f +- %.3f\n", a_dataSb.getVal(), a_dataSb.getError());
-  fprintf(stdout, "b_dataSb = %.3f +- %.3f\n", b_dataSb.getVal(), b_dataSb.getError());
-  fprintf(stdout, "a_sub1Sb = %.3f +- %.3f\n", a_sub1Sb.getVal(), a_sub1Sb.getError());
-  fprintf(stdout, "a_sub1Sg = %.3f +- %.3f\n", a_sub1Sg.getVal(), a_sub1Sg.getError());
-  fprintf(stdout, "a_sub2Sb = %.3f +- %.3f\n", a_sub2Sb.getVal(), a_sub2Sb.getError());
-  fprintf(stdout, "a_sub2Sg = %.3f +- %.3f\n", a_sub2Sg.getVal(), a_sub2Sg.getError());
-  fprintf(stdout, "lamda    = %.3f +- %.3f\n", lamda   .getVal(), lamda   .getError());
+  fprintf(stdout, "nEv_sbDom  = %.3f +- %.3f\n", nEv_sbDom .getVal(), nEv_sbDom .getError());
+  fprintf(stdout, "nEv_sgDom  = %.3f +- %.3f\n", nEv_sgDom .getVal(), nEv_sgDom .getError());
+  fprintf(stdout, "nEv_sbSub1 = %.3f +- %.3f\n", nEv_sbSub1.getVal(), nEv_sbSub1.getError());
+  fprintf(stdout, "nEv_sgSub1 = %.3f +- %.3f\n", nEv_sgSub1.getVal(), nEv_sgSub1.getError());
+  fprintf(stdout, "nEv_sbSub2 = %.3f +- %.3f\n", nEv_sbSub2.getVal(), nEv_sbSub2.getError());
+  fprintf(stdout, "nEv_sgSub2 = %.3f +- %.3f\n", nEv_sgSub2.getVal(), nEv_sgSub2.getError());
+  fprintf(stdout, "nEv_sbData = %.3f +- %.3f\n", nEv_sbData.getVal(), nEv_sbData.getError());
+  fprintf(stdout, "a_domSb    = %.3f +- %.3f\n", a_domSb   .getVal(), a_domSb   .getError());
+  fprintf(stdout, "b_domSb    = %.3f +- %.3f\n", b_domSb   .getVal(), b_domSb   .getError());
+  fprintf(stdout, "a_domSg    = %.3f +- %.3f\n", a_domSg   .getVal(), a_domSg   .getError());
+  fprintf(stdout, "b_domSg    = %.3f +- %.3f\n", b_domSg   .getVal(), b_domSg   .getError());
+  fprintf(stdout, "a_dataSb   = %.3f +- %.3f\n", a_dataSb  .getVal(), a_dataSb  .getError());
+  fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
+  fprintf(stdout, "a_sub1Sb   = %.3f +- %.3f\n", a_sub1Sb  .getVal(), a_sub1Sb  .getError());
+  fprintf(stdout, "a_sub1Sg   = %.3f +- %.3f\n", a_sub1Sg  .getVal(), a_sub1Sg  .getError());
+  fprintf(stdout, "a_sub2Sb   = %.3f +- %.3f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
+  fprintf(stdout, "a_sub2Sg   = %.3f +- %.3f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
+  fprintf(stdout, "lamda      = %.3f +- %.3f\n", lamda     .getVal(), lamda     .getError());
 
   // Plot the results on frame 
 
@@ -288,7 +296,7 @@ void rooFitData(string channel, string catcut){
   ext_sbDataJet.plotOn(frm_sbDataJet, Range("all"));
 
   set_sgData .plotOn(frm_expected, DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_predict.plotOn(frm_expected, VisualizeError(*res_combine,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
+  //pdf_predict.plotOn(frm_expected, VisualizeError(*res_combine,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
   set_sgData .plotOn(frm_expected, DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_predict.plotOn(frm_expected, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
