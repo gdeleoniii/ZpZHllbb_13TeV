@@ -24,19 +24,31 @@ param::param(string flavor, string btag){
 
 float param::value(string keyWord){
 
-  ifstream textFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/mZhFitParam.txt");
+  ifstream tFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/mZhFitParam.txt");
 
-  string textFlavor, textBtag;
-  float  a_domSb, b_domSb, a_domSg, b_domSg, a_subSb, b_subSb, a_subSg, b_subSg, a_datSb, b_datSb, lamda;
-  float  thisParam;
+  string tFlavor, tBtag;
+  float a_domSb, b_domSb, a_domSg, b_domSg, a_sub1Sb, a_sub1Sg, a_sub2Sb, a_sub2Sg, a_dataSb, b_dataSb, j_data, thisParam;
 
   // ignore first line of text file
 
-  textFile.ignore(1000,'\n');
+  tFile.ignore(1000,'\n');
 
-  while( textFile >> textFlavor >> textBtag >> a_domSb >> b_domSb >> a_domSg >> b_domSg >> a_subSb >> b_subSb >> a_subSg >> b_subSg >> a_datSb >> b_datSb >> lamda ){
+  while( tFile    >> 
+	 tFlavor  >> 
+	 tBtag    >> 
+	 a_domSb  >> 
+	 b_domSb  >> 
+	 a_domSg  >> 
+	 b_domSg  >> 
+	 a_sub1Sb >> 
+	 a_sub1Sg >> 
+	 a_sub2Sb >> 
+	 a_sub2Sg >> 
+	 a_dataSb >> 
+	 b_dataSb >> 
+	 j_data   ){
   
-    if( flavor_ == textFlavor && btag_ == textBtag ){
+    if( flavor_ == tFlavor && btag_ == tBtag ){
     
       if     ( keyWord == "a_domSb"    ) thisParam = a_domSb; 
       else if( keyWord == "a_domSbMin" ) thisParam = a_domSb*0.5;
@@ -54,35 +66,35 @@ float param::value(string keyWord){
       else if( keyWord == "b_domSgMin" ) thisParam = b_domSg*0.5;
       else if( keyWord == "b_domSgMax" ) thisParam = b_domSg*1.5;
 
-      else if( keyWord == "a_subSb"    ) thisParam = a_subSb;
-      else if( keyWord == "a_subSbMin" ) thisParam = a_subSb*0.5;
-      else if( keyWord == "a_subSbMax" ) thisParam = a_subSb*1.5;
+      else if( keyWord == "a_sub1Sb"    ) thisParam = a_sub1Sb;
+      else if( keyWord == "a_sub1SbMin" ) thisParam = a_sub1Sb*0.5;
+      else if( keyWord == "a_sub1SbMax" ) thisParam = a_sub1Sb*1.5;
 
-      else if( keyWord == "b_subSb"    ) thisParam = b_subSb;
-      else if( keyWord == "b_subSbMin" ) thisParam = b_subSb*0.5;
-      else if( keyWord == "b_subSbMax" ) thisParam = b_subSb*1.5;
+      else if( keyWord == "a_sub1Sg"    ) thisParam = a_sub1Sg;
+      else if( keyWord == "a_sub1SgMin" ) thisParam = a_sub1Sg*0.5;
+      else if( keyWord == "a_sub1SgMax" ) thisParam = a_sub1Sg*1.5;
 
-      else if( keyWord == "a_subSg"    ) thisParam = a_subSg;
-      else if( keyWord == "a_subSgMin" ) thisParam = a_subSg*0.5;
-      else if( keyWord == "a_subSgMax" ) thisParam = a_subSg*1.5;
+      else if( keyWord == "a_sub2Sb"    ) thisParam = a_sub2Sb;
+      else if( keyWord == "a_sub2SbMin" ) thisParam = a_sub2Sb*0.5;
+      else if( keyWord == "a_sub2SbMax" ) thisParam = a_sub2Sb*1.5;
+      
+      else if( keyWord == "a_sub2Sg"    ) thisParam = a_sub2Sg;
+      else if( keyWord == "a_sub2SgMin" ) thisParam = a_sub2Sg*0.5;
+      else if( keyWord == "a_sub2SgMax" ) thisParam = a_sub2Sg*1.5;
+      
+      else if( keyWord == "a_dataSb"    ) thisParam = a_dataSb;
+      else if( keyWord == "a_dataSbMin" ) thisParam = a_dataSb*0.5;
+      else if( keyWord == "a_dataSbMax" ) thisParam = a_dataSb*1.5;
 
-      else if( keyWord == "b_subSg"    ) thisParam = b_subSg;
-      else if( keyWord == "b_subSgMin" ) thisParam = b_subSg*0.5;
-      else if( keyWord == "b_subSgMax" ) thisParam = b_subSg*1.5;
+      else if( keyWord == "b_dataSb"    ) thisParam = b_dataSb;
+      else if( keyWord == "b_dataSbMin" ) thisParam = b_dataSb*0.5;
+      else if( keyWord == "b_dataSbMax" ) thisParam = b_dataSb*1.5;
 
-      else if( keyWord == "a_datSb"    ) thisParam = a_datSb;
-      else if( keyWord == "a_datSbMin" ) thisParam = a_datSb*0.5;
-      else if( keyWord == "a_datSbMax" ) thisParam = a_datSb*1.5;
+      else if( keyWord == "j_data"      ) thisParam = j_data;
+      else if( keyWord == "j_dataMin"   ) thisParam = j_data*0.5;
+      else if( keyWord == "j_dataMax"   ) thisParam = j_data*1.5;
 
-      else if( keyWord == "b_datSb"    ) thisParam = b_datSb;
-      else if( keyWord == "b_datSbMin" ) thisParam = b_datSb*0.5;
-      else if( keyWord == "b_datSbMax" ) thisParam = b_datSb*1.5;
-
-      else if( keyWord == "lamda"    ) thisParam = lamda;
-      else if( keyWord == "lamdaMin" ) thisParam = lamda*1.5;
-      else if( keyWord == "lamdaMax" ) thisParam = lamda*0.5;
-
-      else thisParam = -999;
+      else thisParam = 0;
     
     }
 
