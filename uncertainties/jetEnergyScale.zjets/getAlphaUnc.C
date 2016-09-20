@@ -6,12 +6,12 @@ void getAlphaUnc(string channel, string catcut){
 
   string region[3] = {"central","up","down"};
 
-  TF1 *f_alpha[3], *f_predict[3];
+  TF1 *f_alpha[3];
   TH1 *h_shape[3];
 
   for(int nw = 2; nw >= 0; --nw){
 
-    rooFitUnc(channel.data(), catcut.data(), region[nw].data(), &f_alpha[nw], &f_predict[nw], &h_shape[nw], nw);
+    rooFitUnc(channel.data(), catcut.data(), region[nw].data(), &f_alpha[nw], &h_shape[nw], nw, true);
 
   }
 
@@ -78,24 +78,9 @@ void getAlphaUnc(string channel, string catcut){
   cv.Clear();
   cv.cd()->SetLogy();
 
-  f_predict[0]->SetTitle("");
-  f_predict[0]->SetLineColor(kBlue);
-  f_predict[0]->Draw();
-  f_predict[1]->Draw("same");
-  f_predict[2]->Draw("same");
-
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "jet energy scale factor");
-
-  cv.Draw();
-  cv.Print(Form("alpha_jetEnergyScale_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  cv.Clear();
-  cv.cd()->SetLogy();
-
   h_shape[0]->SetTitle("");
+  h_shape[0]->SetMinimum(1e-2);
+  h_shape[0]->SetMaximum(10);
   h_shape[0]->Draw();
   h_shape[1]->SetLineColor(kRed);
   h_shape[1]->Draw("same");

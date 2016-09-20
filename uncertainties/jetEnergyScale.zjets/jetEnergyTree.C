@@ -63,6 +63,7 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
 
     data.GetEntry(ev);
 
+    Bool_t        isData           = data.GetBool("isData");
     Float_t       eventWeight      = data.GetFloat("ev_weight");
     Float_t*      FATjetPRmassCorr = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray* muP4             = (TClonesArray*) data.GetPtrTObject("muP4");
@@ -104,7 +105,7 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
     else continue;
  
     prmass   = FATjetPRmassCorr[goodFATJetID];
-    evweight = eventWeight * scale * btagWeight;
+    evweight = isData ? 1 : eventWeight * scale * btagWeight;
 
     tree->Fill();
 

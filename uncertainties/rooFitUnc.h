@@ -3,11 +3,11 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
-void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TF1** f_predict, TH1** h_shape, int i){
+void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1** h_shape, int i, bool isJES=false, bool isPdfScale=false){
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
   RooMsgService::instance().setSilentMode(true);
   gROOT->ProcessLine("gErrorIgnoreLevel=kWarning;");
 
@@ -20,26 +20,61 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TF1*
 
   // Data
 
-  if( channel == "ele" ){
+  if( !isJES ){
 
-    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v1_eleMiniTree.root");
-    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v4_eleMiniTree.root");
+    if( channel == "ele" ){
+
+      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v1_eleMiniTree.root");
+      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v4_eleMiniTree.root");
+
+    }
+
+    else if( channel == "mu" ){
+
+      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v1_muMiniTree.root");
+      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v4_muMiniTree.root");
+
+    }
 
   }
 
-  else if( channel == "mu" ){
+  else{
 
-    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v1_muMiniTree.root");
-    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v4_muMiniTree.root");
+    if( channel == "ele" ){
+
+      tree_Data->Add(Form("data/SingleElectron-Run2015D-v1_%s_eleMiniTree.root", region.data()));
+      tree_Data->Add(Form("data/SingleElectron-Run2015D-v4_%s_eleMiniTree.root", region.data()));
+
+    }
+
+    else if( channel == "mu" ){
+
+      tree_Data->Add(Form("data/SingleMuon-Run2015D-v1_%s_muMiniTree.root", region.data()));
+      tree_Data->Add(Form("data/SingleMuon-Run2015D-v4_%s_muMiniTree.root", region.data()));
+
+    }
 
   }
 
   // Dominant and subdominant background
 
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
+  if( !isPdfScale ){
+
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
+    
+  }
+
+  else{
+
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+    tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
+
+  }
 
   tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
   tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
@@ -52,7 +87,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TF1*
   RooRealVar cat      ("cat", "", 0, 2);
   RooRealVar mJet     ("prmass", "M_{jet}", 30., 300., "GeV");
   RooRealVar mZH      ("mllbb", "M_{ZH}", 750., 4300., "GeV");
-  RooRealVar evWeight ("evweight", "", 0., 1.e3);
+  RooRealVar evWeight ((!isPdfScale) ? "evweight" : Form("evweight%02i",i), "", 0., 1.e3);
 
   // Set the range in zh mass and in jet mass
 
@@ -171,14 +206,15 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TF1*
 
   float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
 
-  *f_alpha   = new TF1(Form("f_alpha%i",i), "[0]*exp(-x/([1]+[2]*x))/exp(-x/([3]+[4]*x))", 750, 4300);
-  *f_predict = new TF1(Form("f_predict%i",i), "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*[7]*exp(-x/([8]+[9]*x))/exp(-x/([10]+[11]*x))+[12]*exp(-x/[13])+[14]*exp(-x/[15])", 750, 4300);
+  *f_alpha = new TF1(Form("f_alpha%i",i), "[0]*exp(-x/([1]+[2]*x))/exp(-x/([3]+[4]*x))", 750, 4300);
+
+  TF1* f_predict = new TF1("f_predict", "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*[7]*exp(-x/([8]+[9]*x))/exp(-x/([10]+[11]*x))+[12]*exp(-x/[13])+[14]*exp(-x/[15])", 750, 4300);
 
   double param_alpha[5]    = {alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal()};
   double param_predict[16] = {nEv_sbData.getVal(), a_dataSb.getVal(), b_dataSb.getVal(), nEv_sbSub1.getVal(), a_sub1Sb.getVal(), nEv_sbSub2.getVal(), a_sub2Sb.getVal(), alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal(), nEv_sgSub1.getVal(), a_sub1Sg.getVal(), nEv_sgSub2.getVal(), a_sub2Sg.getVal()};
 
-  (*f_alpha)  ->SetParameters(param_alpha);
-  (*f_predict)->SetParameters(param_predict);
+  (*f_alpha)->SetParameters(param_alpha);
+  f_predict->SetParameters(param_predict);
 
   // jet mass in data side band
 
@@ -197,17 +233,32 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TF1*
 
   float normFactorVal = (catcut=="1") ? nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal()) : 6;
 
-  *h_shape = (*f_predict)->CreateHistogram();
+  // Convert TF1 to TH1
+
+  int nBins = 71;
+  float binWidth = (4300-750)/nBins;
+  
+  *h_shape = new TH1D(Form("h_shape%i",i), "", nBins, 750, 4300);
+
+  float a = 750;
+  float b = 750+binWidth;
+  
+  for( int n = 1; n <= nBins; ++n ){
+
+    (*h_shape)->SetBinContent(n, f_predict->Integral(a, b)/binWidth);
+
+    a += binWidth;
+    b += binWidth;
+    
+  }
+
   (*h_shape)->Scale(normFactorVal/(*h_shape)->Integral());
-  (*h_shape)->SetBins(71, 750, 4300);
 
   fprintf(stdout, "nw = %i\t", i);
   fprintf(stdout, "a_domSb = %.3f +- %.3f\t", a_domSb.getVal(), a_domSb.getError());
   fprintf(stdout, "b_domSb = %.3f +- %.3f\t", b_domSb.getVal(), b_domSb.getError());
   fprintf(stdout, "a_domSg = %.3f +- %.3f\t", a_domSg.getVal(), a_domSg.getError());
-  fprintf(stdout, "b_domSg = %.3f +- %.3f\n", b_domSg.getVal(), b_domSg.getError());
-
-  fprintf(stdout, "real norm = %.3f\t", normFactorVal);
-  fprintf(stdout, "hist norm = %.3f\n", (*h_shape)->Integral());
+  fprintf(stdout, "b_domSg = %.3f +- %.3f\t", b_domSg.getVal(), b_domSg.getError());
+  fprintf(stdout, "j_data  = %.3f +- %.3f\n", j_data.getVal(),  j_data.getError());
 
 }
