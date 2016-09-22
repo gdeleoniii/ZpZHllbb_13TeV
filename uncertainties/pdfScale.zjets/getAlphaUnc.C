@@ -1,52 +1,32 @@
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/rooFitUnc.h"
 
-void getAlphaUnc(string channel, string catcut, string type, int first, int last){
+void murUnc(string channel, string catcut){
 
   gStyle->SetOptStat(0);
 
-  float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
+  TF1 *f_alpha[3];
+  TH1 *h_shape[3];
 
-  int N = last-first;
-  int iw = N-1;
-  float alphaScale[13][N], alphaCentral;
+  for(int nw = 2; nw >= 0; --nw){
 
-  TF1 *f_alpha[N], *f_predict[N];
-  TH1 *h_shape[N];
+    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha[nw], &h_shape[nw], nw, false, true);
 
-  for( int nw = last; nw >= first; --nw ){
-    
-    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha[iw], &f_predict[iw], &h_shape[iw], nw, true);
-
-     for( int im = 0; im < 13; ++im ){
-
-      if( nw != first ) alphaScale[im][iw] = f_alpha[iw]->Eval(Mzh[im]);
-      if( nw == first )	alphaCentral[im]   = f_alpha[iw]->Eval(Mzh[im]);
-
-    }
-
-    --iw;
   }
 
-  // Calculate RMS value of each mass bin
+  // Calculate uncertainty of each mass bin
 
-  float Unc[13], relativeUnc[13];
+  float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
+  float Alpha[13], UncUp[13], UncDw[13];
 
   for( int im = 0; im < 13; ++im ){
 
-    if( type == "mur1" )
-      Unc[im] = ( fabs(alphaScale[im][1]-alphaCentral[im]) > fabs(alphaScale[im][0]-alphaCentral[im]) ) ?
-	fabs(alphaScale[im][1]-alphaCentral[im]) : fabs(alphaScale[im][0]-alphaCentral[im]);
-
-    else 
-      Unc[im] = TMath::RMS(N, alphaScale[im]);
-
-    relativeUnc[im] = Unc[im]/alphaCentral[im];
-
-    fprintf(stdout, "massPoint=%i\trelativeUnc=%f\n", (int)Mzh[im], relativeUnc[im]);
- 
+    Alpha[im] = f_alpha[0]->Eval(Mzh[im]);
+    UncUp[im] = fabs(f_alpha[1]->Eval(Mzh[im]) - Alpha[im]);
+    UncDw[im] = fabs(f_alpha[2]->Eval(Mzh[im]) - Alpha[im]);
+        
   } // end of mass points
 
-  TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, alphaCentral, 0, Unc);
+  TGraphAsymmErrors *g_alpha = new TGraphAsymmErrors(13, Mzh, Alpha, 0, 0, UncDw, UncUp);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetLimits(750,4300);
@@ -60,7 +40,17 @@ void getAlphaUnc(string channel, string catcut, string type, int first, int last
   g_alpha->SetMarkerStyle(8);
   g_alpha->SetMarkerColor(kBlue);
   g_alpha->SetFillStyle(3002);
-  
+
+  // Store histograms in root file (for shape analysis)
+
+  TFile f_shape("histo_mZH_qcdUnc.root", "recreate");
+
+  h_shape[0]->Write("h_mZH_QCD_central");
+  h_shape[1]->Write("h_mZH_QCD_up");
+  h_shape[2]->Write("h_mZH_QCD_down");
+
+  // Output the results
+
   TLatex lar;
 
   lar.SetTextSize(0.03);
@@ -73,35 +63,20 @@ void getAlphaUnc(string channel, string catcut, string type, int first, int last
   g_alpha->Draw("Xac");
   g_alpha->Draw("3same");
 
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.57, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, type=="pdf"?"PDF weight":"QCD scale factor");
-
-  cv.Draw();
-  cv.Print(Form("alpha_%sScale_%s_cat%s.pdf(", type.data(), channel.data(), catcut.data()));  
-
-  cv.Clear();
-  cv.cd()->SetLogy();
-
-  f_predict[0]->SetTitle("");
-  f_predict[0]->SetLineColor(kBlue);
-  f_predict[0]->Draw();
-  f_predict[1]->Draw("same");
-  f_predict[2]->Draw("same");
-
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, type=="pdf"?"PDF weight":"QCD scale factor");
+  lar.DrawLatexNDC(0.15, 0.82, "QCD scale factor");
 
   cv.Draw();
-  cv.Print(Form("alpha_%sScale_%s_cat%s.pdf", type.data(), channel.data(), catcut.data()));
+  cv.Print(Form("alpha_QCDScale_%s_cat%s.pdf(", channel.data(), catcut.data()));
 
   cv.Clear();
   cv.cd()->SetLogy();
 
   h_shape[0]->SetTitle("");
+  h_shape[0]->SetMinimum(1e-2);
+  h_shape[0]->SetMaximum(10);
   h_shape[0]->Draw();
   h_shape[1]->SetLineColor(kRed);
   h_shape[1]->Draw("same");
@@ -109,6 +84,136 @@ void getAlphaUnc(string channel, string catcut, string type, int first, int last
   h_shape[2]->Draw("same");
 
   cv.Draw();
-  cv.Print(Form("alpha_%sScale_%s_cat%s.pdf)", type.data(), channel.data(), catcut.data()));
+  cv.Print(Form("alpha_QCDScale_%s_cat%s.pdf)", channel.data(), catcut.data()));
+
+}
+
+void pdfUnc(string channel, string catcut){
+
+  gStyle->SetOptStat(0);
+
+  float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
+
+  TF1 *f_alpha_temp[100], *f_alpha;
+  TH1 *h_shape_temp[100], *h_shape;
+
+  // 9:central value
+  rooFitUnc(channel.data(), catcut.data(), "", &f_alpha, &h_shape, 9, false, true);
+
+  for(int nw = 109; nw >= 10; --nw){
+
+    // not central value: 0~99
+    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha_temp[nw-10], &h_shape_temp[nw-10], nw, false, true);
+
+  }
+
+  int nBins = h_shape->GetNbinsX();
+
+  float alphaScale[13][100], predictScale[nBins][100];
+
+  // only temp
+  for(int tmp = 0; tmp <= 99; ++tmp){
+
+    for(int im = 0; im < 13; ++im){
+      alphaScale[im][tmp] = f_alpha_temp[tmp]->Eval(Mzh[im]);
+    }
+
+    //id=0=1st bin
+    for(int nb = 1; nb <= nBins; ++nb){
+      predictScale[nb-1][tmp] = h_shape_temp[tmp]->GetBinContent(nb);
+
+    }
+
+  }
+
+  // Calculate uncertainty of each mass bin
+
+  float Alpha[13], Unc[13];
+
+  for( int im = 0; im < 13; ++im ){
+
+    Alpha[im] = f_alpha->Eval(Mzh[im]);
+    Unc[im] = TMath::RMS(100, alphaScale[im]);
+        
+  }
+
+  TH1F* h_shapeUp = new TH1F("h_shapeUp", "", 71, 750, 4300);
+  TH1F* h_shapeDw = new TH1F("h_shapeDw", "", 71, 750, 4300);
+
+  // Calculate uncertainty of each predict bin
+
+  for(int nb = 1; nb <= nBins; ++nb){
+
+    h_shapeUp->SetBinContent(nb, h_shape->GetBinContent(nb)+TMath::RMS(100, predictScale[nb-1]));
+    h_shapeDw->SetBinContent(nb, h_shape->GetBinContent(nb)-TMath::RMS(100, predictScale[nb-1]));
+
+  }
+
+  TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, Alpha, 0, Unc);
+
+  g_alpha->SetTitle("");
+  g_alpha->GetXaxis()->SetLimits(750,4300);
+  g_alpha->GetXaxis()->SetTitle("m_{ZH}(GeV)");
+  g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
+  g_alpha->GetYaxis()->SetTitleOffset(1.3);
+  g_alpha->SetMinimum(0.05);
+  g_alpha->SetMaximum(50);
+  g_alpha->SetLineWidth(2);
+  g_alpha->SetLineColor(kBlue);
+  g_alpha->SetMarkerStyle(8);
+  g_alpha->SetMarkerColor(kBlue);
+  g_alpha->SetFillStyle(3002);
+
+  // Store histograms in root file (for shape analysis)
+
+  TFile f_shape("histo_mZH_pdfUnc.root", "recreate");
+
+  h_shape  ->Write("h_mZH_PDF_central");
+  h_shapeUp->Write("h_mZH_PDF_up");
+  h_shapeDw->Write("h_mZH_PDF_down");
+
+  // Output the results
+
+  TLatex lar;
+
+  lar.SetTextSize(0.03);
+  lar.SetLineWidth(5);
+
+  TCanvas cv("cv","",0,0,1000,900);
+
+  cv.cd()->SetLogy();
+
+  g_alpha->Draw("Xac");
+  g_alpha->Draw("3same");
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "PDF weight");
+
+  cv.Draw();
+  cv.Print(Form("alpha_PDFScale_%s_cat%s.pdf(", channel.data(), catcut.data()));
+
+  cv.Clear();
+  cv.cd()->SetLogy();
+
+  h_shape->SetTitle("");
+  h_shape->SetMinimum(1e-2);
+  h_shape->SetMaximum(10);
+  h_shape->Draw();
+  h_shapeUp->SetLineColor(kRed);
+  h_shapeUp->Draw("same");
+  h_shapeDw->SetLineColor(kRed);
+  h_shapeDw->Draw("same");
+
+  cv.Draw();
+  cv.Print(Form("alpha_PDFScale_%s_cat%s.pdf)", channel.data(), catcut.data()));
+
+}
+
+void getAlphaUnc(string channel, string catcut){
+
+  murUnc(channel.data(), catcut.data());
+  pdfUnc(channel.data(), catcut.data());
 
 }

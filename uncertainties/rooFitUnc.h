@@ -87,7 +87,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   RooRealVar cat      ("cat", "", 0, 2);
   RooRealVar mJet     ("prmass", "M_{jet}", 30., 300., "GeV");
   RooRealVar mZH      ("mllbb", "M_{ZH}", 750., 4300., "GeV");
-  RooRealVar evWeight ((!isPdfScale) ? "evweight" : Form("evweight%02i",i), "", 0., 1.e3);
+  RooRealVar evWeight (((!isPdfScale) ? "evweight" : Form("evweight%02i",i)), "", 0., 1.e3);
 
   // Set the range in zh mass and in jet mass
 
@@ -254,11 +254,17 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   (*h_shape)->Scale(normFactorVal/(*h_shape)->Integral());
 
-  fprintf(stdout, "nw = %i\t", i);
-  fprintf(stdout, "a_domSb = %.3f +- %.3f\t", a_domSb.getVal(), a_domSb.getError());
-  fprintf(stdout, "b_domSb = %.3f +- %.3f\t", b_domSb.getVal(), b_domSb.getError());
-  fprintf(stdout, "a_domSg = %.3f +- %.3f\t", a_domSg.getVal(), a_domSg.getError());
-  fprintf(stdout, "b_domSg = %.3f +- %.3f\t", b_domSg.getVal(), b_domSg.getError());
-  fprintf(stdout, "j_data  = %.3f +- %.3f\n", j_data.getVal(),  j_data.getError());
+  fprintf(stdout, "****nw=%i****\n", i);
+  fprintf(stdout, "a_domSb=%.3f+-%.3f\n", a_domSb.getVal(), a_domSb.getError());
+  fprintf(stdout, "b_domSb=%.3f+-%.3f\n", b_domSb.getVal(), b_domSb.getError());
+  fprintf(stdout, "a_domSg=%.3f+-%.3f\n", a_domSg.getVal(), a_domSg.getError());
+  fprintf(stdout, "b_domSg=%.3f+-%.3f\n", b_domSg.getVal(), b_domSg.getError());
+
+  if( isJES ){
+    fprintf(stdout, "a_dataSb=%.3f+-%.3f\n", a_dataSb.getVal(), a_dataSb.getError());
+    fprintf(stdout, "b_dataSb=%.3f+-%.3f\n", b_dataSb.getVal(), b_dataSb.getError());
+    fprintf(stdout, "j_data=%.3f+-%.3f\n", j_data.getVal(), j_data.getError());
+    fprintf(stdout, "normFactor=%.3f\n", normFactorVal);
+  }
 
 }

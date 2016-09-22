@@ -18,19 +18,17 @@ void getAlphaUnc(string channel, string catcut){
   // Calculate uncertainty of each mass bin
 
   float Mzh[13] = {750,800,1000,1200,1400,1600,1800,2000,2500,3000,3500,4000,4300};
-  float Alpha[13], Unc[13], relativeUnc[13];
+  float Alpha[13], UncUp[13], UncDw[13];
 
   for( int im = 0; im < 13; ++im ){
 
     Alpha[im] = f_alpha[0]->Eval(Mzh[im]);
-    Unc[im] = (fabs(f_alpha[1]->Eval(Mzh[im])-Alpha[im])>fabs(f_alpha[2]->Eval(Mzh[im])-Alpha[im])) ? fabs(f_alpha[1]->Eval(Mzh[im])-Alpha[im]) : fabs(f_alpha[2]->Eval(Mzh[im])-Alpha[im]);
-    relativeUnc[im] = Unc[im]/Alpha[im];
-    
-    fprintf(stdout, "massPoint=%i\trelativeUnc=%f\n", (int)Mzh[im], relativeUnc[im]);
-    
+    UncUp[im] = fabs(f_alpha[1]->Eval(Mzh[im]) - Alpha[im]);
+    UncDw[im] = fabs(f_alpha[2]->Eval(Mzh[im]) - Alpha[im]);
+        
   } // end of mass points
 
-  TGraphErrors *g_alpha = new TGraphErrors(13, Mzh, Alpha, 0, Unc);
+  TGraphAsymmErrors *g_alpha = new TGraphAsymmErrors(13, Mzh, Alpha, 0, 0, UncDw, UncUp);
 
   g_alpha->SetTitle("");
   g_alpha->GetXaxis()->SetLimits(750,4300);

@@ -9,8 +9,7 @@ cat=(1 2)
 for ((i=0; i<${#channel[@]}; i++)); do
     for ((j=0; j<${#cat[@]}; j++)); do
 	echo "Now running ==> channel: " ${channel[$i]} " category: " ${cat[$j]}
-	root -q -b -l getAlphaUnc.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"mur1\"\,0\,2\)
-	root -q -b -l getAlphaUnc.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\,\"pdf\"\,9\,109\)
+	root -q -b -l getAlphaUnc.C\(\"${channel[$i]}\"\,\"${cat[$j]}\"\)
     done
 done
 
