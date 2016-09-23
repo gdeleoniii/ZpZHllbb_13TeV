@@ -3,7 +3,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
-void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1** h_shape, int i, bool isJES=false, bool isPdfScale=false){
+void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1** h_shape, int i, string tag=""){
 
   // Suppress all the INFO message
 
@@ -20,45 +20,39 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   // Data
 
-  if( !isJES ){
+  string str1 = "";
+  string str2 = "";
 
-    if( channel == "ele" ){
-
-      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v1_eleMiniTree.root");
-      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v4_eleMiniTree.root");
-
-    }
-
-    else if( channel == "mu" ){
-
-      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v1_muMiniTree.root");
-      tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v4_muMiniTree.root");
-
-    }
-
+  if( tag=="jes" ){
+    str1 = ""; 
+    str2 = region+"_";
   }
-
+  else if( tag=="pdf" ){
+    str1 = ""; 
+    str2 = "";
+  }
   else{
-
-    if( channel == "ele" ){
-
-      tree_Data->Add(Form("data/SingleElectron-Run2015D-v1_%s_eleMiniTree.root", region.data()));
-      tree_Data->Add(Form("data/SingleElectron-Run2015D-v4_%s_eleMiniTree.root", region.data()));
-
-    }
-
-    else if( channel == "mu" ){
-
-      tree_Data->Add(Form("data/SingleMuon-Run2015D-v1_%s_muMiniTree.root", region.data()));
-      tree_Data->Add(Form("data/SingleMuon-Run2015D-v4_%s_muMiniTree.root", region.data()));
-
-    }
-
+    str1 = "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/"; 
+    str2 = "";
   }
 
+  if( channel == "ele" ){
+    
+    tree_Data->Add(Form("%sdata/SingleElectron-Run2015D-v1_%seleMiniTree.root", str1.data(), str2.data()));
+    tree_Data->Add(Form("%sdata/SingleElectron-Run2015D-v4_%seleMiniTree.root", str1.data(), str2.data()));
+    
+  }
+  
+  else if( channel == "mu" ){
+    
+    tree_Data->Add(Form("%sdata/SingleMuon-Run2015D-v1_%smuMiniTree.root", str1.data(), str2.data()));
+    tree_Data->Add(Form("%sdata/SingleMuon-Run2015D-v4_%smuMiniTree.root", str1.data(), str2.data()));
+    
+  }
+  
   // Dominant and subdominant background
 
-  if( !isPdfScale ){
+  if( tag!="pdf" ){
 
     tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
     tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%s_%sMiniTree.root", region.data(), channel.data()));
@@ -76,18 +70,20 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   }
 
-  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub2->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
-
+  string str3 = (tag=="pdf") ? "" : "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/";
+  
+  tree_Sub1->Add(Form("%sminor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     str3.data(), channel.data()));
+  tree_Sub1->Add(Form("%sminor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     str3.data(), channel.data()));
+  tree_Sub1->Add(Form("%sminor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     str3.data(), channel.data()));
+  tree_Sub1->Add(Form("%sminor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     str3.data(), channel.data()));
+  tree_Sub2->Add(Form("%sminor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", str3.data(), channel.data()));
+  
   // Define all the variables from the trees
 
-  RooRealVar cat      ("cat", "", 0, 2);
-  RooRealVar mJet     ("prmass", "M_{jet}", 30., 300., "GeV");
-  RooRealVar mZH      ("mllbb", "M_{ZH}", 750., 4300., "GeV");
-  RooRealVar evWeight (((!isPdfScale) ? "evweight" : Form("evweight%02i",i)), "", 0., 1.e3);
+  RooRealVar cat("cat", "", 0, 2);
+  RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
+  RooRealVar mZH("mllbb", "M_{ZH}", 750., 4300., "GeV");
+  RooRealVar evWeight(((tag=="pdf") ?  Form("evweight%02i",i) : "evweight"), "", 0., 1.e3);
 
   // Set the range in zh mass and in jet mass
 
@@ -187,7 +183,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   mapSet.insert(pair<string, RooDataSet*>("sub2_SG", &set_sgSub2));
   mapSet.insert(pair<string, RooDataSet*>("data_SB", &set_sbData));
 
-  RooDataSet cmb_combine("cmb_combine", "cmb_combine", RooArgSet(cat, mJet, mZH, evWeight), Index(cat_combine), Import(mapSet), WeightVar(evWeight));
+  RooDataSet set_combine("set_combine", "set_combine", RooArgSet(cat, mJet, mZH, evWeight), Index(cat_combine), WeightVar(evWeight), Import(mapSet));
 
   RooSimultaneous pdf_combine("pdf_combine", "pdf_combine", cat_combine);
 
@@ -199,7 +195,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  pdf_combine.fitTo(cmb_combine, SumW2Error(true), Extended(true), Range("All"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
@@ -210,7 +206,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   TF1* f_predict = new TF1("f_predict", "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*[7]*exp(-x/([8]+[9]*x))/exp(-x/([10]+[11]*x))+[12]*exp(-x/[13])+[14]*exp(-x/[15])", 750, 4300);
 
-  double param_alpha[5]    = {alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal()};
+  double param_alpha[5] = {alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal()};
   double param_predict[16] = {nEv_sbData.getVal(), a_dataSb.getVal(), b_dataSb.getVal(), nEv_sbSub1.getVal(), a_sub1Sb.getVal(), nEv_sbSub2.getVal(), a_sub2Sb.getVal(), alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal(), nEv_sgSub1.getVal(), a_sub1Sg.getVal(), nEv_sgSub2.getVal(), a_sub2Sg.getVal()};
 
   (*f_alpha)->SetParameters(param_alpha);
@@ -260,7 +256,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   fprintf(stdout, "a_domSg=%.3f+-%.3f\n", a_domSg.getVal(), a_domSg.getError());
   fprintf(stdout, "b_domSg=%.3f+-%.3f\n", b_domSg.getVal(), b_domSg.getError());
 
-  if( isJES ){
+  if( tag == "jes" ){
     fprintf(stdout, "a_dataSb=%.3f+-%.3f\n", a_dataSb.getVal(), a_dataSb.getError());
     fprintf(stdout, "b_dataSb=%.3f+-%.3f\n", b_dataSb.getVal(), b_dataSb.getError());
     fprintf(stdout, "j_data=%.3f+-%.3f\n", j_data.getVal(), j_data.getError());

@@ -71,12 +71,12 @@ void rooFitData(string channel, string catcut){
 
   // Create a dataset from a tree to process an unbinned likelihood fitting
 
-  RooDataSet set_sbDom ("set_sbDom",  "set_sbDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sb), Import(*tree_Dom),  WeightVar(evWeight));  
+  RooDataSet set_sbDom ("set_sbDom",  "set_sbDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sb), Import(*tree_Dom),  WeightVar(evWeight)); 
   RooDataSet set_sgDom ("set_sgDom",  "set_sgDom",  RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sg), Import(*tree_Dom),  WeightVar(evWeight));
   RooDataSet set_sbSub1("set_sbSub1", "set_sbSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sb), Import(*tree_Sub1), WeightVar(evWeight));
   RooDataSet set_sgSub1("set_sgSub1", "set_sgSub1", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sg), Import(*tree_Sub1), WeightVar(evWeight));
   RooDataSet set_sbSub2("set_sbSub2", "set_sbSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sb), Import(*tree_Sub2), WeightVar(evWeight));
-  RooDataSet set_sgSub2("set_sgSub2", "set_sgSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sg), Import(*tree_Sub2), WeightVar(evWeight));  
+  RooDataSet set_sgSub2("set_sgSub2", "set_sgSub2", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sg), Import(*tree_Sub2), WeightVar(evWeight)); 
   RooDataSet set_sbData("set_sbData", "set_sbData", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sb), Import(*tree_Data), WeightVar(evWeight));
   RooDataSet set_sgData("set_sgData", "set_sgData", RooArgSet(cat, mJet, mZH, evWeight), Cut(cut_bTag && cut_sg), Import(*tree_Data), WeightVar(evWeight));
 
@@ -231,6 +231,7 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "a_sub2Sb   = %.3f +- %.3f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
   fprintf(stdout, "a_sub2Sg   = %.3f +- %.3f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
   fprintf(stdout, "j_data     = %.3f +- %.3f\n", j_data    .getVal(), j_data    .getError());
+  fprintf(stdout, "nEv_subDom = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
   // Plot the results on frame 
 

@@ -11,7 +11,7 @@ void getAlphaUnc(string channel, string catcut){
 
   for(int nw = 2; nw >= 0; --nw){
 
-    rooFitUnc(channel.data(), catcut.data(), region[nw].data(), &f_alpha[nw], &h_shape[nw], nw, true);
+    rooFitUnc(channel.data(), catcut.data(), region[nw].data(), &f_alpha[nw], &h_shape[nw], nw, "jes");
 
   }
 

@@ -55,6 +55,8 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
 
   float scale = 2512.*readHist::crossSection(outputFile.data())/((TH1F*)f.Get("h_totalEv"))->Integral();
 
+  bool isZjets = ( inputFile.find("DYJets") != string::npos ) ? true : false;
+
   // begin of event loop
 
   fprintf(stdout, "Total events %lli\n", data.GetEntriesFast());
@@ -66,7 +68,8 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
 
     data.GetEntry(ev);
 
-    Float_t*      pdfscaleSysWeight = data.GetPtrFloat("pdfscaleSysWeights"); 
+    Bool_t        isData            = data.GetBool("isData");
+    Float_t*      pdfscaleSysWeight = isZjets ? data.GetPtrFloat("pdfscaleSysWeights") : NULL;
     Float_t       eventWeight       = data.GetFloat("ev_weight");
     Float_t*      FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray* muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
@@ -107,9 +110,10 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
     prmass = FATjetPRmassCorr[goodFATJetID];
 
     for( int i = 0; i < 110; ++i ){
-      evweight[i] = (i<9) ?
-	eventWeight * scale * btagWeight * pdfscaleSysWeight[i] :
-	eventWeight * scale * btagWeight * (pdfscaleSysWeight[i]/pdfscaleSysWeight[9]);
+      if( isData )
+	evweight[i] = 1;
+      else 
+	evweight[i] = isZjets ? eventWeight * scale * btagWeight * (pdfscaleSysWeight[i]/pdfscaleSysWeight[9]) : eventWeight * scale * btagWeight;
     }
 
     tree->Fill();

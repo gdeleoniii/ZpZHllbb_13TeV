@@ -9,7 +9,7 @@ void murUnc(string channel, string catcut){
 
   for(int nw = 2; nw >= 0; --nw){
 
-    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha[nw], &h_shape[nw], nw, false, true);
+    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha[nw], &h_shape[nw], nw, "pdf");
 
   }
 
@@ -98,12 +98,12 @@ void pdfUnc(string channel, string catcut){
   TH1 *h_shape_temp[100], *h_shape;
 
   // 9:central value
-  rooFitUnc(channel.data(), catcut.data(), "", &f_alpha, &h_shape, 9, false, true);
+  rooFitUnc(channel.data(), catcut.data(), "", &f_alpha, &h_shape, 9, "pdf");
 
   for(int nw = 109; nw >= 10; --nw){
 
     // not central value: 0~99
-    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha_temp[nw-10], &h_shape_temp[nw-10], nw, false, true);
+    rooFitUnc(channel.data(), catcut.data(), "", &f_alpha_temp[nw-10], &h_shape_temp[nw-10], nw, "pdf");
 
   }
 
@@ -213,7 +213,9 @@ void pdfUnc(string channel, string catcut){
 
 void getAlphaUnc(string channel, string catcut){
 
+  fprintf(stdout, "QCD sacle\n");
   murUnc(channel.data(), catcut.data());
+  fprintf(stdout, "PDF sacle\n");
   pdfUnc(channel.data(), catcut.data());
 
 }
