@@ -7,8 +7,7 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
   const TString myFormula = f.GetExpFormula();
   const vector<string> myOrder{"nEv_sbData","a_dataSb","b_dataSb","nEv_sbSub1","a_sub1Sb","nEv_sbSub2","a_sub2Sb","nEv_sgDom","a_domSg","b_domSg","nEv_sbDom","a_domSb","b_domSb","nEv_sgSub1","a_sub1Sg","nEv_sgSub2","a_sub2Sg"};
 
-  double cenVal[myList.getSize()];
-  double errVal[myList.getSize()];
+  double cenVal[myList.getSize()], errVal[myList.getSize()];
 
   for( unsigned int ipar = 0; ipar < myList.getSize(); ++ipar ){
 
@@ -21,14 +20,14 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
 
   f.SetParameters(cenVal);
 
-  TMatrixD M (myList.getSize(),1);
-  TMatrixD Mt(1,myList.getSize());
-
   double x = myBins.lowBound();
   vector<double> sigma;
 
-  for( int nb = 0; nb < myBins.numBins(); ++nb ){
+  for( int nb = 0; nb <= myBins.numBins(); ++nb ){
     
+    TMatrixD M (myList.getSize(),1);
+    TMatrixD Mt(1,myList.getSize());
+
     for( unsigned int ipar = 0; ipar < myList.getSize(); ++ipar ){
 
       double cenTempUp[sizeof(cenVal)], cenTempDw[sizeof(cenVal)];
@@ -54,6 +53,8 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
     TMatrixD sigmaSquare = Mt*(fitRes.correlationMatrix()*M);
 
     sigma.push_back(TMath::Sqrt(sigmaSquare(0,0)));
+
+    fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
 
     x += myBins.binWidth(1);
 
