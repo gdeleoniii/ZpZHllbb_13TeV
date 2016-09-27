@@ -1,6 +1,7 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/getFitErrors.h"
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut){
@@ -172,23 +173,39 @@ void rooFitData(string channel, string catcut){
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
 
-  RooArgSet arg_combine(mZH);
+  RooArgSet arg_alpha, arg_combine;
 
+  arg_alpha.add(mZH);
+  arg_alpha.add(nEv_sgDom);
+  arg_alpha.add(a_domSg);
+  arg_alpha.add(b_domSg);
+  arg_alpha.add(nEv_sbDom);
+  arg_alpha.add(a_domSb);
+  arg_alpha.add(b_domSb);
+
+  arg_combine.add(mZH);
+  arg_combine.add(nEv_sbData);
   arg_combine.add(a_dataSb);
   arg_combine.add(b_dataSb);
+  arg_combine.add(nEv_sbSub1);
   arg_combine.add(a_sub1Sb);
+  arg_combine.add(nEv_sbSub2);
   arg_combine.add(a_sub2Sb);
+  arg_combine.add(nEv_sgDom);
   arg_combine.add(a_domSg);
   arg_combine.add(b_domSg);
+  arg_combine.add(nEv_sbDom);
   arg_combine.add(a_domSb);
   arg_combine.add(b_domSb);
+  arg_combine.add(nEv_sgSub1);
   arg_combine.add(a_sub1Sg);
+  arg_combine.add(nEv_sgSub2);
   arg_combine.add(a_sub2Sg);
 
   float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
 
-  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*exp(-@0/(@1+@2*@0))/exp(-@0/(@3+@4*@0))", alpConst), RooArgSet(mZH,a_domSg,b_domSg,a_domSb,b_domSb));
-  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(%f*exp(-@0/(@1+@2*@0))-%f*exp(-@0/@3)-%f*exp(-@0/@4))*%f*exp(-@0/(@5+@6*@0))/exp(-@0/(@7+@8*@0))+%f*exp(-@0/@9)+%f*exp(-@0/@10)", nEv_sbData.getVal(), nEv_sbSub1.getVal(), nEv_sbSub2.getVal(), alpConst, nEv_sgSub1.getVal(), nEv_sgSub2.getVal()), arg_combine);
+  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*@1*exp(-@0/(@2+@3*@0))/@4/exp(-@0/(@5+@6*@0))", alpConst), arg_alpha);
+  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(@1*exp(-@0/(@2+@3*@0))-@4*exp(-@0/@5)-@6*exp(-@0/@7))*%f*@8*exp(-@0/(@9+@10*@0))/@11/exp(-@0/(@12+@13*@0))+@14*exp(-@0/@15)+@16*exp(-@0/@17)", alpConst), arg_combine);
 
   // jet mass in data side band
 
@@ -211,7 +228,15 @@ void rooFitData(string channel, string catcut){
   float normFactorUnc = (catcut=="1") ? normFormula.getPropagatedError(*res_dataJet) : fabs(6-normFactorVal);
 
   RooRealVar normFactor("normFactor", "normFactor", 0, 1e9);
-  normFactor.setVal( (catcut=="1") ? normFactorVal : 6 );
+  normFactor.setVal((catcut=="1") ? normFactorVal : 6);
+
+  // Own method to get the propagated fit errors
+
+  TF1 f("f", Form("([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])",alpConst), 750, 4300);
+
+  vector<double> sigma = getFitErrors(f, *res_combine, bin_mZH);
+
+
 
   fprintf(stdout, "nEv_sbDom  = %.3f +- %.3f\n", nEv_sbDom .getVal(), nEv_sbDom .getError());
   fprintf(stdout, "nEv_sgDom  = %.3f +- %.3f\n", nEv_sgDom .getVal(), nEv_sgDom .getError());
