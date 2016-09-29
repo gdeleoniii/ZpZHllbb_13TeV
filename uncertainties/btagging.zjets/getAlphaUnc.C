@@ -35,8 +35,8 @@ void getAlphaUnc(string channel, string catcut){
   g_alpha->GetXaxis()->SetTitle("m_{ZH}(GeV)");
   g_alpha->GetYaxis()->SetTitle("#alpha Ratio");  
   g_alpha->GetYaxis()->SetTitleOffset(1.3);
-  g_alpha->SetMinimum(0.05);
-  g_alpha->SetMaximum(50);
+  g_alpha->SetMinimum(1e-2);
+  g_alpha->SetMaximum(10);
   g_alpha->SetLineWidth(2);
   g_alpha->SetLineColor(kBlue);
   g_alpha->SetMarkerStyle(8);

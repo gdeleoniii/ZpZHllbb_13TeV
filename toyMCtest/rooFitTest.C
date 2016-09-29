@@ -53,17 +53,19 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   nMcEvents.setVal(dataSet.sumEntries());
   nSBMcEvents.setVal(dataSetSB.sumEntries());
 
-  // ALL RANGE
+  float myGuess = -0.025;
 
-  RooRealVar     lamda("lamda", "lamda", -0.025, -0.04, -0.01);
-  RooExponential model("model", "Exponential function for Z+jets mass", mJet, lamda);
+  // ALL RANGE 
+
+  RooRealVar     lamda("lamda", "lamda", myGuess, myGuess*1.5, myGuess*0.5);
+  RooExponential model("model", "model", mJet, lamda);
   RooExtendPdf   ext_model("ext_model", "ext_model", model, nMcEvents);
   RooFitResult*  mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Extended(true), Range("allRange"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // SIDE BAND
 
-  RooRealVar     lamdaSB("lamdaSB", "lamda", -0.025, -0.04, -0.01);
-  RooExponential modelSB("modelSB", "Exponential function for Z+jets mass", mJet, lamdaSB);
+  RooRealVar     lamdaSB("lamdaSB", "lamdaSB",myGuess, myGuess*1.5, myGuess*0.5);
+  RooExponential modelSB("modelSB", "modelSB", mJet, lamdaSB);
   RooExtendPdf   ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
   RooFitResult*  mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
@@ -88,8 +90,8 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
     RooRealVar  nToyMcEvents("nToyMcEvents", "nToyMcEvents", 0., 1.e10);
     nToyMcEvents.setVal(thisToyMC.sumEntries());
 
-    RooRealVar     lamda_toyMC("lamda_toyMC", "lamda", -0.025, -0.04, -0.01);
-    RooExponential model_toyMC("model_toyMC", "Exponential function for Z+jets mass", mJet, lamda_toyMC);
+    RooRealVar     lamda_toyMC("lamda_toyMC", "lamda_toyMC", myGuess, myGuess*1.5, myGuess*0.5);
+    RooExponential model_toyMC("model_toyMC", "model_toyMC", mJet, lamda_toyMC);
     RooExtendPdf   ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
     RooFitResult*  toyMC_result = ext_model_toyMC.fitTo(thisToyMC, SumW2Error(true), Extended(true), Range("lowSB,highSB"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
@@ -152,9 +154,9 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooPlot* mcstudyPullFrame = mcstudy->plotPull(lamda, FrameRange(-9.5,9.5), Bins(19), FitGauss(true));
 
   dataSet  .plotOn(mJetFrame, Binning(binsmJet)); 
-  ext_model.plotOn(mJetFrame, VisualizeError(*mJet_result,1,false), FillStyle(3002));
+  ext_model.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJet_result,1,false), FillStyle(3002));
   dataSet  .plotOn(mJetFrame, Binning(binsmJet));
-  ext_model.plotOn(mJetFrame);
+  ext_model.plotOn(mJetFrame, Range("allRange"));
 
   mJetPullFrame->addObject(mJetFrame->pullHist(), "P");
 

@@ -234,7 +234,7 @@ void rooFitData(string channel, string catcut){
 
   TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), alpConst), 750, 4300);
 
-  vector<double> sigma = getFitErrors(f, *res_combine, bin_mZH);
+  //  vector<double> sigma = getFitErrors(f, *res_combine, bin_mZH);
 
 
 
@@ -249,12 +249,12 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "b_domSb    = %.3f +- %.3f\n", b_domSb   .getVal(), b_domSb   .getError());
   fprintf(stdout, "a_domSg    = %.3f +- %.3f\n", a_domSg   .getVal(), a_domSg   .getError());
   fprintf(stdout, "b_domSg    = %.3f +- %.3f\n", b_domSg   .getVal(), b_domSg   .getError());
-  fprintf(stdout, "a_dataSb   = %.3f +- %.3f\n", a_dataSb  .getVal(), a_dataSb  .getError());
-  fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
   fprintf(stdout, "a_sub1Sb   = %.3f +- %.3f\n", a_sub1Sb  .getVal(), a_sub1Sb  .getError());
   fprintf(stdout, "a_sub1Sg   = %.3f +- %.3f\n", a_sub1Sg  .getVal(), a_sub1Sg  .getError());
   fprintf(stdout, "a_sub2Sb   = %.3f +- %.3f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
   fprintf(stdout, "a_sub2Sg   = %.3f +- %.3f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
+  fprintf(stdout, "a_dataSb   = %.3f +- %.3f\n", a_dataSb  .getVal(), a_dataSb  .getError());
+  fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
   fprintf(stdout, "j_data     = %.3f +- %.3f\n", j_data    .getVal(), j_data    .getError());
   fprintf(stdout, "nEv_subDom = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
@@ -295,22 +295,22 @@ void rooFitData(string channel, string catcut){
   pdf_combine.plotOn(frm_sbSub1Zh, Slice(cat_combine,"sub1_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sgSub1Zh, Cut("cat_combine==cat_combine::sub1_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  //pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sgSub1Zh, Cut("cat_combine==cat_combine::sub1_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sbSub2Zh, Cut("cat_combine==cat_combine::sub2_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  //pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sbSub2Zh, Cut("cat_combine==cat_combine::sub2_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sgSub2Zh, Cut("cat_combine==cat_combine::sub2_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  //pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sgSub2Zh, Cut("cat_combine==cat_combine::sub2_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  //pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 

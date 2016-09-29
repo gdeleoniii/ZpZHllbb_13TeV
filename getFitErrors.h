@@ -21,6 +21,10 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
 
   fitRes.printMultiline(cout ,true,"\t");
 
+  fitRes.correlationMatrix().Print();
+  fitRes.covarianceMatrix().Print();
+
+
   for(int i=0; i<17; ++i){
     fprintf(stdout, "%i\t%f\n", i, TMath::Sqrt((fitRes.covarianceMatrix())(i,i)));
   }
