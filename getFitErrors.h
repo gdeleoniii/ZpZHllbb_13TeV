@@ -15,10 +15,15 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
 
     cenVal[ipar] = ((RooRealVar&)myList[idx]).getVal();
     errVal[ipar] = ((RooRealVar&)myList[idx]).getError();
-
   }
 
   f.SetParameters(cenVal);
+
+  fitRes.printMultiline(cout ,true,"\t");
+
+  for(int i=0; i<17; ++i){
+    fprintf(stdout, "%i\t%f\n", i, TMath::Sqrt((fitRes.covarianceMatrix())(i,i)));
+  }
 
   double x = myBins.lowBound();
   vector<double> sigma;
@@ -46,15 +51,15 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
 
       M(ipar,0) = (fabs(f.Eval(x)-f_tempUp.Eval(x)) > fabs(f.Eval(x)-f_tempDw.Eval(x))) ? fabs(f.Eval(x)-f_tempUp.Eval(x)) : fabs(f.Eval(x)-f_tempDw.Eval(x));
       Mt(0,ipar) = M(ipar,0);
-      
+
     }
 
     // Very dangereous: are the elements in correlation matrix match to M?
     TMatrixD sigmaSquare = Mt*(fitRes.correlationMatrix()*M);
 
     sigma.push_back(TMath::Sqrt(sigmaSquare(0,0)));
-
-    fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
+    
+    //fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
 
     x += myBins.binWidth(1);
 

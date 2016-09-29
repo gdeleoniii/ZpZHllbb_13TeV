@@ -116,7 +116,7 @@ TGraphAsymmErrors* btaggingEff(string inputFile, string channel){
 
     float mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag efficiency part (b flavor only)
 

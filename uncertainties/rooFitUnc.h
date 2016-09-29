@@ -7,7 +7,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   // Suppress all the INFO message
 
-  RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
   gROOT->ProcessLine("gErrorIgnoreLevel=kWarning;");
 
@@ -195,19 +195,19 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
 
   float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
 
-  *f_alpha = new TF1(Form("f_alpha%i",i), "[0]*exp(-x/([1]+[2]*x))/exp(-x/([3]+[4]*x))", 750, 4300);
+  *f_alpha = new TF1(Form("f_alpha%i",i), "[0]*[1]*exp(-x/([2]+[3]*x))/[4]/exp(-x/([5]+[6]*x))", 750, 4300);
 
-  TF1* f_predict = new TF1("f_predict", "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*[7]*exp(-x/([8]+[9]*x))/exp(-x/([10]+[11]*x))+[12]*exp(-x/[13])+[14]*exp(-x/[15])", 750, 4300);
+  TF1* f_predict = new TF1("f_predict", "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*[7]*[8]*exp(-x/([9]+[10]*x))/[11]/exp(-x/([12]+[13]*x))+[14]*exp(-x/[15])+[16]*exp(-x/[17])", 750, 4300);
 
-  double param_alpha[5] = {alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal()};
-  double param_predict[16] = {nEv_sbData.getVal(), a_dataSb.getVal(), b_dataSb.getVal(), nEv_sbSub1.getVal(), a_sub1Sb.getVal(), nEv_sbSub2.getVal(), a_sub2Sb.getVal(), alpConst, a_domSg.getVal(), b_domSg.getVal(), a_domSb.getVal(), b_domSb.getVal(), nEv_sgSub1.getVal(), a_sub1Sg.getVal(), nEv_sgSub2.getVal(), a_sub2Sg.getVal()};
+  double param_alpha[7] = {alpConst, nEv_sgDom.getVal(), a_domSg.getVal(), b_domSg.getVal(), nEv_sbDom.getVal(), a_domSb.getVal(), b_domSb.getVal()};
+  double param_predict[18] = {nEv_sbData.getVal(), a_dataSb.getVal(), b_dataSb.getVal(), nEv_sbSub1.getVal(), a_sub1Sb.getVal(), nEv_sbSub2.getVal(), a_sub2Sb.getVal(), alpConst, nEv_sgDom.getVal(), a_domSg.getVal(), b_domSg.getVal(), nEv_sbDom.getVal(), a_domSb.getVal(), b_domSb.getVal(), nEv_sgSub1.getVal(), a_sub1Sg.getVal(), nEv_sgSub2.getVal(), a_sub2Sg.getVal()};
 
   (*f_alpha)->SetParameters(param_alpha);
   f_predict->SetParameters(param_predict);
@@ -218,7 +218,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   RooGenericPdf pdf_dataJet("pdf_dataJet", "pdf_dataJet", "exp(-@0/@1)", RooArgSet(mJet, j_data));
   RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_sbData);
 
-  ext_dataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("SB_l,SB_h"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  ext_dataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Normalize factor to normalize the background in signal region of data
 
@@ -229,6 +229,14 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   float normFactorVal = (catcut=="1") ? nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal()) : 6;
 
+  RooPlot* frm_sbDataZh       = mZH.frame();
+  set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::sub1_SB"), DataError(RooAbsData::SumW2), Binning(71,750,4300));
+  pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"sub1_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
+  TCanvas c("c","",0,0,800,600);
+  c.cd()->SetLogy(1);
+  f_predict->Draw();
+  //frm_sbDataZh ->Draw();
+  c.Print("test.pdf");
   // Convert TF1 to TH1
 
   int nBins = 71;
@@ -257,6 +265,7 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   fprintf(stdout, "b_domSg=%.3f+-%.3f\n", b_domSg.getVal(), b_domSg.getError());
 
   if( tag == "jes" ){
+    fprintf(stdout, "nEv_sbData=%.3f+-%.3f\n", nEv_sbData.getVal(), nEv_sbData.getError());
     fprintf(stdout, "a_dataSb=%.3f+-%.3f\n", a_dataSb.getVal(), a_dataSb.getError());
     fprintf(stdout, "b_dataSb=%.3f+-%.3f\n", b_dataSb.getVal(), b_dataSb.getError());
     fprintf(stdout, "j_data=%.3f+-%.3f\n", j_data.getVal(), j_data.getError());

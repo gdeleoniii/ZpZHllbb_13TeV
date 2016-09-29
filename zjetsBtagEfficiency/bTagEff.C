@@ -72,7 +72,7 @@ void bTagEff(string inputFile, string outputFile, string channel){
 
     float mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag efficiency part
 

@@ -95,7 +95,7 @@ void pdfScaleTree(string inputFile, string outputFile, string channel){
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 

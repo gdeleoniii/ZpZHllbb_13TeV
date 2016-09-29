@@ -55,7 +55,7 @@ void signalShape(string channel, string catcut){
     RooCBShape model("model", "Cystal Ball Function", mZH, m, s, a, n);
     RooExtendPdf ext_model("ext_model", "Extended Cystal Ball Function", model, nEvents);
 
-    ext_model.fitTo(dataSetSignal, SumW2Error(true), Extended(true), Range("fullRange"), Strategy(2), Minimizer("Minuit2"), Save(1));
+    ext_model.fitTo(dataSetSignal, SumW2Error(true), Extended(true), Range("fullRange"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
     fprintf(stdout, "mass=%i\tmean=%f\tsigma=%f\talpha=%f\tn=%f\n", mass[i], m.getVal(), s.getVal(), a.getVal(), n.getVal());
 

@@ -88,7 +88,7 @@ void bTagUncTree(string inputFile, string outputFile, string region, string chan
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 

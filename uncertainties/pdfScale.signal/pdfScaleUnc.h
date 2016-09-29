@@ -130,7 +130,7 @@ float pdfScaleUnc(string inputFile, string channel, int cat, int mzh, int first,
 
     float mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 

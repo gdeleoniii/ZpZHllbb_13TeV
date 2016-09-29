@@ -85,7 +85,7 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     float mllbb; 
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 

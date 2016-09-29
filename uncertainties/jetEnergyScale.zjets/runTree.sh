@@ -15,15 +15,15 @@ for ((i=0; i<${#ch[@]}; i++)); do
 
 	    echo "Processing muon data set..."
 
-	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-05Oct2015-v1.root\"\,\"SingleMuon-Run2015D-v1\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
-	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleMuon_Run2015D-PromptReco-v4.root\"\,\"SingleMuon-Run2015D-v4\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
+	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_mu_SingleMuon_Run2015D-05Oct2015-v1.root\"\,\"SingleMuon-Run2015D-v1\"\,\"${rg[$j]}\"\,\"mu\"\)
+	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_mu_SingleMuon_Run2015D-PromptReco-v4.root\"\,\"SingleMuon-Run2015D-v4\"\,\"${rg[$j]}\"\,\"mu\"\)
 
 	elif [ `echo ${ch[$i]} | grep -c "ele"` -gt 0 ]; then
 
 	    echo "Processing electron data set..."
 
-            root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-05Oct2015-v1.root\"\,\"SingleElectron-Run2015D-v1\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
-	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_${ch[$i]}_SingleElectron_Run2015D-PromptReco-v4.root\"\,\"SingleElectron-Run2015D-v4\"\,\"${rg[$j]}\"\,\"${ch[$i]}\"\)
+            root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_ele_SingleElectron_Run2015D-05Oct2015-v1.root\"\,\"SingleElectron-Run2015D-v1\"\,\"${rg[$j]}\"\,\"ele\"\)
+	    root -q -b -l jetEnergyTree.C\(\"$samplePath/skim_ele_SingleElectron_Run2015D-PromptReco-v4.root\"\,\"SingleElectron-Run2015D-v4\"\,\"${rg[$j]}\"\,\"ele\"\)
 
 	fi
 

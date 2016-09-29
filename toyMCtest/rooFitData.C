@@ -168,7 +168,7 @@ void rooFitData(string channel, string catcut){
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
@@ -213,7 +213,7 @@ void rooFitData(string channel, string catcut){
   RooGenericPdf pdf_dataJet("pdf_dataJet", "pdf_dataJet", "exp(-@0/@1)", RooArgSet(mJet, j_data));
   RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_sbData);
 
-  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("SB_l,SB_h"), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Normalize factor to normalize the background in signal region of data
 
@@ -232,7 +232,7 @@ void rooFitData(string channel, string catcut){
 
   // Own method to get the propagated fit errors
 
-  TF1 f("f", Form("([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])",alpConst), 750, 4300);
+  TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), alpConst), 750, 4300);
 
   vector<double> sigma = getFitErrors(f, *res_combine, bin_mZH);
 

@@ -123,7 +123,7 @@ float leptonTriggerUnc(string inputFile, string channel, int cat, int trigScale,
 
     float mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 

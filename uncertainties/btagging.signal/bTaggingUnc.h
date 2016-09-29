@@ -123,7 +123,7 @@ float bTaggingUnc(string inputFile, string channel, int cat, string region, int 
 
     float mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     // b-tag cut
 
