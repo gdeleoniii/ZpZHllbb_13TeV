@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
 using namespace RooFit;
 
 void rooFitTest(string channel, string catcut, bool pullTest=true){
@@ -21,55 +22,57 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   // Define all the variables from the trees
 
-  RooRealVar cat ("cat", "", 0, 2);
-  RooRealVar mJet("prmass", "M_{jet}", 30., 300., "GeV");
+  RooRealVar cat     ("cat", "", 0, 2);
+  RooRealVar mJet    ("prmass", "M_{jet}", 30., 300., "GeV");
   RooRealVar evWeight("evweight", "", 0., 1.e3);
 
   // Set the range in jet mass
 
-  mJet.setRange("allRange", 30., 300.);
-  mJet.setRange("lowSB",    30.,  65.);
-  mJet.setRange("highSB",  135., 300.);
-  mJet.setRange("signal",  105., 135.);
+  mJet.setRange("All",  30.,  300.);
+  mJet.setRange("SB_l", 30.,  65.);
+  mJet.setRange("SB_h", 135., 300.);
+  mJet.setRange("SG",   105., 135.);
 
-  RooBinning binsmJet(54, 30, 300);
+  RooBinning bin_mJet(54, 30, 300);
 
-  RooArgSet variables(cat, mJet, evWeight);
-
-  TCut catCut = Form("cat==%s", catcut.data());
-  TCut sbCut  = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
-  TCut sigCut = "prmass>105 && prmass<135";
+  TCut cut_bTag = Form("cat==%s", catcut.data());
+  TCut cut_sb   = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
+  TCut cut_sg   = "prmass>105 && prmass<135";
 
   // Create a dataset from a tree -> to process an unbinned likelihood fitting
 
-  RooDataSet dataSet  ("dataSet",   "dataSet",   variables, Cut(catCut),          WeightVar(evWeight), Import(*tree));
-  RooDataSet dataSetSB("dataSetSB", "dataSetSB", variables, Cut(catCut && sbCut), WeightVar(evWeight), Import(*tree));
+  RooDataSet set_Dom  ("set_Dom",   "set_Dom",   RooArgSet(cat, mJet, evWeight), Cut(cut_bTag),           WeightVar(evWeight), Import(*tree));
+  RooDataSet set_sbDom("set_sbDom", "set_sbDom", RooArgSet(cat, mJet, evWeight), Cut(cut_bTag && cut_sb), WeightVar(evWeight), Import(*tree));
 
   // Total events number
 
-  RooRealVar nMcEvents  ("nMcEvents",   "nMcEvents",   0., 1.e10);
-  RooRealVar nSBMcEvents("nSBMcEvents", "nSBMcEvents", 0., 1.e10);
+  RooRealVar nEv_Dom  ("nEv_Dom",   "nEv_Dom",   set_Dom  .sumEntries(), set_Dom  .sumEntries()*0.5, set_Dom  .sumEntries()*1.5);
+  RooRealVar nEv_sbDom("nEv_sbDom", "nEv_sbDom", set_sbDom.sumEntries(), set_sbDom.sumEntries()*0.5, set_sbDom.sumEntries()*1.5);
 
-  nMcEvents.setVal(dataSet.sumEntries());
-  nSBMcEvents.setVal(dataSetSB.sumEntries());
+  // Set fit parameters for jet mass
 
-  float myGuess = -0.025;
+  param myVal(channel.data(), catcut.data());
 
-  // ALL RANGE 
+  RooRealVar j_mc  ("j_mc",   "j_mc",   myVal.value("j_mc"), myVal.value("j_mcMin"), myVal.value("j_mcMax"));
+  RooRealVar j_sbmc("j_sbmc", "j_sbmc", myVal.value("j_mc"), myVal.value("j_mcMin"), myVal.value("j_mcMax"));
 
-  RooRealVar     lamda("lamda", "lamda", myGuess, myGuess*1.5, myGuess*0.5);
-  RooExponential model("model", "model", mJet, lamda);
-  RooExtendPdf   ext_model("ext_model", "ext_model", model, nMcEvents);
-  RooFitResult*  mJet_result = ext_model.fitTo(dataSet, SumW2Error(true), Extended(true), Range("allRange"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  // Create pdf for jet mass
 
-  // SIDE BAND
+  RooGenericPdf pdf_McJet  ("pdf_McJet",   "pdf_McJet",   "exp(-@0/@1)", RooArgSet(mJet, j_mc));
+  RooGenericPdf pdf_sbMcJet("pdf_sbMcJet", "pdf_sbMcJet", "exp(-@0/@1)", RooArgSet(mJet, j_sbmc));
 
-  RooRealVar     lamdaSB("lamdaSB", "lamdaSB",myGuess, myGuess*1.5, myGuess*0.5);
-  RooExponential modelSB("modelSB", "modelSB", mJet, lamdaSB);
-  RooExtendPdf   ext_modelSB("ext_modelSB", "ext_modelSB", modelSB, nSBMcEvents);
-  RooFitResult*  mJetSB_result = ext_modelSB.fitTo(dataSetSB, SumW2Error(true), Extended(true), Range("lowSB,highSB"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  // Extended pdf from RooGenericPdf
 
-  fprintf(stdout, "lamda=%f\tlamdaSB=%f\n", lamda.getVal(), lamdaSB.getVal());
+  RooExtendPdf ext_McJet  ("ext_McJet",   "ext_McJet",   pdf_McJet,   nEv_Dom);
+  RooExtendPdf ext_sbMcJet("ext_sbMcJet", "ext_sbMcJet", pdf_sbMcJet, nEv_sbDom);
+
+  // Fit jet mass
+
+  RooFitResult* res_McJet   = ext_McJet  .fitTo(set_Dom,   SumW2Error(false), Extended(true), Range("All"),       NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* res_sbMcJet = ext_sbMcJet.fitTo(set_sbDom, SumW2Error(false), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+  fprintf(stdout, "j_mc   = %.3f +- %.3f\n", j_mc  .getVal(), j_mc  .getError());
+  fprintf(stdout, "j_sbmc = %.3f +- %.3f\n", j_sbmc.getVal(), j_sbmc.getError());
 
   // Produce n toyMCs to study fit bias and pull  
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
@@ -82,40 +85,37 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     if( !pullTest ) break;
 
-    RooArgSet mjet(mJet);
+    RooDataSet* set_toyMc = ext_McJet.generate(RooArgSet(mJet));
+    RooDataSet  thisToyMc("thisToyMc", "thisToyMc", RooArgSet(mJet), Cut(cut_sb), Import(*set_toyMc));
 
-    RooDataSet* setToyMC = ext_model.generate(mjet);
-    RooDataSet  thisToyMC("thisToyMC", "thisToyMC", mjet, Cut(sbCut), Import(*setToyMC));
+    RooRealVar nEv_toyMc("nEv_toyMc", "nEv_toyMc", thisToyMc.sumEntries(), thisToyMc.sumEntries()*0.5, thisToyMc.sumEntries()*1.5);
+    RooRealVar j_toymc("j_toymc", "j_toymc", myVal.value("j_mc"), myVal.value("j_mcMin"), myVal.value("j_mcMax"));
 
-    RooRealVar  nToyMcEvents("nToyMcEvents", "nToyMcEvents", 0., 1.e10);
-    nToyMcEvents.setVal(thisToyMC.sumEntries());
+    RooGenericPdf pdf_toyMcJet("pdf_toyMcJet", "pdf_toyMcJet", "exp(-@0/@1)", RooArgSet(mJet, j_toymc));
+    RooExtendPdf  ext_toyMcJet("ext_toyMcJet", "ext_toyMcJet", pdf_toyMcJet, nEv_toyMc);
+    RooFitResult* res_toyMcJet = ext_toyMcJet.fitTo(thisToyMc, SumW2Error(false), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
-    RooRealVar     lamda_toyMC("lamda_toyMC", "lamda_toyMC", myGuess, myGuess*1.5, myGuess*0.5);
-    RooExponential model_toyMC("model_toyMC", "model_toyMC", mJet, lamda_toyMC);
-    RooExtendPdf   ext_model_toyMC("ext_model_toyMC", "ext_model_toyMC", model_toyMC, nToyMcEvents);
-    RooFitResult*  toyMC_result = ext_model_toyMC.fitTo(thisToyMC, SumW2Error(true), Extended(true), Range("lowSB,highSB"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+    // fprintf(stdout, "nToy=%i\tj_mcToy=%f\tstatus=%i\n", ntoy, j_toymc.getVal(), toyMC_result->status());
 
-    // fprintf(stdout, "nToy=%i\tlamdaToy=%f\tstatus=%i\n", ntoy, lamda_toyMC.getVal(), toyMC_result->status());
-
-    if( toyMC_result->status() != 0 ) continue;
+    if( res_toyMcJet->status() != 0 ) continue;
    
     // calulate normalize factor
 
-    RooAbsReal* nSIGFit = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("signal"));
-    RooAbsReal* nSBFit  = ext_model_toyMC.createIntegral(mjet, NormSet(mjet), Range("lowSB,highSB"));
+    RooAbsReal* nSIGFit = ext_toyMcJet.createIntegral(RooArgSet(mJet), NormSet(RooArgSet(mJet)), Range("SG"));
+    RooAbsReal* nSBFit  = ext_toyMcJet.createIntegral(RooArgSet(mJet), NormSet(RooArgSet(mJet)), Range("SB_l,SB_h"));
 
     RooRealVar nSBHist("nSBHist", "nSBHist", 0., 1.e10);
 
-    nSBHist.setVal(setToyMC->sumEntries(sbCut));
+    nSBHist.setVal(set_toyMc->sumEntries(cut_sb));
     nSBHist.setConstant(true);
 
     float toyNormFactor = nSBHist.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
-    float toyNormHiste  = setToyMC->sumEntries(sigCut);
+    float toyNormHiste  = set_toyMc->sumEntries(cut_sg);
 
     RooFormulaVar formula("formula", "events in signal region of toyMC", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
 
     h_bias->Fill((toyNormFactor - toyNormHiste)/toyNormHiste);
-    h_pull->Fill((toyNormFactor - toyNormHiste)/formula.getPropagatedError(*toyMC_result));
+    h_pull->Fill((toyNormFactor - toyNormHiste)/formula.getPropagatedError(*res_toyMcJet));
 
   } // End of ntoy loop
 
@@ -137,12 +137,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   gb.fitTo(hbias);
   gp.fitTo(hpull);
 
-  // Another toy MC study using RooMCStudy 
-
-  RooMCStudy* mcstudy = new RooMCStudy(model, mJet, Binned(false), Silence(true), Extended(true), FitOptions(Save(1), PrintEvalErrors(false)));
-  
-  mcstudy->generateAndFit(1000, dataSet.sumEntries());
-
   // Plot the results on frame 
 
   RooPlot* mJetFrame        = mJet.frame();
@@ -151,23 +145,22 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooPlot* pullFrame        = pull.frame();
   RooPlot* mJetPullFrame    = mJet.frame();
   RooPlot* mJetSBPullFrame  = mJet.frame();
-  RooPlot* mcstudyPullFrame = mcstudy->plotPull(lamda, FrameRange(-9.5,9.5), Bins(19), FitGauss(true));
 
-  dataSet  .plotOn(mJetFrame, Binning(binsmJet)); 
-  ext_model.plotOn(mJetFrame, Range("allRange"), VisualizeError(*mJet_result,1,false), FillStyle(3002));
-  dataSet  .plotOn(mJetFrame, Binning(binsmJet));
-  ext_model.plotOn(mJetFrame, Range("allRange"));
+  set_Dom  .plotOn(mJetFrame, Binning(bin_mJet)); 
+  ext_McJet.plotOn(mJetFrame, Range("All"), VisualizeError(*res_McJet,1,false), FillStyle(3002));
+  set_Dom  .plotOn(mJetFrame, Binning(bin_mJet));
+  ext_McJet.plotOn(mJetFrame, Range("All"));
 
   mJetPullFrame->addObject(mJetFrame->pullHist(), "P");
 
-  dataSetSB  .plotOn(mJetSBFrame, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetSBFrame, Range("allRange"), VisualizeError(*mJetSB_result,1,false), FillStyle(3002));
-  dataSetSB  .plotOn(mJetSBFrame, Binning(binsmJet));
-  ext_modelSB.plotOn(mJetSBFrame, Range("allRange"));
+  set_sbDom  .plotOn(mJetSBFrame, Binning(bin_mJet));
+  ext_sbMcJet.plotOn(mJetSBFrame, Range("All"), VisualizeError(*res_sbMcJet,1,false), FillStyle(3002));
+  set_sbDom  .plotOn(mJetSBFrame, Binning(bin_mJet));
+  ext_sbMcJet.plotOn(mJetSBFrame, Range("All"));
 
   mJetSBPullFrame->addObject(mJetSBFrame->pullHist(), "P");
 
-  ext_model.plotOn(mJetSBFrame, Normalization(dataSet.sumEntries(),RooAbsReal::NumEvent), Range("allRange"), LineStyle(7), LineColor(kRed));
+  ext_McJet.plotOn(mJetSBFrame, Normalization(set_Dom.sumEntries(),RooAbsReal::NumEvent), Range("All"), LineStyle(7), LineColor(kRed));
 
   hbias.plotOn(biasFrame);
   gb.plotOn(biasFrame);
@@ -284,12 +277,6 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   c1.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
   
   TCanvas c("c","",0,0,1000,800);
-
-  c.cd();
-  mcstudyPullFrame->getAttText()->SetTextSize(0.025);
-  mcstudyPullFrame->SetTitle("");
-  mcstudyPullFrame->Draw();
-  c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
   c.Clear();
   c.cd();

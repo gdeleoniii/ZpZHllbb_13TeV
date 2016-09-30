@@ -28,7 +28,7 @@ float param::value(string keyWord){
 
   string tFlavor, tBtag;
   float a_domSb, b_domSb, a_domSg, b_domSg, a_sub1Sb, b_sub1Sb, a_sub1Sg, b_sub1Sg, a_sub2Sb, b_sub2Sb, a_sub2Sg, b_sub2Sg, a_dataSb, b_dataSb;
-  float j_data, thisParam;
+  float j_data, j_mc, thisParam;
 
   // ignore first line of text file
 
@@ -51,7 +51,8 @@ float param::value(string keyWord){
 	 b_sub2Sg >>
 	 a_dataSb >> 
 	 b_dataSb >> 
-	 j_data   ){
+	 j_data   >>
+	 j_mc     ){
   
     if( flavor_ == tFlavor && btag_ == tBtag ){
     
@@ -114,6 +115,10 @@ float param::value(string keyWord){
       else if( keyWord == "j_data"      ) thisParam = j_data;
       else if( keyWord == "j_dataMin"   ) thisParam = j_data*0.5;
       else if( keyWord == "j_dataMax"   ) thisParam = j_data*1.5;
+
+      else if( keyWord == "j_mc"        ) thisParam = j_mc;
+      else if( keyWord == "j_mcMin"     ) thisParam = j_mc*0.5;
+      else if( keyWord == "j_mcMax"     ) thisParam = j_mc*1.5;
 
       else thisParam = 0;
     
