@@ -8,6 +8,7 @@ void signalShape(string channel, string catcut){
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
   RooMsgService::instance().setSilentMode(true);
+  gROOT->ProcessLine("gErrorIgnoreLevel=kWarning;");
 
   int mass[10] = {800,1000,1200,1400,1600,1800,2000,2500,3000,3500};
 

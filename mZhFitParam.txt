@@ -1,5 +1,5 @@
-flavor btag a_domSb b_domSb a_domSg b_domSg a_sub1Sb a_sub1Sg a_sub2Sb a_sub2Sg a_dataSb b_dataSb j_data
-ele    1    84	    0.045   97	    0.047   425	     278      244      303	160	 0.047    70
-ele    2    142	    0.048   84	    0.055   429	     166      248      278	341	 0.001    20
-mu     1    100	    0.043   134	    0.041   265	     305      246      274	135	 0.043    57
-mu     2    203	    0.026   337	    0.001   383	     62       215      224	397	 0.001    259
+flavor btag a_domSb b_domSb a_domSg b_domSg a_sub1Sb b_sub1Sb a_sub1Sg b_sub1Sg a_sub2Sb b_sub2Sb a_sub2Sg b_sub2Sg a_dataSb b_dataSb j_data
+ele    1    267	    0.016   204	    0.028   78	     0.092    645      0.001	70       0.051	  308	   0.003    478	     0.009    58
+ele    2    390	    0.001   344	    0.001   22	     0.037    167      0.001	255      0.001	  256	   0.004    287	     0.001    32
+mu     1    191	    0.038   168	    0.041   332	     0.001    254      0.001	207      0.017	  225	   0.019    94	     0.042    52
+mu     2    214	    0.039   301	    0.001   284	     0.001    56       0.001	220      0.009	  179	   0.024    456	     0.001    100000

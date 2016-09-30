@@ -27,7 +27,8 @@ float param::value(string keyWord){
   ifstream tFile("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/mZhFitParam.txt");
 
   string tFlavor, tBtag;
-  float a_domSb, b_domSb, a_domSg, b_domSg, a_sub1Sb, a_sub1Sg, a_sub2Sb, a_sub2Sg, a_dataSb, b_dataSb, j_data, thisParam;
+  float a_domSb, b_domSb, a_domSg, b_domSg, a_sub1Sb, b_sub1Sb, a_sub1Sg, b_sub1Sg, a_sub2Sb, b_sub2Sb, a_sub2Sg, b_sub2Sg, a_dataSb, b_dataSb;
+  float j_data, thisParam;
 
   // ignore first line of text file
 
@@ -40,10 +41,14 @@ float param::value(string keyWord){
 	 b_domSb  >> 
 	 a_domSg  >> 
 	 b_domSg  >> 
-	 a_sub1Sb >> 
+	 a_sub1Sb >>
+	 b_sub1Sb >> 
 	 a_sub1Sg >> 
+	 b_sub1Sg >>
 	 a_sub2Sb >> 
+	 b_sub2Sb >>
 	 a_sub2Sg >> 
+	 b_sub2Sg >>
 	 a_dataSb >> 
 	 b_dataSb >> 
 	 j_data   ){
@@ -70,18 +75,34 @@ float param::value(string keyWord){
       else if( keyWord == "a_sub1SbMin" ) thisParam = a_sub1Sb*0.5;
       else if( keyWord == "a_sub1SbMax" ) thisParam = a_sub1Sb*1.5;
 
+      else if( keyWord == "b_sub1Sb"    ) thisParam = b_sub1Sb;
+      else if( keyWord == "b_sub1SbMin" ) thisParam = b_sub1Sb*0.5;
+      else if( keyWord == "b_sub1SbMax" ) thisParam = b_sub1Sb*1.5;
+
       else if( keyWord == "a_sub1Sg"    ) thisParam = a_sub1Sg;
       else if( keyWord == "a_sub1SgMin" ) thisParam = a_sub1Sg*0.5;
       else if( keyWord == "a_sub1SgMax" ) thisParam = a_sub1Sg*1.5;
+
+      else if( keyWord == "b_sub1Sg"    ) thisParam = b_sub1Sg;
+      else if( keyWord == "b_sub1SgMin" ) thisParam = b_sub1Sg*0.5;
+      else if( keyWord == "b_sub1SgMax" ) thisParam = b_sub1Sg*1.5;
 
       else if( keyWord == "a_sub2Sb"    ) thisParam = a_sub2Sb;
       else if( keyWord == "a_sub2SbMin" ) thisParam = a_sub2Sb*0.5;
       else if( keyWord == "a_sub2SbMax" ) thisParam = a_sub2Sb*1.5;
       
+      else if( keyWord == "b_sub2Sb"    ) thisParam = b_sub2Sb;
+      else if( keyWord == "b_sub2SbMin" ) thisParam = b_sub2Sb*0.5;
+      else if( keyWord == "b_sub2SbMax" ) thisParam = b_sub2Sb*1.5;
+
       else if( keyWord == "a_sub2Sg"    ) thisParam = a_sub2Sg;
       else if( keyWord == "a_sub2SgMin" ) thisParam = a_sub2Sg*0.5;
       else if( keyWord == "a_sub2SgMax" ) thisParam = a_sub2Sg*1.5;
       
+      else if( keyWord == "b_sub2Sg"    ) thisParam = b_sub2Sg;
+      else if( keyWord == "b_sub2SgMin" ) thisParam = b_sub2Sg*0.5;
+      else if( keyWord == "b_sub2SgMax" ) thisParam = b_sub2Sg*1.5;
+
       else if( keyWord == "a_dataSb"    ) thisParam = a_dataSb;
       else if( keyWord == "a_dataSbMin" ) thisParam = a_dataSb*0.5;
       else if( keyWord == "a_dataSbMax" ) thisParam = a_dataSb*1.5;

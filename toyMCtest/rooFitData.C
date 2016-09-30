@@ -83,21 +83,13 @@ void rooFitData(string channel, string catcut){
 
   // Total events number
 
-  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  0, 1e9);
-  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  0, 1e9);
-  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", 0, 1e9);
-  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", 0, 1e9);
-  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", 0, 1e9);
-  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", 0, 1e9);
-  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", 0, 1e9);
-
-  nEv_sbDom .setVal(set_sbDom .sumEntries());
-  nEv_sgDom .setVal(set_sbDom .sumEntries());
-  nEv_sbSub1.setVal(set_sbSub1.sumEntries());
-  nEv_sgSub1.setVal(set_sgSub1.sumEntries());
-  nEv_sbSub2.setVal(set_sbSub2.sumEntries());
-  nEv_sgSub2.setVal(set_sgSub2.sumEntries());
-  nEv_sbData.setVal(set_sbData.sumEntries());
+  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
+  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
+  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", set_sbSub1.sumEntries(), set_sbSub1.sumEntries()*0.5, set_sbSub1.sumEntries()*1.5);
+  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", set_sgSub1.sumEntries(), set_sgSub1.sumEntries()*0.5, set_sgSub1.sumEntries()*1.5);
+  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", set_sbSub2.sumEntries(), set_sbSub2.sumEntries()*0.5, set_sbSub2.sumEntries()*1.5);
+  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", set_sgSub2.sumEntries(), set_sgSub2.sumEntries()*0.5, set_sgSub2.sumEntries()*1.5);
+  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", set_sbData.sumEntries(), set_sbData.sumEntries()*0.5, set_sbData.sumEntries()*1.5);
 
   // Set fit parameters for ZH mass
 
@@ -110,19 +102,23 @@ void rooFitData(string channel, string catcut){
   RooRealVar a_dataSb("a_dataSb", "a_dataSb", myVal.value("a_dataSb"), myVal.value("a_dataSbMin"), myVal.value("a_dataSbMax"));
   RooRealVar b_dataSb("b_dataSb", "b_dataSb", myVal.value("b_dataSb"), myVal.value("b_dataSbMin"), myVal.value("b_dataSbMax"));
   RooRealVar a_sub1Sb("a_sub1Sb", "a_sub1Sb", myVal.value("a_sub1Sb"), myVal.value("a_sub1SbMin"), myVal.value("a_sub1SbMax"));
+  RooRealVar b_sub1Sb("b_sub1Sb", "b_sub1Sb", myVal.value("b_sub1Sb"), myVal.value("b_sub1SbMin"), myVal.value("b_sub1SbMax"));
   RooRealVar a_sub1Sg("a_sub1Sg", "a_sub1Sg", myVal.value("a_sub1Sg"), myVal.value("a_sub1SgMin"), myVal.value("a_sub1SgMax"));
+  RooRealVar b_sub1Sg("b_sub1Sg", "b_sub1Sg", myVal.value("b_sub1Sg"), myVal.value("b_sub1SgMin"), myVal.value("b_sub1SgMax"));
   RooRealVar a_sub2Sb("a_sub2Sb", "a_sub2Sb", myVal.value("a_sub2Sb"), myVal.value("a_sub2SbMin"), myVal.value("a_sub2SbMax"));
+  RooRealVar b_sub2Sb("b_sub2Sb", "b_sub2Sb", myVal.value("b_sub2Sb"), myVal.value("b_sub2SbMin"), myVal.value("b_sub2SbMax"));
   RooRealVar a_sub2Sg("a_sub2Sg", "a_sub2Sg", myVal.value("a_sub2Sg"), myVal.value("a_sub2SgMin"), myVal.value("a_sub2SgMax"));
+  RooRealVar b_sub2Sg("b_sub2Sg", "b_sub2Sg", myVal.value("b_sub2Sg"), myVal.value("b_sub2SgMin"), myVal.value("b_sub2SgMax"));
 
   // Create pdf for ZH mass
 
-  RooGenericPdf pdf_sbDomZh ("pdf_sbDomZh",  "pdf_sbDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_domSb,b_domSb));
-  RooGenericPdf pdf_sgDomZh ("pdf_sgDomZh",  "pdf_sgDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_domSg,b_domSg));
-  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH,a_dataSb,b_dataSb));
-  RooGenericPdf pdf_sbSub1Zh("pdf_sbSub1Zh", "pdf_sbSub1Zh", "exp(-@0/@1)",         RooArgSet(mZH,a_sub1Sb));
-  RooGenericPdf pdf_sgSub1Zh("pdf_sgSub1Zh", "pdf_sgSub1Zh", "exp(-@0/@1)",         RooArgSet(mZH,a_sub1Sg));
-  RooGenericPdf pdf_sbSub2Zh("pdf_sbSub2Zh", "pdf_sbSub2Zh", "exp(-@0/@1)",         RooArgSet(mZH,a_sub2Sb));
-  RooGenericPdf pdf_sgSub2Zh("pdf_sgSub2Zh", "pdf_sgSub2Zh", "exp(-@0/@1)",         RooArgSet(mZH,a_sub2Sg));
+  RooGenericPdf pdf_sbDomZh ("pdf_sbDomZh",  "pdf_sbDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSb , b_domSb));
+  RooGenericPdf pdf_sgDomZh ("pdf_sgDomZh",  "pdf_sgDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSg , b_domSg));
+  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_dataSb, b_dataSb));
+  RooGenericPdf pdf_sbSub1Zh("pdf_sbSub1Zh", "pdf_sbSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sb, b_sub1Sb));
+  RooGenericPdf pdf_sgSub1Zh("pdf_sgSub1Zh", "pdf_sgSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sg, b_sub1Sg));
+  RooGenericPdf pdf_sbSub2Zh("pdf_sbSub2Zh", "pdf_sbSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sb, b_sub2Sb));
+  RooGenericPdf pdf_sgSub2Zh("pdf_sgSub2Zh", "pdf_sgSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sg, b_sub2Sg));
 
   // Extended pdf from RooGenericPdf
 
@@ -168,7 +164,7 @@ void rooFitData(string channel, string catcut){
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, SumW2Error(true), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, SumW2Error(false), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
@@ -189,8 +185,10 @@ void rooFitData(string channel, string catcut){
   arg_combine.add(b_dataSb);
   arg_combine.add(nEv_sbSub1);
   arg_combine.add(a_sub1Sb);
+  arg_combine.add(b_sub1Sb);
   arg_combine.add(nEv_sbSub2);
   arg_combine.add(a_sub2Sb);
+  arg_combine.add(b_sub2Sb);
   arg_combine.add(nEv_sgDom);
   arg_combine.add(a_domSg);
   arg_combine.add(b_domSg);
@@ -199,13 +197,15 @@ void rooFitData(string channel, string catcut){
   arg_combine.add(b_domSb);
   arg_combine.add(nEv_sgSub1);
   arg_combine.add(a_sub1Sg);
+  arg_combine.add(b_sub1Sg);
   arg_combine.add(nEv_sgSub2);
   arg_combine.add(a_sub2Sg);
+  arg_combine.add(b_sub2Sg);
 
   float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
 
   RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*@1*exp(-@0/(@2+@3*@0))/@4/exp(-@0/(@5+@6*@0))", alpConst), arg_alpha);
-  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(@1*exp(-@0/(@2+@3*@0))-@4*exp(-@0/@5)-@6*exp(-@0/@7))*%f*@8*exp(-@0/(@9+@10*@0))/@11/exp(-@0/(@12+@13*@0))+@14*exp(-@0/@15)+@16*exp(-@0/@17)", alpConst), arg_combine);
+  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(@1*exp(-@0/(@2+@3*@0))-@4*exp(-@0/(@5+@6*@0))-@7*exp(-@0/(@8+@9*@0)))*%f*@10*exp(-@0/(@11+@12*@0))/@13/exp(-@0/(@14+@15*@0))+@16*exp(-@0/(@17+@18*@0))+@19*exp(-@0/(@20+@21*@0))", alpConst), arg_combine);
 
   // jet mass in data side band
 
@@ -213,7 +213,7 @@ void rooFitData(string channel, string catcut){
   RooGenericPdf pdf_dataJet("pdf_dataJet", "pdf_dataJet", "exp(-@0/@1)", RooArgSet(mJet, j_data));
   RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_sbData);
 
-  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, SumW2Error(true), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, SumW2Error(false), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
 
   // Normalize factor to normalize the background in signal region of data
 
@@ -250,12 +250,17 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "a_domSg    = %.3f +- %.3f\n", a_domSg   .getVal(), a_domSg   .getError());
   fprintf(stdout, "b_domSg    = %.3f +- %.3f\n", b_domSg   .getVal(), b_domSg   .getError());
   fprintf(stdout, "a_sub1Sb   = %.3f +- %.3f\n", a_sub1Sb  .getVal(), a_sub1Sb  .getError());
+  fprintf(stdout, "b_sub1Sb   = %.3f +- %.3f\n", b_sub1Sb  .getVal(), b_sub1Sb  .getError());
   fprintf(stdout, "a_sub1Sg   = %.3f +- %.3f\n", a_sub1Sg  .getVal(), a_sub1Sg  .getError());
+  fprintf(stdout, "b_sub1Sg   = %.3f +- %.3f\n", b_sub1Sg  .getVal(), b_sub1Sg  .getError());
   fprintf(stdout, "a_sub2Sb   = %.3f +- %.3f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
+  fprintf(stdout, "b_sub2Sb   = %.3f +- %.3f\n", b_sub2Sb  .getVal(), b_sub2Sb  .getError());
   fprintf(stdout, "a_sub2Sg   = %.3f +- %.3f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
+  fprintf(stdout, "b_sub2Sg   = %.3f +- %.3f\n", b_sub2Sg  .getVal(), b_sub2Sg  .getError());
   fprintf(stdout, "a_dataSb   = %.3f +- %.3f\n", a_dataSb  .getVal(), a_dataSb  .getError());
   fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
   fprintf(stdout, "j_data     = %.3f +- %.3f\n", j_data    .getVal(), j_data    .getError());
+  fprintf(stdout, "alpConst   = %.3f\n", alpConst);
   fprintf(stdout, "nEv_subDom = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
   // Plot the results on frame 
@@ -295,7 +300,7 @@ void rooFitData(string channel, string catcut){
   pdf_combine.plotOn(frm_sbSub1Zh, Slice(cat_combine,"sub1_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sgSub1Zh, Cut("cat_combine==cat_combine::sub1_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  //pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sgSub1Zh, Cut("cat_combine==cat_combine::sub1_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
@@ -314,13 +319,13 @@ void rooFitData(string channel, string catcut){
   set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
-  pdf_alpha  .plotOn(frm_alpha, VisualizeError(*res_combine,1,false), FillStyle(3002), FillColor(kBlack));
+  //pdf_alpha  .plotOn(frm_alpha, VisualizeError(*res_combine,1,false), FillStyle(3002), FillColor(kBlack));
   pdf_alpha  .plotOn(frm_alpha, LineColor(kBlack));
   ext_sbDomZh.plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
   ext_sgDomZh.plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
 
   set_sgData .plotOn(frm_predict, DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  pdf_predict.plotOn(frm_predict, VisualizeError(*res_combine,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
+  //pdf_predict.plotOn(frm_predict, VisualizeError(*res_combine,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
   set_sgData .plotOn(frm_predict, DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_predict.plotOn(frm_predict, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
@@ -571,7 +576,7 @@ void rooFitData(string channel, string catcut){
 
   frm_sbSub2Zh->SetTitle("");
   frm_sbSub2Zh->SetMinimum(1e-4);
-  frm_sbSub2Zh->SetMaximum(1);
+  frm_sbSub2Zh->SetMaximum(1e-1);
   frm_sbSub2Zh->GetXaxis()->SetTitle("");
   frm_sbSub2Zh->GetXaxis()->SetLabelOffset(999);
   frm_sbSub2Zh->Draw();
@@ -614,7 +619,7 @@ void rooFitData(string channel, string catcut){
 
   frm_sgSub2Zh->SetTitle("");
   frm_sgSub2Zh->SetMinimum(1e-4);
-  frm_sgSub2Zh->SetMaximum(1);
+  frm_sgSub2Zh->SetMaximum(1e-1);
   frm_sgSub2Zh->GetXaxis()->SetTitle("");
   frm_sgSub2Zh->GetXaxis()->SetLabelOffset(999);
   frm_sgSub2Zh->Draw();
@@ -709,7 +714,7 @@ void rooFitData(string channel, string catcut){
   c8.Clear();
   c8.cd()->SetLogy(1);
   frm_predict->SetTitle("");
-  frm_predict->SetMinimum(1e-2);
+  frm_predict->SetMinimum(1e-3);
   frm_predict->SetMaximum(catcut=="1"?100:10);
   frm_predict->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
