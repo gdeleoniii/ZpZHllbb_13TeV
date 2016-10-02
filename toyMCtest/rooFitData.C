@@ -23,30 +23,30 @@ void rooFitData(string channel, string catcut){
 
   if( channel == "ele" ){
 
-    tree_Data->Add("data/SingleElectron-Run2015D-v1_eleMiniTree.root");
-    tree_Data->Add("data/SingleElectron-Run2015D-v4_eleMiniTree.root");
+    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v1_eleMiniTree.root");
+    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleElectron-Run2015D-v4_eleMiniTree.root");
 
   }
 
   else if( channel == "mu" ){
 
-    tree_Data->Add("data/SingleMuon-Run2015D-v1_muMiniTree.root");
-    tree_Data->Add("data/SingleMuon-Run2015D-v4_muMiniTree.root");
+    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v1_muMiniTree.root");
+    tree_Data->Add("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/data/SingleMuon-Run2015D-v4_muMiniTree.root");
 
   }
 
   // Dominant and subdominant background
 
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
-  tree_Dom->Add(Form("Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/Zjets/DYJetsToLL_M-50_HT-100to200_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/Zjets/DYJetsToLL_M-50_HT-200to400_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/Zjets/DYJetsToLL_M-50_HT-400to600_13TeV_%sMiniTree.root", channel.data()));
+  tree_Dom->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/Zjets/DYJetsToLL_M-50_HT-600toInf_13TeV_%sMiniTree.root", channel.data()));
 
-  tree_Sub1->Add(Form("minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub1->Add(Form("minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root", channel.data()));
-  tree_Sub2->Add(Form("minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
+  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WW_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/WZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZZ_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub1->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/TT_TuneCUETP8M1_13TeV_%sMiniTree.root",     channel.data()));
+  tree_Sub2->Add(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/toyMCtest/minor/ZH_HToBB_ZToLL_M125_13TeV_%sMiniTree.root", channel.data()));
 
   // Define all the variables from the trees
 
@@ -64,7 +64,7 @@ void rooFitData(string channel, string catcut){
   mJet.setRange("SG",   105.,  135.);
 
   RooBinning bin_mZH (71, 750, 4300);
-  RooBinning bin_mJet(54, 30, 300);
+  RooBinning bin_mJet(54,  30,  300);
 
   TCut cut_bTag = Form("cat==%s", catcut.data());
   TCut cut_sb   = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
@@ -83,13 +83,22 @@ void rooFitData(string channel, string catcut){
 
   // Total events number
 
-  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
-  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
-  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", set_sbSub1.sumEntries(), set_sbSub1.sumEntries()*0.5, set_sbSub1.sumEntries()*1.5);
-  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", set_sgSub1.sumEntries(), set_sgSub1.sumEntries()*0.5, set_sgSub1.sumEntries()*1.5);
-  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", set_sbSub2.sumEntries(), set_sbSub2.sumEntries()*0.5, set_sbSub2.sumEntries()*1.5);
-  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", set_sgSub2.sumEntries(), set_sgSub2.sumEntries()*0.5, set_sgSub2.sumEntries()*1.5);
-  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", set_sbData.sumEntries(), set_sbData.sumEntries()*0.5, set_sbData.sumEntries()*1.5);
+  float nHist_sbDom  = set_sbDom .sumEntries();
+  float nHist_sgDom  = set_sgDom .sumEntries();
+  float nHist_sbSub1 = set_sbSub1.sumEntries();
+  float nHist_sgSub1 = set_sgSub1.sumEntries();
+  float nHist_sbSub2 = set_sbSub2.sumEntries();
+  float nHist_sgSub2 = set_sgSub2.sumEntries();
+  float nHist_sbData = set_sbData.sumEntries();
+
+  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  nHist_sbDom,  nHist_sbDom*0.5,  nHist_sbDom*1.5);
+  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  nHist_sgDom,  nHist_sgDom*0.5,  nHist_sgDom*1.5);
+  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", nHist_sbSub1, nHist_sbSub1*0.5, nHist_sbSub1*1.5);
+  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", nHist_sgSub1, nHist_sgSub1*0.5, nHist_sgSub1*1.5);
+  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", nHist_sbSub2, nHist_sbSub2*0.5, nHist_sbSub2*1.5);
+  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", nHist_sgSub2, nHist_sgSub2*0.5, nHist_sgSub2*1.5);
+  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", nHist_sbData, nHist_sbData*0.5, nHist_sbData*1.5);
+  RooRealVar nEv_forJet("nEv_forJet", "nEv_forJet", nHist_sbData, nHist_sbData*0.5, nHist_sbData*1.5);
 
   // Set fit parameters for ZH mass
 
@@ -114,11 +123,11 @@ void rooFitData(string channel, string catcut){
 
   RooGenericPdf pdf_sbDomZh ("pdf_sbDomZh",  "pdf_sbDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSb , b_domSb));
   RooGenericPdf pdf_sgDomZh ("pdf_sgDomZh",  "pdf_sgDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSg , b_domSg));
-  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_dataSb, b_dataSb));
   RooGenericPdf pdf_sbSub1Zh("pdf_sbSub1Zh", "pdf_sbSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sb, b_sub1Sb));
   RooGenericPdf pdf_sgSub1Zh("pdf_sgSub1Zh", "pdf_sgSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sg, b_sub1Sg));
   RooGenericPdf pdf_sbSub2Zh("pdf_sbSub2Zh", "pdf_sbSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sb, b_sub2Sb));
   RooGenericPdf pdf_sgSub2Zh("pdf_sgSub2Zh", "pdf_sgSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sg, b_sub2Sg));
+  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_dataSb, b_dataSb));
 
   // Extended pdf from RooGenericPdf
 
@@ -164,12 +173,24 @@ void rooFitData(string channel, string catcut){
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, SumW2Error(false), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooLinkedList cmdList;
+
+  cmdList.Add(Save(true).Clone());
+  cmdList.Add(Minos(true).Clone());  
+  cmdList.Add(Offset(true).Clone());
+  cmdList.Add(Extended(true).Clone());
+  cmdList.Add(SumW2Error(false).Clone());
+  cmdList.Add(NumCPU(8).Clone());
+  cmdList.Add(Strategy(2).Clone());
+  cmdList.Add(Range("All").Clone());
+  cmdList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  RooFitResult* res_combine = pdf_combine.fitTo(set_combine, cmdList);
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
 
-  RooArgSet arg_alpha, arg_combine;
+  RooArgSet arg_alpha;
 
   arg_alpha.add(mZH);
   arg_alpha.add(nEv_sgDom);
@@ -178,6 +199,8 @@ void rooFitData(string channel, string catcut){
   arg_alpha.add(nEv_sbDom);
   arg_alpha.add(a_domSb);
   arg_alpha.add(b_domSb);
+
+  RooArgSet arg_combine;
 
   arg_combine.add(mZH);
   arg_combine.add(nEv_sbData);
@@ -211,9 +234,21 @@ void rooFitData(string channel, string catcut){
 
   RooRealVar    j_data("j_data", "j_data", myVal.value("j_data"), myVal.value("j_dataMin"), myVal.value("j_dataMax"));
   RooGenericPdf pdf_dataJet("pdf_dataJet", "pdf_dataJet", "exp(-@0/@1)", RooArgSet(mJet, j_data));
-  RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_sbData);
+  RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_forJet);
 
-  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, SumW2Error(false), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooLinkedList cmdjetList;
+
+  cmdjetList.Add(Save(true).Clone());
+  cmdjetList.Add(Minos(true).Clone());
+  cmdjetList.Add(Offset(true).Clone());
+  cmdjetList.Add(Extended(true).Clone());
+  cmdjetList.Add(SumW2Error(false).Clone());
+  cmdjetList.Add(NumCPU(8).Clone());
+  cmdjetList.Add(Strategy(2).Clone());
+  cmdjetList.Add(Range("SB_l,SB_h").Clone());
+  cmdjetList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  RooFitResult* res_dataJet = ext_dataJet.fitTo(set_sbData, cmdjetList);
 
   // Normalize factor to normalize the background in signal region of data
 
@@ -234,9 +269,7 @@ void rooFitData(string channel, string catcut){
 
   TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), alpConst), 750, 4300);
 
-  //  vector<double> sigma = getFitErrors(f, *res_combine, bin_mZH);
-
-
+  getFitErrors(f, *res_combine, bin_mZH);
 
   fprintf(stdout, "nEv_sbDom  = %.3f +- %.3f\n", nEv_sbDom .getVal(), nEv_sbDom .getError());
   fprintf(stdout, "nEv_sgDom  = %.3f +- %.3f\n", nEv_sgDom .getVal(), nEv_sgDom .getError());
@@ -245,44 +278,62 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "nEv_sbSub2 = %.3f +- %.3f\n", nEv_sbSub2.getVal(), nEv_sbSub2.getError());
   fprintf(stdout, "nEv_sgSub2 = %.3f +- %.3f\n", nEv_sgSub2.getVal(), nEv_sgSub2.getError());
   fprintf(stdout, "nEv_sbData = %.3f +- %.3f\n", nEv_sbData.getVal(), nEv_sbData.getError());
-  fprintf(stdout, "a_domSb    = %.3f +- %.3f\n", a_domSb   .getVal(), a_domSb   .getError());
+  fprintf(stdout, "a_domSb    = %.2f +- %.2f\n", a_domSb   .getVal(), a_domSb   .getError());
   fprintf(stdout, "b_domSb    = %.3f +- %.3f\n", b_domSb   .getVal(), b_domSb   .getError());
-  fprintf(stdout, "a_domSg    = %.3f +- %.3f\n", a_domSg   .getVal(), a_domSg   .getError());
+  fprintf(stdout, "a_domSg    = %.2f +- %.2f\n", a_domSg   .getVal(), a_domSg   .getError());
   fprintf(stdout, "b_domSg    = %.3f +- %.3f\n", b_domSg   .getVal(), b_domSg   .getError());
-  fprintf(stdout, "a_sub1Sb   = %.3f +- %.3f\n", a_sub1Sb  .getVal(), a_sub1Sb  .getError());
+  fprintf(stdout, "a_sub1Sb   = %.2f +- %.2f\n", a_sub1Sb  .getVal(), a_sub1Sb  .getError());
   fprintf(stdout, "b_sub1Sb   = %.3f +- %.3f\n", b_sub1Sb  .getVal(), b_sub1Sb  .getError());
-  fprintf(stdout, "a_sub1Sg   = %.3f +- %.3f\n", a_sub1Sg  .getVal(), a_sub1Sg  .getError());
+  fprintf(stdout, "a_sub1Sg   = %.2f +- %.2f\n", a_sub1Sg  .getVal(), a_sub1Sg  .getError());
   fprintf(stdout, "b_sub1Sg   = %.3f +- %.3f\n", b_sub1Sg  .getVal(), b_sub1Sg  .getError());
-  fprintf(stdout, "a_sub2Sb   = %.3f +- %.3f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
+  fprintf(stdout, "a_sub2Sb   = %.2f +- %.2f\n", a_sub2Sb  .getVal(), a_sub2Sb  .getError());
   fprintf(stdout, "b_sub2Sb   = %.3f +- %.3f\n", b_sub2Sb  .getVal(), b_sub2Sb  .getError());
-  fprintf(stdout, "a_sub2Sg   = %.3f +- %.3f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
+  fprintf(stdout, "a_sub2Sg   = %.2f +- %.2f\n", a_sub2Sg  .getVal(), a_sub2Sg  .getError());
   fprintf(stdout, "b_sub2Sg   = %.3f +- %.3f\n", b_sub2Sg  .getVal(), b_sub2Sg  .getError());
-  fprintf(stdout, "a_dataSb   = %.3f +- %.3f\n", a_dataSb  .getVal(), a_dataSb  .getError());
+  fprintf(stdout, "a_dataSb   = %.2f +- %.2f\n", a_dataSb  .getVal(), a_dataSb  .getError());
   fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
   fprintf(stdout, "j_data     = %.3f +- %.3f\n", j_data    .getVal(), j_data    .getError());
-  fprintf(stdout, "alpConst   = %.3f\n", alpConst);
-  fprintf(stdout, "nEv_subDom = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
+
+  fprintf(stdout, "int(ext_sbDomZh)  = %.3f\n", ext_sbDomZh .getNorm(mZH));
+  fprintf(stdout, "int(ext_sgDomZh)  = %.3f\n", ext_sgDomZh .getNorm(mZH));
+  fprintf(stdout, "int(ext_sbSub1Zh) = %.3f\n", ext_sbSub1Zh.getNorm(mZH));
+  fprintf(stdout, "int(ext_sgSub1Zh) = %.3f\n", ext_sgSub1Zh.getNorm(mZH));
+  fprintf(stdout, "int(ext_sbSub2Zh) = %.3f\n", ext_sbSub2Zh.getNorm(mZH));
+  fprintf(stdout, "int(ext_sgSub2Zh) = %.3f\n", ext_sgSub2Zh.getNorm(mZH));
+  fprintf(stdout, "int(ext_sbDataZh) = %.3f\n", ext_sbDataZh.getNorm(mZH));
+
+  fprintf(stdout, "nHist_sbDom  = %.3f\n", nHist_sbDom );
+  fprintf(stdout, "nHist_sgDom  = %.3f\n", nHist_sgDom );
+  fprintf(stdout, "nHist_sbSub1 = %.3f\n", nHist_sbSub1);
+  fprintf(stdout, "nHist_sgSub1 = %.3f\n", nHist_sgSub1);
+  fprintf(stdout, "nHist_sbSub2 = %.3f\n", nHist_sbSub2);
+  fprintf(stdout, "nHist_sgSub2 = %.3f\n", nHist_sgSub2);
+  fprintf(stdout, "nHist_sbData = %.3f\n", nHist_sbData);
+  fprintf(stdout, "alphaConst   = %.3f\n", alpConst);
+  fprintf(stdout, "normFactor   = %.3f\n", normFactor.getVal());
+  fprintf(stdout, "totalBkg     = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
   // Plot the results on frame 
 
-  RooPlot* frm_sbDomZh        = mZH.frame();
-  RooPlot* frm_sgDomZh        = mZH.frame();
-  RooPlot* frm_sbSub1Zh       = mZH.frame();
-  RooPlot* frm_sgSub1Zh       = mZH.frame();
-  RooPlot* frm_sbSub2Zh       = mZH.frame();
-  RooPlot* frm_sgSub2Zh       = mZH.frame();
-  RooPlot* frm_sbDataZh       = mZH.frame();
-  RooPlot* frm_alpha          = mZH.frame();
-  RooPlot* frm_predict        = mZH.frame();
-  RooPlot* frm_dataJet        = mJet.frame();
-  RooPlot* frm_sbDomZh_pull   = mZH.frame();
-  RooPlot* frm_sgDomZh_pull   = mZH.frame();
-  RooPlot* frm_sbSub1Zh_pull  = mZH.frame();
-  RooPlot* frm_sgSub1Zh_pull  = mZH.frame();
-  RooPlot* frm_sbSub2Zh_pull  = mZH.frame();
-  RooPlot* frm_sgSub2Zh_pull  = mZH.frame();
-  RooPlot* frm_sbDataZh_pull  = mZH.frame();
-  RooPlot* frm_dataJet_pull   = mJet.frame();
+  RooPlot* frm_sbDomZh       = mZH.frame();
+  RooPlot* frm_sgDomZh       = mZH.frame();
+  RooPlot* frm_sbSub1Zh      = mZH.frame();
+  RooPlot* frm_sgSub1Zh      = mZH.frame();
+  RooPlot* frm_sbSub2Zh      = mZH.frame();
+  RooPlot* frm_sgSub2Zh      = mZH.frame();
+  RooPlot* frm_sbDataZh      = mZH.frame();
+  RooPlot* frm_alpha         = mZH.frame();
+  RooPlot* frm_predict       = mZH.frame();
+  RooPlot* frm_dataJet       = mJet.frame();
+  RooPlot* frm_sbDomZh_pull  = mZH.frame();
+  RooPlot* frm_sgDomZh_pull  = mZH.frame();
+  RooPlot* frm_sbSub1Zh_pull = mZH.frame();
+  RooPlot* frm_sgSub1Zh_pull = mZH.frame();
+  RooPlot* frm_sbSub2Zh_pull = mZH.frame();
+  RooPlot* frm_sgSub2Zh_pull = mZH.frame();
+  RooPlot* frm_sbDataZh_pull = mZH.frame();
+  RooPlot* frm_predict_pull  = mZH.frame();
+  RooPlot* frm_dataJet_pull  = mJet.frame();
 
   set_combine.plotOn(frm_sbDomZh, Cut("cat_combine==cat_combine::dom_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbDomZh, Slice(cat_combine,"dom_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
@@ -305,27 +356,27 @@ void rooFitData(string channel, string catcut){
   pdf_combine.plotOn(frm_sgSub1Zh, Slice(cat_combine,"sub1_SG"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sbSub2Zh, Cut("cat_combine==cat_combine::sub2_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  //pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sbSub2Zh, Cut("cat_combine==cat_combine::sub2_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbSub2Zh, Slice(cat_combine,"sub2_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sgSub2Zh, Cut("cat_combine==cat_combine::sub2_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  //pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sgSub2Zh, Cut("cat_combine==cat_combine::sub2_SG"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sgSub2Zh, Slice(cat_combine,"sub2_SG"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
   set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  //pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
+  pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), VisualizeError(*res_combine,1,false), FillStyle(3002));
   set_combine.plotOn(frm_sbDataZh, Cut("cat_combine==cat_combine::data_SB"), DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_combine.plotOn(frm_sbDataZh, Slice(cat_combine,"data_SB"), ProjWData(cat_combine,set_combine), LineColor(kBlue));
 
-  //pdf_alpha  .plotOn(frm_alpha, VisualizeError(*res_combine,1,false), FillStyle(3002), FillColor(kBlack));
+  pdf_alpha  .plotOn(frm_alpha, VisualizeError(*res_combine,1,false), FillStyle(3002), FillColor(kBlack));
   pdf_alpha  .plotOn(frm_alpha, LineColor(kBlack));
   ext_sbDomZh.plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kBlue));
   ext_sgDomZh.plotOn(frm_alpha, Normalization(1, RooAbsReal::NumEvent), LineColor(kRed));
 
   set_sgData .plotOn(frm_predict, DataError(RooAbsData::SumW2), Binning(bin_mZH));
-  //pdf_predict.plotOn(frm_predict, VisualizeError(*res_combine,1,false), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
+  pdf_predict.plotOn(frm_predict, VisualizeError(*res_combine,1,true), Normalization(normFactor.getVal(), RooAbsReal::NumEvent), FillStyle(3002));
   set_sgData .plotOn(frm_predict, DataError(RooAbsData::SumW2), Binning(bin_mZH));
   pdf_predict.plotOn(frm_predict, Normalization(normFactor.getVal(), RooAbsReal::NumEvent), LineColor(kBlue));
   // Using RooAbsReal::NumEvent in order to consider the bin width of data set. Equivalent to (normFactor*binWidth) if using RooAbsReal::Raw.
@@ -446,7 +497,7 @@ void rooFitData(string channel, string catcut){
   c2_up->cd()->SetLogy(1);
 
   frm_sbDataZh->SetTitle("");
-  frm_sbDataZh->SetMinimum(1e-1);
+  frm_sbDataZh->SetMinimum(1e-2);
   frm_sbDataZh->SetMaximum(catcut=="1"?100:10);
   frm_sbDataZh->GetXaxis()->SetTitle("");
   frm_sbDataZh->GetXaxis()->SetLabelOffset(999);
@@ -454,7 +505,7 @@ void rooFitData(string channel, string catcut){
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
   lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "data in sidebands");
 
   c2_up->RedrawAxis();
@@ -496,8 +547,8 @@ void rooFitData(string channel, string catcut){
   frm_sbSub1Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (VV+t#bar{t}) in sidebands");
   
   c3_up->RedrawAxis();
@@ -582,8 +633,8 @@ void rooFitData(string channel, string catcut){
   frm_sbSub2Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (ZH) in sidebands");
 
   c5_up->RedrawAxis();
@@ -668,8 +719,8 @@ void rooFitData(string channel, string catcut){
   frm_dataJet->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
   lar.DrawLatexNDC(0.15, 0.78, Form("Normalization factor: %.3f#pm%.3f", normFactor.getVal(), normFactorUnc));
   
@@ -693,9 +744,50 @@ void rooFitData(string channel, string catcut){
   c7.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 
   TCanvas c8("c8","",0,0,1000,800);
+  
+  c8.Divide(1,2);
+
+  TPad* c8_up = (TPad*)c8.GetListOfPrimitives()->FindObject("c8_1");
+  TPad* c8_dw = (TPad*)c8.GetListOfPrimitives()->FindObject("c8_2"); 
+
+  c8_up->SetPad(0,1-up_height,1,1);
+  c8_dw->SetPad(0,0,1,dw_height);
+  c8_dw->SetBottomMargin(0.25);
+  c8_up->cd()->SetLogy(1);
+
+  frm_predict->SetTitle("");
+  frm_predict->SetMinimum(1e-2);
+  frm_predict->SetMaximum(catcut=="1"?100:10);
+  frm_predict->Draw();
+
+  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
+
+  c8_up->RedrawAxis();
+  c8_dw->cd()->SetLogy(0);
+
+  frm_predict_pull->addObject(frm_predict->pullHist(), "P");
+  frm_predict_pull->SetTitle("");
+  frm_predict_pull->GetYaxis()->SetTitle("Pulls");
+  frm_predict_pull->GetYaxis()->SetTitleOffset(0.25);
+  frm_predict_pull->GetXaxis()->SetLabelSize(0.125);
+  frm_predict_pull->GetXaxis()->SetTitleSize(0.125);
+  frm_predict_pull->GetYaxis()->SetLabelSize(0.125);
+  frm_predict_pull->GetYaxis()->SetTitleSize(0.125);
+  frm_predict_pull->GetYaxis()->SetNdivisions(505);
+  frm_predict_pull->SetMinimum(-4);
+  frm_predict_pull->SetMaximum(4);
+  frm_predict_pull->Draw();
+
+  c8.Draw();
+  c8.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  TCanvas c9("c9","",0,0,1000,800);
   TLegend leg(0.60,0.70,0.85,0.80);
 
-  c8.cd();
+  c9.cd();
   frm_alpha->SetTitle("");
   frm_alpha->GetYaxis()->SetTitle("Normalization");
   frm_alpha->GetYaxis()->SetTitleOffset(1.3);
@@ -709,18 +801,6 @@ void rooFitData(string channel, string catcut){
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  c8.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
-
-  c8.Clear();
-  c8.cd()->SetLogy(1);
-  frm_predict->SetTitle("");
-  frm_predict->SetMinimum(1e-3);
-  frm_predict->SetMaximum(catcut=="1"?100:10);
-  frm_predict->Draw();
-  lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s btag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
-  c8.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
+  c9.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }

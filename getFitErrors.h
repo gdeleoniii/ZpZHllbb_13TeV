@@ -1,34 +1,52 @@
 // Manually calculate propagated fit uncertainties along mZH by self-difinition pdf and RooFitResults
 // This is not a general function. The RooFitResult should be consistent with TF1.
 
-vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
+void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
 
   const RooArgList& myList = fitRes.floatParsFinal();
   const TString myFormula = f.GetExpFormula();
-  const vector<string> myOrder{"nEv_sbData","a_dataSb","b_dataSb","nEv_sbSub1","a_sub1Sb","nEv_sbSub2","a_sub2Sb","nEv_sgDom","a_domSg","b_domSg","nEv_sbDom","a_domSb","b_domSb","nEv_sgSub1","a_sub1Sg","nEv_sgSub2","a_sub2Sg"};
-
+  const vector<string> myOrder{
+    "nEv_sbData",
+      "a_dataSb",
+      "b_dataSb",
+      "nEv_sbSub1",
+      "a_sub1Sb",
+      "b_sub1Sb",
+      "nEv_sbSub2",
+      "a_sub2Sb",
+      "b_sub2Sb",
+      "nEv_sgDom",
+      "a_domSg",
+      "b_domSg",
+      "nEv_sbDom",
+      "a_domSb",
+      "b_domSb",
+      "nEv_sgSub1",
+      "a_sub1Sg",
+      "b_sub1Sg",
+      "nEv_sgSub2",
+      "a_sub2Sg",
+      "b_sub2Sg"};
+  
+  int intIdx[myList.getSize()]; // to store RooFit internal Index, used in M & Mt below
   double cenVal[myList.getSize()], errVal[myList.getSize()];
 
   for( unsigned int ipar = 0; ipar < myList.getSize(); ++ipar ){
 
     int idx = myList.index(myOrder[ipar].data());
 
+    intIdx[ipar] = idx;
     cenVal[ipar] = ((RooRealVar&)myList[idx]).getVal();
     errVal[ipar] = ((RooRealVar&)myList[idx]).getError();
+
   }
 
   f.SetParameters(cenVal);
 
-  fitRes.printMultiline(cout ,true,"\t");
-
-  fitRes.correlationMatrix().Print();
-  fitRes.covarianceMatrix().Print();
-
-
-  for(int i=0; i<17; ++i){
-    fprintf(stdout, "%i\t%f\n", i, TMath::Sqrt((fitRes.covarianceMatrix())(i,i)));
-  }
-
+  //fitRes.Print();
+  //fitRes.correlationMatrix().Print("t");
+  //fitRes.covarianceMatrix().Print();
+  
   double x = myBins.lowBound();
   vector<double> sigma;
 
@@ -53,8 +71,8 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
       f_tempUp.SetParameters(cenTempUp);
       f_tempDw.SetParameters(cenTempDw);
 
-      M(ipar,0) = (fabs(f.Eval(x)-f_tempUp.Eval(x)) > fabs(f.Eval(x)-f_tempDw.Eval(x))) ? fabs(f.Eval(x)-f_tempUp.Eval(x)) : fabs(f.Eval(x)-f_tempDw.Eval(x));
-      Mt(0,ipar) = M(ipar,0);
+      M(intIdx[ipar],0) = (fabs(f.Eval(x)-f_tempUp.Eval(x)) > fabs(f.Eval(x)-f_tempDw.Eval(x))) ? fabs(f.Eval(x)-f_tempUp.Eval(x)) : fabs(f.Eval(x)-f_tempDw.Eval(x));
+      Mt(0,intIdx[ipar]) = M(intIdx[ipar],0);
 
     }
 
@@ -63,12 +81,10 @@ vector<double> getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning 
 
     sigma.push_back(TMath::Sqrt(sigmaSquare(0,0)));
     
-    //fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
+    fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
 
     x += myBins.binWidth(1);
 
   }
-
-  return sigma;
-
+  
 }
