@@ -225,10 +225,19 @@ void rooFitData(string channel, string catcut){
   arg_combine.add(a_sub2Sg);
   arg_combine.add(b_sub2Sg);
 
-  float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
+  // Normalization correction
 
-  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("%f*@1*exp(-@0/(@2+@3*@0))/@4/exp(-@0/(@5+@6*@0))", alpConst), arg_alpha);
-  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(@1*exp(-@0/(@2+@3*@0))-@4*exp(-@0/(@5+@6*@0))-@7*exp(-@0/(@8+@9*@0)))*%f*@10*exp(-@0/(@11+@12*@0))/@13/exp(-@0/(@14+@15*@0))+@16*exp(-@0/(@17+@18*@0))+@19*exp(-@0/(@20+@21*@0))", alpConst), arg_combine);
+  float corr_sbDom  = 1/(ext_sbDomZh .createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sgDom  = 1/(ext_sgDomZh .createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sbSub1 = 1/(ext_sbSub1Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sgSub1 = 1/(ext_sgSub1Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sbSub2 = 1/(ext_sbSub2Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sgSub2 = 1/(ext_sgSub2Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sbData = 1/(ext_sbDataZh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+
+  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("(@4/@1)*(%f*@1*exp(-@0/(@2+@3*@0)))/(%f*@4*exp(-@0/(@5+@6*@0)))", corr_sgDom, corr_sbDom), arg_alpha);
+
+  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(%f*@1*exp(-@0/(@2+@3*@0))-%f*@4*exp(-@0/(@5+@6*@0))-%f*@7*exp(-@0/(@8+@9*@0)))*(@13/@10)*(%f*@10*exp(-@0/(@11+@12*@0)))/(%f*@13*exp(-@0/(@14+@15*@0)))+%f*@16*exp(-@0/(@17+@18*@0))+%f*@19*exp(-@0/(@20+@21*@0))", corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2), arg_combine);
 
   // jet mass in data side band
 
@@ -267,9 +276,9 @@ void rooFitData(string channel, string catcut){
 
   // Own method to get the propagated fit errors
 
-  TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), alpConst), 750, 4300);
+  //  TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), a), 750, 4300);
 
-  getFitErrors(f, *res_combine, bin_mZH);
+  // getFitErrors(f, *res_combine, bin_mZH);
 
   fprintf(stdout, "nEv_sbDom  = %.3f +- %.3f\n", nEv_sbDom .getVal(), nEv_sbDom .getError());
   fprintf(stdout, "nEv_sgDom  = %.3f +- %.3f\n", nEv_sgDom .getVal(), nEv_sgDom .getError());
@@ -294,14 +303,6 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "b_dataSb   = %.3f +- %.3f\n", b_dataSb  .getVal(), b_dataSb  .getError());
   fprintf(stdout, "j_data     = %.3f +- %.3f\n", j_data    .getVal(), j_data    .getError());
 
-  fprintf(stdout, "int(ext_sbDomZh)  = %.3f\n", ext_sbDomZh .getNorm(mZH));
-  fprintf(stdout, "int(ext_sgDomZh)  = %.3f\n", ext_sgDomZh .getNorm(mZH));
-  fprintf(stdout, "int(ext_sbSub1Zh) = %.3f\n", ext_sbSub1Zh.getNorm(mZH));
-  fprintf(stdout, "int(ext_sgSub1Zh) = %.3f\n", ext_sgSub1Zh.getNorm(mZH));
-  fprintf(stdout, "int(ext_sbSub2Zh) = %.3f\n", ext_sbSub2Zh.getNorm(mZH));
-  fprintf(stdout, "int(ext_sgSub2Zh) = %.3f\n", ext_sgSub2Zh.getNorm(mZH));
-  fprintf(stdout, "int(ext_sbDataZh) = %.3f\n", ext_sbDataZh.getNorm(mZH));
-
   fprintf(stdout, "nHist_sbDom  = %.3f\n", nHist_sbDom );
   fprintf(stdout, "nHist_sgDom  = %.3f\n", nHist_sgDom );
   fprintf(stdout, "nHist_sbSub1 = %.3f\n", nHist_sbSub1);
@@ -309,7 +310,6 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "nHist_sbSub2 = %.3f\n", nHist_sbSub2);
   fprintf(stdout, "nHist_sgSub2 = %.3f\n", nHist_sgSub2);
   fprintf(stdout, "nHist_sbData = %.3f\n", nHist_sbData);
-  fprintf(stdout, "alphaConst   = %.3f\n", alpConst);
   fprintf(stdout, "normFactor   = %.3f\n", normFactor.getVal());
   fprintf(stdout, "totalBkg     = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
