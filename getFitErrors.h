@@ -1,5 +1,6 @@
 // Manually calculate propagated fit uncertainties along mZH by self-difinition pdf and RooFitResults
 // This is not a general function. The RooFitResult should be consistent with TF1.
+// myFormula = Form("%f*((%f*[0]*exp(-x/([1]+[2]*x))-%f*[3]*exp(-x/([4]+[5]*x))-%f*[6]*exp(-x/([7]+[8]*x)))*([12]/[9])*(%f*[9]*exp(-x/([10]+[11]*x)))/(%f*[12]*exp(-x/([13]+[14]*x)))+%f*[15]*exp(-x/([16]+[17]*x))+%f*[18]*exp(-x/([19]+[20]*x)))", normFactorVal, corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2);
 
 void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
 
@@ -71,7 +72,8 @@ void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
       f_tempUp.SetParameters(cenTempUp);
       f_tempDw.SetParameters(cenTempDw);
 
-      M(intIdx[ipar],0) = (fabs(f.Eval(x)-f_tempUp.Eval(x)) > fabs(f.Eval(x)-f_tempDw.Eval(x))) ? fabs(f.Eval(x)-f_tempUp.Eval(x)) : fabs(f.Eval(x)-f_tempDw.Eval(x));
+      M(intIdx[ipar],0) = fabs(f.Eval(x)-f_tempUp.Eval(x));
+      //M(intIdx[ipar],0) = (fabs(f.Eval(x)-f_tempUp.Eval(x)) > fabs(f.Eval(x)-f_tempDw.Eval(x))) ? fabs(f.Eval(x)-f_tempUp.Eval(x)) : fabs(f.Eval(x)-f_tempDw.Eval(x));
       Mt(0,intIdx[ipar]) = M(intIdx[ipar],0);
 
     }
@@ -81,7 +83,7 @@ void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
 
     sigma.push_back(TMath::Sqrt(sigmaSquare(0,0)));
     
-    fprintf(stdout, "mZH=%i\tsigma=%.3f\n", (int)x, sigma[nb]); 
+    fprintf(stdout, "mZH=%i\tsigma^2=%.3f\tsigma=%.3f\n", (int)x, sigmaSquare(0,0), sigma[nb]); 
 
     x += myBins.binWidth(1);
 

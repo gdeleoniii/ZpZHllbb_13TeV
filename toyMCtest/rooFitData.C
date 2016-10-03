@@ -271,14 +271,16 @@ void rooFitData(string channel, string catcut){
   float normFactorVal = nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal());
   float normFactorUnc = (catcut=="1") ? normFormula.getPropagatedError(*res_dataJet) : fabs(6-normFactorVal);
 
-  RooRealVar normFactor("normFactor", "normFactor", 0, 1e9);
+  RooRealVar normFactor("normFactor", "normFactor", 0, 1e4);
   normFactor.setVal((catcut=="1") ? normFactorVal : 6);
 
   // Own method to get the propagated fit errors
 
-  //  TF1 f("f", Form("%f*([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/[4])-[5]*exp(-x/[6]))*%f*[7]*exp(-x/([8]+[9]*x))/[10]/exp(-x/([11]+[12]*x))+[13]*exp(-x/[14])+[15]*exp(-x/[16])", normFactor.getVal(), a), 750, 4300);
+  TF1 f("f", Form("%f*((%f*[0]*exp(-x/([1]+[2]*x))-%f*[3]*exp(-x/([4]+[5]*x))-%f*[6]*exp(-x/([7]+[8]*x)))*([12]/[9])*(%f*[9]*exp(-x/([10]+[11]*x)))/(%f*[12]*exp(-x/([13]+[14]*x)))+%f*[15]*exp(-x/([16]+[17]*x))+%f*[18]*exp(-x/([19]+[20]*x)))", normFactorVal, corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2), bin_mZH.lowBound(), bin_mZH.highBound());
 
-  // getFitErrors(f, *res_combine, bin_mZH);
+  getFitErrors(f, *res_combine, bin_mZH);
+
+  // Print everything
 
   fprintf(stdout, "nEv_sbDom  = %.3f +- %.3f\n", nEv_sbDom .getVal(), nEv_sbDom .getError());
   fprintf(stdout, "nEv_sgDom  = %.3f +- %.3f\n", nEv_sgDom .getVal(), nEv_sgDom .getError());
