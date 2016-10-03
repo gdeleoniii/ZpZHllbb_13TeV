@@ -48,10 +48,12 @@ void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
   //fitRes.correlationMatrix().Print("t");
   //fitRes.covarianceMatrix().Print();
   
+  int numBins = myBins.numBins();
+  double binWidth = myBins.binWidth(1);
   double x = myBins.lowBound();
   vector<double> sigma;
 
-  for( int nb = 0; nb <= myBins.numBins(); ++nb ){
+  for( int nb = 0; nb <= numBins; ++nb ){
     
     TMatrixD M (myList.getSize(),1);
     TMatrixD Mt(1,myList.getSize());
@@ -85,8 +87,36 @@ void getFitErrors(TF1 f, const RooFitResult& fitRes, const RooBinning myBins){
     
     fprintf(stdout, "mZH=%i\tsigma^2=%.3f\tsigma=%.3f\n", (int)x, sigmaSquare(0,0), sigma[nb]); 
 
-    x += myBins.binWidth(1);
+    x += binWidth;
 
   }
+
+  double a = myBins.lowBound();
+  double b = a + binWidth;
+
+  TH1D* h_shape[3];
+
+  for( int i = 0; i < 3; ++i ){
+  
+    h_shape[i] = new TH1D(Form("h_shape%i",i), "", numBins, myBins.lowBound(), myBins.highBound());
+
+  }
+  
+  for( int n = 1; n <= numBins; ++n ){
+
+    h_shape[0]->SetBinContent(n, f.Integral(a,b)/binWidth);
+    h_shape[1]->SetBinContent(n, f.Integral(a,b)/binWidth + sigma[n]);
+    h_shape[2]->SetBinContent(n, f.Integral(a,b)/binWidth - sigma[n]);
+
+    a += binWidth;
+    b += binWidth;
+    
+  }
+
+  TFile f_shape("histo_mZH_fitParamUnc.root", "recreate");
+
+  h_shape[0]->Write("h_mZH_fitParam_central");
+  h_shape[1]->Write("h_mZH_fitParam_up");
+  h_shape[2]->Write("h_mZH_fitParam_down");
   
 }
