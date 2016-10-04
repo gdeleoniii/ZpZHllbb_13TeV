@@ -45,7 +45,7 @@ void getAlphaUnc(string channel, string catcut){
 
   // Store histograms in root file (for shape analysis)
 
-  TFile f_shape("histo_mZH_jesUnc.root", "recreate");
+  TFile f_shape(Form("histo_mZH_jesUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
   h_shape[0]->Write("h_mZH_JES_central");
   h_shape[1]->Write("h_mZH_JES_up");

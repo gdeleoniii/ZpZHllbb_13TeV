@@ -93,6 +93,8 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   mJet.setRange("SB_h", 135.,  300.);
   mJet.setRange("SG",   105.,  135.);
 
+  RooBinning bin_mZH(71, 750, 4300);
+
   TCut cut_bTag = Form("cat==%s", catcut.data());
   TCut cut_sb   = "prmass>30 && !(prmass>65 && prmass<135) && prmass<300";
   TCut cut_sg   = "prmass>105 && prmass<135";
@@ -110,13 +112,22 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   // Total events number
 
-  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
-  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  set_sbDom .sumEntries(), set_sbDom .sumEntries()*0.5, set_sbDom .sumEntries()*1.5);
-  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", set_sbSub1.sumEntries(), set_sbSub1.sumEntries()*0.5, set_sbSub1.sumEntries()*1.5);
-  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", set_sgSub1.sumEntries(), set_sgSub1.sumEntries()*0.5, set_sgSub1.sumEntries()*1.5);
-  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", set_sbSub2.sumEntries(), set_sbSub2.sumEntries()*0.5, set_sbSub2.sumEntries()*1.5);
-  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", set_sgSub2.sumEntries(), set_sgSub2.sumEntries()*0.5, set_sgSub2.sumEntries()*1.5);
-  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", set_sbData.sumEntries(), set_sbData.sumEntries()*0.5, set_sbData.sumEntries()*1.5);
+  float nHist_sbDom  = set_sbDom .sumEntries();
+  float nHist_sgDom  = set_sgDom .sumEntries();
+  float nHist_sbSub1 = set_sbSub1.sumEntries();
+  float nHist_sgSub1 = set_sgSub1.sumEntries();
+  float nHist_sbSub2 = set_sbSub2.sumEntries();
+  float nHist_sgSub2 = set_sgSub2.sumEntries();
+  float nHist_sbData = set_sbData.sumEntries();
+
+  RooRealVar nEv_sbDom ("nEv_sbDom",  "nEv_sbDom",  nHist_sbDom,  nHist_sbDom*0.5,  nHist_sbDom*1.5);
+  RooRealVar nEv_sgDom ("nEv_sgDom",  "nEv_sgDom",  nHist_sgDom,  nHist_sgDom*0.5,  nHist_sgDom*1.5);
+  RooRealVar nEv_sbSub1("nEv_sbSub1", "nEv_sbSub1", nHist_sbSub1, nHist_sbSub1*0.5, nHist_sbSub1*1.5);
+  RooRealVar nEv_sgSub1("nEv_sgSub1", "nEv_sgSub1", nHist_sgSub1, nHist_sgSub1*0.5, nHist_sgSub1*1.5);
+  RooRealVar nEv_sbSub2("nEv_sbSub2", "nEv_sbSub2", nHist_sbSub2, nHist_sbSub2*0.5, nHist_sbSub2*1.5);
+  RooRealVar nEv_sgSub2("nEv_sgSub2", "nEv_sgSub2", nHist_sgSub2, nHist_sgSub2*0.5, nHist_sgSub2*1.5);
+  RooRealVar nEv_sbData("nEv_sbData", "nEv_sbData", nHist_sbData, nHist_sbData*0.5, nHist_sbData*1.5);
+  RooRealVar nEv_forJet("nEv_forJet", "nEv_forJet", nHist_sbData, nHist_sbData*0.5, nHist_sbData*1.5);
 
   // Set fit parameters for ZH mass
 
@@ -141,11 +152,11 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 
   RooGenericPdf pdf_sbDomZh ("pdf_sbDomZh",  "pdf_sbDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSb , b_domSb));
   RooGenericPdf pdf_sgDomZh ("pdf_sgDomZh",  "pdf_sgDomZh",  "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_domSg , b_domSg));
-  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_dataSb, b_dataSb));
   RooGenericPdf pdf_sbSub1Zh("pdf_sbSub1Zh", "pdf_sbSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sb, b_sub1Sb));
   RooGenericPdf pdf_sgSub1Zh("pdf_sgSub1Zh", "pdf_sgSub1Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub1Sg, b_sub1Sg));
   RooGenericPdf pdf_sbSub2Zh("pdf_sbSub2Zh", "pdf_sbSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sb, b_sub2Sb));
   RooGenericPdf pdf_sgSub2Zh("pdf_sgSub2Zh", "pdf_sgSub2Zh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_sub2Sg, b_sub2Sg));
+  RooGenericPdf pdf_sbDataZh("pdf_sbDataZh", "pdf_sbDataZh", "exp(-@0/(@1+@2*@0))", RooArgSet(mZH, a_dataSb, b_dataSb));
 
   // Extended pdf from RooGenericPdf
 
@@ -191,26 +202,29 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   pdf_combine.addPdf(ext_sgSub2Zh, "sub2_SG");
   pdf_combine.addPdf(ext_sbDataZh, "data_SB");
 
-  pdf_combine.fitTo(set_combine, SumW2Error(false), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooLinkedList cmdList;
+
+  cmdList.Add(Save(true).Clone());
+  cmdList.Add(Minos(true).Clone());  
+  cmdList.Add(Offset(true).Clone());
+  cmdList.Add(Extended(true).Clone());
+  cmdList.Add(SumW2Error(false).Clone());
+  cmdList.Add(NumCPU(8).Clone());
+  cmdList.Add(Strategy(2).Clone());
+  cmdList.Add(Range("All").Clone());
+  cmdList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  pdf_combine.fitTo(set_combine, cmdList);
 
   // Multiply the model of background in data side band with the model of alpha ratio to the a model of background in data signal region
   // predicted background = (sbDataZh - sbSub1Zh - sbSub2Zh) * alpha + sgSub1Zh + sgSub2Zh
 
-  float alpConst = ext_sbDomZh.createIntegral(mZH)->getVal()/ext_sgDomZh.createIntegral(mZH)->getVal();
-
-  *f_alpha = new TF1(Form("f_alpha%i",i), "[0]*[1]*exp(-x/([2]+[3]*x))/[4]/exp(-x/([5]+[6]*x))", 750, 4300);
-
-  TF1* f_predict = new TF1("f_predict", "([0]*exp(-x/([1]+[2]*x))-[3]*exp(-x/([4]+[5]*x))-[6]*exp(-x/([7]+[8]*x)))*[9]*[10]*exp(-x/([11]+[12]*x))/[13]/exp(-x/([14]+[15]*x))+[16]*exp(-x/([17]+[18]*x))+[19]*exp(-x/([20]+[21]*x))", 750, 4300);
-
-  double param_alpha[7] = {alpConst, 
-			   nEv_sgDom.getVal(), 
-			   a_domSg  .getVal(), 
-			   b_domSg  .getVal(), 
-			   nEv_sbDom.getVal(),
-			   a_domSb  .getVal(), 
-			   b_domSb  .getVal()};
-
-  double param_predict[22] = {nEv_sbData.getVal(), 
+  double param_alpha[4] = {a_domSg.getVal(), 
+			   b_domSg.getVal(), 
+			   a_domSb.getVal(), 
+			   b_domSb.getVal()};
+  
+  double param_predict[19] = {nEv_sbData.getVal(), 
 			      a_dataSb  .getVal(),
 			      b_dataSb  .getVal(),
 			      nEv_sbSub1.getVal(), 
@@ -219,11 +233,8 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 			      nEv_sbSub2.getVal(),
 			      a_sub2Sb  .getVal(),
 			      b_sub2Sb  .getVal(), 
-			      alpConst,
-			      nEv_sgDom .getVal(), 
 			      a_domSg   .getVal(), 
 			      b_domSg   .getVal(),
-			      nEv_sbDom .getVal(),
 			      a_domSb   .getVal(), 
 			      b_domSb   .getVal(),
 			      nEv_sgSub1.getVal(),
@@ -233,42 +244,68 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
 			      a_sub2Sg  .getVal(),
 			      b_sub1Sg  .getVal()};
 
+  // Normalization correction
+
+  float corr_sbDom  = 1/ext_sbDomZh .createIntegral(mZH)->getVal();
+  float corr_sgDom  = 1/ext_sgDomZh .createIntegral(mZH)->getVal();
+  float corr_sbSub1 = 1/ext_sbSub1Zh.createIntegral(mZH)->getVal();
+  float corr_sgSub1 = 1/ext_sgSub1Zh.createIntegral(mZH)->getVal();
+  float corr_sbSub2 = 1/ext_sbSub2Zh.createIntegral(mZH)->getVal();
+  float corr_sgSub2 = 1/ext_sgSub2Zh.createIntegral(mZH)->getVal();
+  float corr_sbData = 1/ext_sbDataZh.createIntegral(mZH)->getVal();
+
+  string eqn_alpha   = Form("(%f*exp(-x/([0]+[1]*x)))/(%f*exp(-x/([2]+[3]*x)))", corr_sgDom, corr_sbDom);
+  string eqn_predict = Form("%f*(%f*[0]*exp(-x/([1]+[2]*x))-%f*[3]*exp(-x/([4]+[5]*x))-%f*[6]*exp(-x/([7]+[8]*x))*(%f*exp(-x/([9]+[10]*x)))/(%f*exp(-x/([11]+[12]*x)))+%f*[13]*exp(-x/([14]+[15]*x))+%f*[16]*exp(-x/([17]+[18]*x)))", bin_mZH.binWidth(1), corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2);
+
+
+  *f_alpha = new TF1(Form("f_alpha%i",i), eqn_alpha.data(), bin_mZH.lowBound(), bin_mZH.highBound());
   (*f_alpha)->SetParameters(param_alpha);
-  f_predict->SetParameters(param_predict);
+
+  TF1 f_predict("f_predict", eqn_predict.data(), bin_mZH.lowBound(), bin_mZH.highBound());
+  f_predict.SetParameters(param_predict);
 
   // jet mass in data side band
 
   RooRealVar    j_data("j_data", "j_data", myVal.value("j_data"), myVal.value("j_dataMin"), myVal.value("j_dataMax"));
   RooGenericPdf pdf_dataJet("pdf_dataJet", "pdf_dataJet", "exp(-@0/@1)", RooArgSet(mJet, j_data));
-  RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_sbData);
+  RooExtendPdf  ext_dataJet("ext_dataJet", "ext_dataJet", pdf_dataJet, nEv_forJet);
 
-  ext_dataJet.fitTo(set_sbData, SumW2Error(false), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooLinkedList cmdjetList;
+
+  cmdjetList.Add(Save(true).Clone());
+  cmdjetList.Add(Minos(true).Clone());
+  cmdjetList.Add(Offset(true).Clone());
+  cmdjetList.Add(Extended(true).Clone());
+  cmdjetList.Add(SumW2Error(false).Clone());
+  cmdjetList.Add(NumCPU(8).Clone());
+  cmdjetList.Add(Strategy(2).Clone());
+  cmdjetList.Add(Range("SB_l,SB_h").Clone());
+  cmdjetList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  ext_dataJet.fitTo(set_sbData, cmdjetList);
 
   // Normalize factor to normalize the background in signal region of data
 
-  RooAbsReal* nFit_sg = ext_dataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("SG"));
-  RooAbsReal* nFit_sb = ext_dataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("SB_l,SB_h"));
+  RooAbsReal* nFit_sg = ext_dataJet.createIntegral(mJet, Range("SG"));
+  RooAbsReal* nFit_sb = ext_dataJet.createIntegral(mJet, Range("SB_l,SB_h"));
 
   // Since the statistic of 2015 data is low, the jet mass distribution in 2 btag is consider as a flat distribution
 
   float normFactorVal = (catcut=="1") ? nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal()) : 6;
 
   // Convert TF1 to TH1
-
-  int nBins = 71;
-  float binWidth = (4300-750)/nBins;
   
-  *h_shape = new TH1D(Form("h_shape%i",i), "", nBins, 750, 4300);
+  *h_shape = new TH1D(Form("h_shape%i",i), "", bin_mZH.numBins(), bin_mZH.lowBound(), bin_mZH.highBound());
 
-  float a = 750;
-  float b = a + binWidth;
+  float a = bin_mZH.lowBound();
+  float b = a + bin_mZH.binWidth(1);
   
-  for( int n = 1; n <= nBins; ++n ){
+  for( int n = 1; n <= bin_mZH.numBins(); ++n ){
 
-    (*h_shape)->SetBinContent(n, f_predict->Integral(a, b)/binWidth);
+    (*h_shape)->SetBinContent(n, f_predict.Integral(a, b)/bin_mZH.binWidth(1));
 
-    a += binWidth;
-    b += binWidth;
+    a += bin_mZH.binWidth(1);
+    b += bin_mZH.binWidth(1);
     
   }
 
