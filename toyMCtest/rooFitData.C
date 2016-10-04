@@ -1,7 +1,6 @@
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/HWWLVJRooPdfs_cxx.so)
 R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/PDFs/PdfDiagonalizer_cc.so)
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/readFitParam.h"
-#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/getFitErrors.h"
 using namespace RooFit;
 
 void rooFitData(string channel, string catcut){
@@ -193,10 +192,8 @@ void rooFitData(string channel, string catcut){
   RooArgSet arg_alpha;
 
   arg_alpha.add(mZH);
-  arg_alpha.add(nEv_sgDom);
   arg_alpha.add(a_domSg);
   arg_alpha.add(b_domSg);
-  arg_alpha.add(nEv_sbDom);
   arg_alpha.add(a_domSb);
   arg_alpha.add(b_domSb);
 
@@ -212,10 +209,8 @@ void rooFitData(string channel, string catcut){
   arg_combine.add(nEv_sbSub2);
   arg_combine.add(a_sub2Sb);
   arg_combine.add(b_sub2Sb);
-  arg_combine.add(nEv_sgDom);
   arg_combine.add(a_domSg);
   arg_combine.add(b_domSg);
-  arg_combine.add(nEv_sbDom);
   arg_combine.add(a_domSb);
   arg_combine.add(b_domSb);
   arg_combine.add(nEv_sgSub1);
@@ -227,17 +222,19 @@ void rooFitData(string channel, string catcut){
 
   // Normalization correction
 
-  float corr_sbDom  = 1/(ext_sbDomZh .createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sgDom  = 1/(ext_sgDomZh .createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sbSub1 = 1/(ext_sbSub1Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sgSub1 = 1/(ext_sgSub1Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sbSub2 = 1/(ext_sbSub2Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sgSub2 = 1/(ext_sgSub2Zh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
-  float corr_sbData = 1/(ext_sbDataZh.createIntegral(mZH)->getVal()*bin_mZH.binWidth(1));
+  float corr_sbDom  = 1/ext_sbDomZh .createIntegral(mZH)->getVal();
+  float corr_sgDom  = 1/ext_sgDomZh .createIntegral(mZH)->getVal();
+  float corr_sbSub1 = 1/ext_sbSub1Zh.createIntegral(mZH)->getVal();
+  float corr_sgSub1 = 1/ext_sgSub1Zh.createIntegral(mZH)->getVal();
+  float corr_sbSub2 = 1/ext_sbSub2Zh.createIntegral(mZH)->getVal();
+  float corr_sgSub2 = 1/ext_sgSub2Zh.createIntegral(mZH)->getVal();
+  float corr_sbData = 1/ext_sbDataZh.createIntegral(mZH)->getVal();
 
-  RooGenericPdf pdf_alpha("pdf_alpha", "pdf_alpha", Form("(@4/@1)*(%f*@1*exp(-@0/(@2+@3*@0)))/(%f*@4*exp(-@0/(@5+@6*@0)))", corr_sgDom, corr_sbDom), arg_alpha);
+  string eqn_alpha   = Form("(%f*exp(-@0/(@1+@2*@0)))/(%f*exp(-@0/(@3+@4*@0)))", corr_sgDom, corr_sbDom);
+  string eqn_predict = Form("%f*(%f*@1*exp(-@0/(@2+@3*@0))-%f*@4*exp(-@0/(@5+@6*@0))-%f*@7*exp(-@0/(@8+@9*@0))*(%f*exp(-@0/(@10+@11*@0)))/(%f*exp(-@0/(@12+@13*@0)))+%f*@14*exp(-@0/(@15+@16*@0))+%f*@17*exp(-@0/(@18+@19*@0)))", bin_mZH.binWidth(1), corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2);
 
-  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", Form("(%f*@1*exp(-@0/(@2+@3*@0))-%f*@4*exp(-@0/(@5+@6*@0))-%f*@7*exp(-@0/(@8+@9*@0)))*(@13/@10)*(%f*@10*exp(-@0/(@11+@12*@0)))/(%f*@13*exp(-@0/(@14+@15*@0)))+%f*@16*exp(-@0/(@17+@18*@0))+%f*@19*exp(-@0/(@20+@21*@0))", corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2), arg_combine);
+  RooGenericPdf pdf_alpha  ("pdf_alpha",   "pdf_alpha",   eqn_alpha.data(),   arg_alpha);
+  RooGenericPdf pdf_predict("pdf_predict", "pdf_predict", eqn_predict.data(), arg_combine);
 
   // jet mass in data side band
 
@@ -261,8 +258,8 @@ void rooFitData(string channel, string catcut){
 
   // Normalize factor to normalize the background in signal region of data
 
-  RooAbsReal* nFit_sg = ext_dataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("SG"));
-  RooAbsReal* nFit_sb = ext_dataJet.createIntegral(RooArgSet(mJet), NormSet(mJet), Range("SB_l,SB_h"));
+  RooAbsReal* nFit_sg = ext_dataJet.createIntegral(mJet, Range("SG"));
+  RooAbsReal* nFit_sb = ext_dataJet.createIntegral(mJet, Range("SB_l,SB_h"));
 
   // Since the statistic of 2015 data is low, the jet mass distribution in 2 btag is consider as a flat distribution
 
@@ -273,12 +270,6 @@ void rooFitData(string channel, string catcut){
 
   RooRealVar normFactor("normFactor", "normFactor", 0, 1e4);
   normFactor.setVal((catcut=="1") ? normFactorVal : 6);
-
-  // Own method to get the propagated fit errors
-
-  TF1 f("f", Form("%f*((%f*[0]*exp(-x/([1]+[2]*x))-%f*[3]*exp(-x/([4]+[5]*x))-%f*[6]*exp(-x/([7]+[8]*x)))*([12]/[9])*(%f*[9]*exp(-x/([10]+[11]*x)))/(%f*[12]*exp(-x/([13]+[14]*x)))+%f*[15]*exp(-x/([16]+[17]*x))+%f*[18]*exp(-x/([19]+[20]*x)))", normFactorVal, corr_sbData, corr_sbSub1, corr_sbSub2, corr_sgDom, corr_sbDom, corr_sgSub1, corr_sgSub2), bin_mZH.lowBound(), bin_mZH.highBound());
-
-  getFitErrors(f, *res_combine, bin_mZH);
 
   // Print everything
 
@@ -390,6 +381,51 @@ void rooFitData(string channel, string catcut){
     ext_dataJet.plotOn(frm_dataJet, Range("All"));
   }
 
+  // Dump the central values and corresponding error band values in frm_predict
+  
+  RooCurve* central_predict = frm_predict->getCurve(frm_predict->nameOf(3));
+  RooCurve* errBand_predict = frm_predict->getCurve(frm_predict->nameOf(1));
+
+  /// separate two curves in errBand_predict
+
+  TGraph* upBound = new TGraph(central_predict->GetN());
+  TGraph* loBound = new TGraph(central_predict->GetN());
+
+  for( int j = 0; j < errBand_predict->GetN(); ++j ){
+
+    if( j < central_predict->GetN() )
+      upBound->SetPoint(j, errBand_predict->GetX()[j], errBand_predict->GetY()[j]);
+    else
+      loBound->SetPoint(j, errBand_predict->GetX()[j], errBand_predict->GetY()[j]);
+
+  }
+
+  float x = bin_mZH.lowBound();
+
+  TH1D* h_shape[3];
+
+  h_shape[0] = new TH1D("h_shape0", "", bin_mZH.numBins(), bin_mZH.lowBound(), bin_mZH.highBound());
+  h_shape[1] = new TH1D("h_shape1", "", bin_mZH.numBins(), bin_mZH.lowBound(), bin_mZH.highBound());
+  h_shape[2] = new TH1D("h_shape2", "", bin_mZH.numBins(), bin_mZH.lowBound(), bin_mZH.highBound());
+  
+  for( int n = 1; n <= bin_mZH.numBins() ; ++n ){
+  
+    h_shape[0]->SetBinContent(n, central_predict->Eval(x));
+    h_shape[1]->SetBinContent(n, upBound->Eval(x));
+    h_shape[2]->SetBinContent(n, loBound->Eval(x));
+
+    x += bin_mZH.binWidth(1);
+    
+  }
+
+  // Store the histograms for limit setting 
+
+  TFile f_shape(Form("histo_mZH_fitParamUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+
+  h_shape[0]->Write("h_mZH_fitParam_central");
+  h_shape[1]->Write("h_mZH_fitParam_up");
+  h_shape[2]->Write("h_mZH_fitParam_down");
+
   // Output the results
 
   TLatex lar;
@@ -409,7 +445,7 @@ void rooFitData(string channel, string catcut){
 
   c0_up->SetPad(0,1-up_height,1,1);
   c0_dw->SetPad(0,0,1,dw_height);
-  c0_dw->SetBottomMargin(0.25);
+  c0_dw->SetBottomMargin(0.25); 
   c0_up->cd()->SetLogy(1);
 
   frm_sbDomZh->SetTitle("");
