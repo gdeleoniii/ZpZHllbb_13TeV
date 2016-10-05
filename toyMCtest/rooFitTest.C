@@ -68,8 +68,32 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
   // Fit jet mass
 
-  RooFitResult* res_McJet   = ext_McJet  .fitTo(set_Dom,   SumW2Error(false), Extended(true), Range("All"),       NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
-  RooFitResult* res_sbMcJet = ext_sbMcJet.fitTo(set_sbDom, SumW2Error(false), Extended(true), Range("SB_l,SB_h"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+  RooLinkedList cmdJetList;
+
+  cmdJetList.Add(Save(true).Clone());
+  cmdJetList.Add(Minos(true).Clone());
+  cmdJetList.Add(Offset(true).Clone());
+  cmdJetList.Add(Extended(true).Clone());
+  cmdJetList.Add(SumW2Error(false).Clone());
+  cmdJetList.Add(NumCPU(8).Clone());
+  cmdJetList.Add(Strategy(2).Clone());
+  cmdJetList.Add(Range("All").Clone());
+  cmdJetList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  RooLinkedList cmdsbJetList;
+
+  cmdsbJetList.Add(Save(true).Clone());
+  cmdsbJetList.Add(Minos(true).Clone());
+  cmdsbJetList.Add(Offset(true).Clone());
+  cmdsbJetList.Add(Extended(true).Clone());
+  cmdsbJetList.Add(SumW2Error(false).Clone());
+  cmdsbJetList.Add(NumCPU(8).Clone());
+  cmdsbJetList.Add(Strategy(2).Clone());
+  cmdsbJetList.Add(Range("SB_l,SB_h").Clone());
+  cmdsbJetList.Add(Minimizer("Minuit2","migrad").Clone());
+
+  RooFitResult* res_McJet   = ext_McJet  .fitTo(set_Dom,   cmdJetList);
+  RooFitResult* res_sbMcJet = ext_sbMcJet.fitTo(set_sbDom, cmdsbJetList);
 
   fprintf(stdout, "j_mc   = %.3f +- %.3f\n", j_mc  .getVal(), j_mc  .getError());
   fprintf(stdout, "j_sbmc = %.3f +- %.3f\n", j_sbmc.getVal(), j_sbmc.getError());
@@ -93,7 +117,20 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     RooGenericPdf pdf_toyMcJet("pdf_toyMcJet", "pdf_toyMcJet", "exp(-@0/@1)", RooArgSet(mJet, j_toymc));
     RooExtendPdf  ext_toyMcJet("ext_toyMcJet", "ext_toyMcJet", pdf_toyMcJet, nEv_toyMc);
-    RooFitResult* res_toyMcJet = ext_toyMcJet.fitTo(thisToyMc, SumW2Error(false), Extended(true), Range("All"), NumCPU(8), Minos(true), Strategy(2), Minimizer("Minuit2"), Save(1));
+
+    RooLinkedList cmdtoyMcJetList;
+
+    cmdtoyMcJetList.Add(Save(true).Clone());
+    cmdtoyMcJetList.Add(Minos(true).Clone());
+    cmdtoyMcJetList.Add(Offset(true).Clone());
+    cmdtoyMcJetList.Add(Extended(true).Clone());
+    cmdtoyMcJetList.Add(SumW2Error(false).Clone());
+    cmdtoyMcJetList.Add(NumCPU(8).Clone());
+    cmdtoyMcJetList.Add(Strategy(2).Clone());
+    cmdtoyMcJetList.Add(Range("SB_l,SB_h").Clone());
+    cmdtoyMcJetList.Add(Minimizer("Minuit2","migrad").Clone());
+
+    RooFitResult* res_toyMcJet = ext_toyMcJet.fitTo(thisToyMc, cmdtoyMcJetList);
 
     // fprintf(stdout, "nToy=%i\tj_mcToy=%f\tstatus=%i\n", ntoy, j_toymc.getVal(), toyMC_result->status());
 

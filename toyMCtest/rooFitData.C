@@ -5,6 +5,8 @@ using namespace RooFit;
 
 void rooFitData(string channel, string catcut){
 
+  gStyle->SetOptStat(0);
+
   // Suppress all the INFO message
 
   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
@@ -304,7 +306,8 @@ void rooFitData(string channel, string catcut){
   fprintf(stdout, "nHist_sgSub2 = %.3f\n", nHist_sgSub2);
   fprintf(stdout, "nHist_sbData = %.3f\n", nHist_sbData);
   fprintf(stdout, "normFactor   = %.3f\n", normFactor.getVal());
-  fprintf(stdout, "totalBkg     = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
+  fprintf(stdout, "totalBkginSG = %.3f\n", nEv_sgDom.getVal()+nEv_sgSub1.getVal()+nEv_sgSub2.getVal());
+  fprintf(stdout, "subDomBkginSG = %.3f\n", nEv_sgSub1.getVal()+nEv_sgSub2.getVal());        
 
   // Plot the results on frame 
 
@@ -839,6 +842,18 @@ void rooFitData(string channel, string catcut){
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
+  c9.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
+
+  c9.Clear();
+  c9.cd()->SetLogy();
+  h_shape[0]->SetTitle("");
+  h_shape[0]->SetMinimum(1e-2);
+  h_shape[0]->SetMaximum(10);
+  h_shape[0]->Draw();
+  h_shape[1]->SetLineColor(kRed);
+  h_shape[1]->Draw("same");
+  h_shape[2]->SetLineColor(kRed);
+  h_shape[2]->Draw("same");
   c9.Print(Form("rooFit_forData_%s_cat%s.pdf)", channel.data(), catcut.data()));
 
 }
