@@ -43,11 +43,11 @@ void murUnc(string channel, string catcut){
 
   // Store histograms in root file (for shape analysis)
 
-  TFile f_shape(Form("histo_mZH_qcdUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+  TFile f_shape(Form("background_QCD_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
-  h_shape[0]->Write("h_mZH_QCD_central");
-  h_shape[1]->Write("h_mZH_QCD_up");
-  h_shape[2]->Write("h_mZH_QCD_down");
+  h_shape[0]->Write("background_QCD_central");
+  h_shape[1]->Write("background_QCD_up");
+  h_shape[2]->Write("background_QCD_down");
 
   // Output the results
 
@@ -166,11 +166,11 @@ void pdfUnc(string channel, string catcut){
 
   // Store histograms in root file (for shape analysis)
 
-  TFile f_shape(Form("histo_mZH_pdfUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+  TFile f_shape(Form("background_PDF_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
-  h_shape  ->Write("h_mZH_PDF_central");
-  h_shapeUp->Write("h_mZH_PDF_up");
-  h_shapeDw->Write("h_mZH_PDF_down");
+  h_shape  ->Write("background_PDF");
+  h_shapeUp->Write("background_PDFUp");
+  h_shapeDw->Write("background_PDFDown");
 
   // Output the results
 

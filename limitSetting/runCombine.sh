@@ -20,16 +20,12 @@ mass=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
 for ((i=0; i<${#CHAN[@]}; i++)); do
     for ((j=0; j<${#BTAG[@]}; j++)); do
 
-	echo -e "*** Now running samples for "${CHAN[$i]}" channel," ${BTAG[$j]}" btag"
-
-#	/bin/bash globalRunLimit.sh ${CHAN[$i]} ${BTAG[$j]}
-
 	echo -e "*** Generate the necessary text file and root file ***"
 	
 	rootfile=mZH${CHAN[$i]}btag${BTAG[$j]}.root
 	textfile=nEv${CHAN[$i]}btag${BTAG[$j]}.txt
 
-	root -q -b -l nZHplots.C+\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\,\"$rootfile\"\,\"$textfile\"\)
+	root -q -b -l nZHplots.C\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\,\"$rootfile\"\,\"$textfile\"\)
 	
         ## make data cards for the combine tool ##
 	
@@ -68,7 +64,7 @@ for ((i=0; i<${#CHAN[@]}; i++)); do
 	cd $pwd
 	echo -e "*** Plot the results using plotAsymptotic.C ***"
 	
-	root -q -b -l plotAsymptotic.C+\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\)
+	root -q -b -l plotAsymptotic.C\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\)
 
 	echo -e ""
 	echo -e ""

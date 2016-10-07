@@ -109,7 +109,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     if( !pullTest ) break;
 
-    RooDataSet* set_toyMc = ext_McJet.generate(RooArgSet(mJet));
+    RooDataSet* set_toyMc = ext_McJet.generate(mJet, Extended(), ProtoData(set_Dom));
     RooDataSet  thisToyMc("thisToyMc", "thisToyMc", RooArgSet(mJet), Cut(cut_sb), Import(*set_toyMc));
 
     RooRealVar nEv_toyMc("nEv_toyMc", "nEv_toyMc", thisToyMc.sumEntries(), thisToyMc.sumEntries()*0.5, thisToyMc.sumEntries()*1.5);
@@ -132,16 +132,16 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     RooFitResult* res_toyMcJet = ext_toyMcJet.fitTo(thisToyMc, cmdtoyMcJetList);
 
-    // fprintf(stdout, "nToy=%i\tj_mcToy=%f\tstatus=%i\n", ntoy, j_toymc.getVal(), toyMC_result->status());
+    fprintf(stdout, "nToy=%i\tj_mcToy=%f\tstatus=%i\n", ntoy, j_toymc.getVal(), res_toyMcJet->status());
 
     if( res_toyMcJet->status() != 0 ) continue;
    
     // calulate normalize factor
 
-    RooAbsReal* nSIGFit = ext_toyMcJet.createIntegral(RooArgSet(mJet), NormSet(RooArgSet(mJet)), Range("SG"));
-    RooAbsReal* nSBFit  = ext_toyMcJet.createIntegral(RooArgSet(mJet), NormSet(RooArgSet(mJet)), Range("SB_l,SB_h"));
+    RooAbsReal* nSIGFit = ext_toyMcJet.createIntegral(mJet, Range("SG"));
+    RooAbsReal* nSBFit  = ext_toyMcJet.createIntegral(mJet, Range("SB_l,SB_h"));
 
-    RooRealVar nSBHist("nSBHist", "nSBHist", 0., 1.e10);
+    RooRealVar nSBHist("nSBHist", "nSBHist", 0, 1e4);
 
     nSBHist.setVal(set_toyMc->sumEntries(cut_sb));
     nSBHist.setConstant(true);
@@ -149,7 +149,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
     float toyNormFactor = nSBHist.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
     float toyNormHiste  = set_toyMc->sumEntries(cut_sg);
 
-    RooFormulaVar formula("formula", "events in signal region of toyMC", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
+    RooFormulaVar formula("formula", "formula", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
 
     h_bias->Fill((toyNormFactor - toyNormHiste)/toyNormHiste);
     h_pull->Fill((toyNormFactor - toyNormHiste)/formula.getPropagatedError(*res_toyMcJet));

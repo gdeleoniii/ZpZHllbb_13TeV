@@ -18,6 +18,10 @@ mv *pdf alphaPdfScaleResults/
 rm -rf $HOME/www/alphaPdfScaleResults/
 mv alphaPdfScaleResults/ $HOME/www/
 
+mkdir background_PDF_root background_QCD_root
+mv *PDF*.root background_PDF_root
+mv *QCD*.root background_QCD_root
+
 echo "All the jobs are finished."
 
 exit

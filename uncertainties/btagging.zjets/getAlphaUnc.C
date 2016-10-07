@@ -45,11 +45,11 @@ void getAlphaUnc(string channel, string catcut){
 
   // Store histograms in root file (for shape analysis)
 
-  TFile f_shape(Form("histo_mZH_bTagUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+  TFile f_shape(Form("background_bTag_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
-  h_shape[0]->Write("h_mZH_bTag_central");
-  h_shape[1]->Write("h_mZH_bTag_up");
-  h_shape[2]->Write("h_mZH_bTag_down");
+  h_shape[0]->Write("background_bTag");
+  h_shape[1]->Write("background_bTagUp");
+  h_shape[2]->Write("background_bTagDown");
 
   // Output the results
 

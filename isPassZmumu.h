@@ -79,6 +79,6 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
     }
   }
 
-  return findMPair ? true : false;
+  return findMPair;
 
 }

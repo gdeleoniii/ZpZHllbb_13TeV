@@ -18,6 +18,9 @@ mv *pdf rooFitDataResults/
 rm -rf $HOME/www/rooFitDataResults/
 mv rooFitDataResults/ $HOME/www/
 
+mkdir background_FitDev_root
+mv *.root background_FitDev_root
+
 echo "All the jobs are finished."
 
 exit

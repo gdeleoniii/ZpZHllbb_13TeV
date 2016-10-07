@@ -3,6 +3,7 @@ R__LOAD_LIBRARY(/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibra
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZee.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassZmumu.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/isPassJet.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonWeight.h"
 #include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagCalhead/BTagCalibrationStandalone.h"
 
 void mZHLimit(string inputFile, string outputFile, string channel, int cat, int mzh=0){
@@ -21,17 +22,28 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
   // to read b-tag effinciency 
 
-  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
-  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/%s_cflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_l = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_udsgflavor_zjetsBtagEff.root", channel.data()));
+  TFile* f_c = TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_cflavor_zjetsBtagEff.root",    channel.data()));
   TFile* f_b = mzh==0 ? 
-    TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.zjets/bTagEffroot/%s_bflavor_zjetsBtagEff.root", channel.data())) :
-    TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/uncertainties/btagging.signal/bTagEffroot/%s_bflavor_signalBtagEff.root", channel.data()));
+    TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_zjetsBtagEff.root",  channel.data())) :
+    TFile::Open(Form("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/bTagEffroot/%s_bflavor_signalBtagEff.root", channel.data()));
   
   TH1F* h_l = (TH1F*)(f_l->Get(Form("%s_udsgflavor", channel.data())));
   TH1F* h_c = (TH1F*)(f_c->Get(Form("%s_cflavor",    channel.data())));
   TH1F* h_b = mzh==0 ?
     (TH1F*)(f_b->Get(Form("%s_bflavor",     channel.data()))) :
     (TH1F*)(f_b->Get(Form("%s_bflavor_m%i", channel.data(), mzh)));
+
+  // to read lepton scale factor / trigger
+
+  TFile* f_ele    = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/CutBasedID_LooseWP_fromTemplates_withSyst_Final.txt_SF2D.root");
+  TFile* f_muScal = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/MuonHighPt_Z_RunCD_Reco74X_Dec17.root");
+  TFile* f_muTrig = TFile::Open("/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/leptonSFroot/SingleMuonTrigger_Z_RunCD_Reco74X_Dec1.root");
+
+  TH2F* h2_ele    = (TH2F*)(f_ele->Get("EGamma_SF2D"));
+  TH2F* h2_muPt20 = (TH2F*)(f_muScal->Get("HighPtID_PtEtaBins_Pt20/abseta_pTtuneP_ratio"));
+  TH2F* h2_muPt53 = (TH2F*)(f_muScal->Get("HighPtID_PtEtaBins_Pt53/abseta_pTtuneP_ratio"));
+  TH2F* h2_muRunD = (TH2F*)(f_muTrig->Get("runD_Mu45_eta2p1_PtEtaBins/abseta_pt_ratio"));
 
   // read the ntuples (in pcncu)
   
@@ -40,12 +52,12 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
   // Declare the histogram
 
-  TH1F* h_totalEvents = (TH1F*)f.Get("h_totalEv");
+  TH1F* h_totalEv = (TH1F*)f.Get("h_totalEv");
      
-  TH1F* h_mZprime = new TH1F("h_mZprime", "mZprime", 100, 400, 5000);
+  TH1F* h_mZH = new TH1F("h_mZH", "h_mZH", 71, 750, 4300);
 
-  h_mZprime->Sumw2();
-  h_mZprime->GetXaxis()->SetTitle("mZprime");
+  h_mZH->Sumw2();
+  h_mZH->GetXaxis()->SetTitle("mZH");
 
   // begin of event loop
 
@@ -58,11 +70,12 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     data.GetEntry(ev);
 
-    Bool_t         isData            = data.GetBool("isData");
-    Float_t        eventWeight       = data.GetFloat("ev_weight");
-    TClonesArray*  muP4              = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray*  eleP4             = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    Bool_t         isData      = data.GetBool("isData");
+    Float_t        eventWeight = data.GetFloat("ev_weight");
+    TClonesArray*  muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray*  FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    vector<bool>& isHighPtMuon = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
 
     // select good reco level events
     // select good leptons
@@ -74,6 +87,55 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     TLorentzVector* thisLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[0]) : (TLorentzVector*)muP4->At(goodLepID[0]);
     TLorentzVector* thatLep = (channel=="ele") ? (TLorentzVector*)eleP4->At(goodLepID[1]) : (TLorentzVector*)muP4->At(goodLepID[1]);
+
+    // calculate lepton weight
+    
+    float thisLepWeight = 1;
+    float thatLepWeight = 1;
+
+    if( mzh != 0){
+
+      if( channel == "ele" ){
+	
+	thisLepWeight = leptonWeight(h2_ele, thisLep, false);
+	thatLepWeight = leptonWeight(h2_ele, thatLep, false);
+	
+      }
+      
+      else if( channel == "mu" ){
+	
+	if( isHighPtMuon[goodLepID[0]] ) 
+	  thisLepWeight = (thisLep->Pt() < 53) ? leptonWeight(h2_muPt20, thisLep) : leptonWeight(h2_muPt53, thisLep);
+	
+	else thisLepWeight = 1;
+	
+	if( isHighPtMuon[goodLepID[1]] )
+	  thatLepWeight = (thatLep->Pt() < 53) ? leptonWeight(h2_muPt20, thatLep) : leptonWeight(h2_muPt53, thatLep);
+	
+	else thatLepWeight = 1;
+	
+      }
+
+    } // only signal samples
+
+    // calculate trigger weight for muon
+
+    float muTrigWeight = 1;
+
+    if( mzh != 0 ){
+
+      if( channel=="mu" ){
+	
+	if( thisLep->Pt() > thatLep->Pt() )
+	  muTrigWeight = (fabs(thisLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thisLep) : 1;
+	else 
+	  muTrigWeight = (fabs(thatLep->Eta()) < 2.1) ? leptonWeight(h2_muRunD, thatLep) : 1;
+	
+      }
+      
+      else muTrigWeight = 1;
+      
+    } // only signal samples
 
     // select good FATjet
 
@@ -96,16 +158,18 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
     
-    h_mZprime->Fill(mllbb, eventWeight*btagWeight);
+    float finalWeight = eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
+
+    h_mZH->Fill(mllbb, finalWeight);
 
   } // end of event loop
 
   fprintf(stderr, "Processed all events\n");
 
-  TFile* outFile = new TFile(Form("%s_mZH%sLimit.root", outputFile.data(), channel.data()), "recreate");
+  TFile* outFile = new TFile(Form("%s_mZHLimit.root", outputFile.data()), "recreate");
 
-  h_mZprime    ->Write("mZprime");
-  h_totalEvents->Write("totalEvents");
+  h_mZH    ->Write("mZH");
+  h_totalEv->Write("totalEv");
 
   outFile->Write();
 

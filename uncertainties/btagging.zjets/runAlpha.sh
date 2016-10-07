@@ -18,6 +18,9 @@ mv *pdf alphabTagScaleResults/
 rm -rf $HOME/www/alphabTagScaleResults/
 mv alphabTagScaleResults/ $HOME/www/
 
+mkdir background_bTag_root
+mv *.root background_bTag_root
+
 echo "All the jobs are finished."
 
 exit

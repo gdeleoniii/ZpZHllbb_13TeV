@@ -18,6 +18,9 @@ mv *pdf alphaJetEnScaleResults/
 rm -rf $HOME/www/alphaJetEnScaleResults/
 mv alphaJetEnScaleResults/ $HOME/www/
 
+mkdir background_JES_root
+mv *.root background_JES_root
+
 echo "All the jobs are finished."
 
 exit

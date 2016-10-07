@@ -405,6 +405,13 @@ void rooFitData(string channel, string catcut){
 
   float x = bin_mZH.lowBound();
 
+  float pullSigma = 1;
+
+  if     ( channel=="ele" && catcut=="1" ) pullSigma = 1.708;
+  else if( channel=="ele" && catcut=="2" ) pullSigma = 2.578;
+  else if( channel=="mu"  && catcut=="1" ) pullSigma = 1.791;
+  else if( channel=="mu"  && catcut=="2" ) pullSigma = 2.460;
+
   TH1D* h_shape[3];
 
   h_shape[0] = new TH1D("h_shape0", "", bin_mZH.numBins(), bin_mZH.lowBound(), bin_mZH.highBound());
@@ -414,8 +421,8 @@ void rooFitData(string channel, string catcut){
   for( int n = 1; n <= bin_mZH.numBins() ; ++n ){
   
     h_shape[0]->SetBinContent(n, central_predict->Eval(x));
-    h_shape[1]->SetBinContent(n, upBound->Eval(x));
-    h_shape[2]->SetBinContent(n, loBound->Eval(x));
+    h_shape[1]->SetBinContent(n, central_predict->Eval(x)+(upBound->Eval(x)-central_predict->Eval(x))*pullSigma);
+    h_shape[2]->SetBinContent(n, central_predict->Eval(x)-(central_predict->Eval(x)-loBound->Eval(x))*pullSigma);
 
     x += bin_mZH.binWidth(1);
     
@@ -423,11 +430,11 @@ void rooFitData(string channel, string catcut){
 
   // Store the histograms for limit setting 
 
-  TFile f_shape(Form("histo_mZH_fitParamUnc_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+  TFile f_shape(Form("background_FitDev_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
-  h_shape[0]->Write("h_mZH_fitParam_central");
-  h_shape[1]->Write("h_mZH_fitParam_up");
-  h_shape[2]->Write("h_mZH_fitParam_down");
+  h_shape[0]->Write("background_FitDev");
+  h_shape[1]->Write("background_FitDevUp");
+  h_shape[2]->Write("background_FitDevDown");
 
   // Output the results
 
