@@ -4,17 +4,18 @@ import os
 #ROOT.gROOT.SetBatch(True)  
 #from DataSetInfo import *
 
-if len(sys.argv) < 5 :
+if len(sys.argv) < 6 :
     print "insufficient options provided see help function "
     exit (1)
 
-if len(sys.argv) == 5 :
+if len(sys.argv) == 6 :
     print ('You are making datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[3])
 
 inputtextfilename=sys.argv[1]
 inputrootfilename=sys.argv[2]
 dirtosave=sys.argv[3]
-inputuncertaintyfile=sys.argv[4]
+inputsignaluncfile=sys.argv[4]
+inputotheruncfile=sys.argv[5]
 
 os.system('mkdir -p '+dirtosave)
 
@@ -27,41 +28,45 @@ imax    1        number of channels
 jmax    *        number of backgrounds
 kmax    *        number of nuisance parameters (sources of systematical uncertainties)
 
------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
 shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
 
------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
 bin              ZPTOZHMM
 observation      DATARATE
 
------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
-bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM    ZPTOZHMM    ZPTOZHMM    ZPTOZHMM   ZPTOZHMM
-process                      SIGNAL       DYJETS       TTBAR       WW          WZ          ZZ         ZH
-process                      0            1            2           3           4           5          6
-rate                         SIGNALRATE   DYJETSRATE   TTBARRATE   WWRATE      WZRATE      ZZRATE     ZHRATE
+bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM  
+process                      SIGNAL       DYJETS       SUBDOM
+process                      0            1            2         
+rate                         SIGNALRATE   DYJETSRATE   SUBDOMRATE
 
------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
-Alpha_bTag      shape        -          1.00       -          -          -          -          -   
-Alpha_QCD       shape        -          1.00       -          -          -          -          -   
-Alpha_PDF       shape        -          1.00       -          -          -          -          -   
-Alpha_JES       shape        -          1.00       -          -          -          -          -   
-SigEf_bTag      lnN          SIGBTAG    -          -          -          -          -          -
-SigEf_QCD       lnN          SIGQCD     -          -          -          -          -          -
-SigEf_PDF       lnN          SIGPDF     -          -          -          -          -          -
-SigEf_JES       lnN          SIGJES     -          -          -          -          -          -
-SigEf_PU        lnN          SIGPU      -          -          -          -          -          -
-SigEf_Lep       lnN          SIGLEP     -          -          -          -          -          -
-SigEf_Trig      lnN          SIGTRIG    -          -          -          -          -          -
-NormF_JES       lnN          -          ?          -          -          -          -          -
-NormF_model     lnN          -          ?          -          -          -          -          -
-lumi_13TeV      lnN          -          -          -          -          -          -          -
-MinorBkg        lnN          -          -          -          -          -          -          - 
-Fit_Goodness    lnN          -          -          -          -          -          -          - 
-Fit_Deviation   lnN          -          -          -          -          -          -          - 
+background_bTag     shape    -            1.000        -              
+background_QCD      shape    -            1.000        -              
+background_PDF      shape    -            1.000        -              
+background_JES      shape    -            1.000        -              
+background_FitDev   shape    -            1.000        - 
+background_FitGood  lnN      -            FITGOOD      -      
+background_Norm     lnN      -            NORM         -
+background_SubDom   lnN      -            -            SUBDOM
+signal_bTag         lnN      SIGBTAG      -            -              
+signal_QCD          lnN      SIGQCD       -            -              
+signal_PDF          lnN      SIGPDF       -            -              
+signal_JES          lnN      SIGJES       -            -              
+signal_PU           lnN      SIGPU        -            -              
+signal_Lep          lnN      SIGLEP       -            -              
+signal_Trig         lnN      SIGTRIG      -            -              
+lumi_13TeV          lnN      1.027        1.027        1.027
 '''
 
 ## template datacard ends here 
@@ -78,11 +83,7 @@ def Normalize(n,xs,tot):
 
 ## map of placeholder used in the Template datacard.
 ## This is analysis specific.
-nameinnumber=['ZH',
-              'ZZ',
-              'WZ',
-              'WW',
-              'TTBAR',
+nameinnumber=['SUBDOM',
               'DYJETS',
               'DATA']
 
@@ -147,12 +148,19 @@ print signalvaluemap
 #print scaledsig
 
 # Read the uncertainty numbers according mass point and sources
-def uncValue(source):
-    myData = csv.DictReader(open(inputuncertaintyfile), delimiter="\t")
+def sigUncValue(source):
+    myData = csv.DictReader(open(inputsignaluncfile), delimiter="\t")
     for row in myData:
         if row['mass'] == masspoint:
             return row[source]
 
+# Read the uncertainty numbers 
+def otherUncValue(source):
+    myData = csv.DictReader(open(inputotheruncfile), delimiter="\t")
+    for row in myData:
+        return row[source]
+
+# Make datacards
 def MakeDataCard(masspoint):
     datacard = open('DataCard_MXXXGeV.txt','r')
     newdatacardname = dirtosave+'/DataCard_'+masspoint+'GeV_MonoHbb_13TeV.txt'
@@ -175,13 +183,17 @@ def MakeDataCard(masspoint):
         line = line.replace('SIGNAL', massname)
 
         ## replace the uncertainty values
-        line = line.replace('SIGBTAG', uncValue('bTag'))
-        line = line.replace('SIGQCD',  uncValue('QCD'))
-        line = line.replace('SIGPDF',  uncValue('PDF'))
-        line = line.replace('SIGJES',  uncValue('JES'))
-        line = line.replace('SIGPU',   uncValue('pileUp'))
-        line = line.replace('SIGLEP',  uncValue('lepton'))
-        line = line.replace('SIGTRIG', uncValue('Trigger'))
+        line = line.replace('SIGBTAG', sigUncValue('bTag'))
+        line = line.replace('SIGQCD',  sigUncValue('QCD'))
+        line = line.replace('SIGPDF',  sigUncValue('PDF'))
+        line = line.replace('SIGJES',  sigUncValue('JES'))
+        line = line.replace('SIGPU',   sigUncValue('pileUp'))
+        line = line.replace('SIGLEP',  sigUncValue('lepton'))
+        line = line.replace('SIGTRIG', sigUncValue('Trigger'))
+
+        line = line.replace('FITGOOD', otherUncValue('fitGood'))
+        line = line.replace('NORM',    otherUncValue('norm'))
+        line = line.replace('SUBDOM',  otherUncValue('subDom'))
 
         datacard600.write(line)
     datacard600.close()

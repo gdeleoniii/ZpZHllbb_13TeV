@@ -77,7 +77,7 @@ done
 combineCarddr=combineCards
 mkdir $combineCarddr
 
-eachCarddr=($(ls -d dataCards*/))
+eachCarddr=($(ls -d dataCards*))
 
 for ((i=0; i<${#mass[@]}; i++)); do
 
