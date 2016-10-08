@@ -1,4 +1,4 @@
-mass	central	bTag	JES	lepton	Trigger	JES	lepton	PDF	pileUp	QCD	Trigger	
+mass	central	bTag	JES	lepton	PDF	pileUp	QCD	Trigger	
 800	0.022	1.086	1.000	1.011	1.040	1.025	1.028	-	
 1000	0.033	1.096	1.007	1.010	1.042	1.005	1.041	-	
 1200	0.039	1.112	1.009	1.009	1.042	1.009	1.051	-	
