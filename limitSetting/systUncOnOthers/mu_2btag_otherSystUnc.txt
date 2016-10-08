@@ -1,2 +1,2 @@
-norm  fitGood subDom
-1.775 0.968   1.055
+norm fitGood subDom
+1.775 0.968 1.055
