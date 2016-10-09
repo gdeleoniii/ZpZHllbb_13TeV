@@ -150,7 +150,7 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     int nsubBjet = 0;
 
-    float btagWeight = isData ? 1 : bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
+    float btagWeight = bTagWeight(data, goodFATJetID, &nsubBjet, h_l, h_c, h_b, reader_l, reader_c, reader_b);
 
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;

@@ -5,19 +5,19 @@ kmax    *        number of nuisance parameters (sources of systematical uncertai
 
 ---------------------------------------------------------------------------
 
-shapes  *        ZPTOZHMM  input_ele_cat2.root  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  input_ele_cat2.root  $PROCESS  $SYSTEMATIC
 
 ---------------------------------------------------------------------------
 
 bin              ZPTOZHMM
-observation      0
+observation      1
 
 ---------------------------------------------------------------------------
 
 bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM  
-process                      SIGM1000       ZJETS        1.160
+process                      SIGM1000       ZJETS        SUBDOM
 process                      0            1            2         
-rate                         2.34659   1.5243    0.283607
+rate                         2.3466   1.5243    0.283607
 
 ---------------------------------------------------------------------------
 

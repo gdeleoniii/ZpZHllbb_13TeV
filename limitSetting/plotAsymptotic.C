@@ -12,7 +12,7 @@
 #include <TGraphAsymmErrors.h>
 #include "../setNCUStyle.h"
 
-void plotAsymptotic(string chan="", string btag=""){
+void plotAsymptotic(string chan, string btag){
 
   setNCUStyle();  
   gStyle->SetTitleSize(0.04,"XYZ");
@@ -125,7 +125,7 @@ void plotAsymptotic(string chan="", string btag=""){
   TGraph *grthSM = new TGraph(nMassEff,mass,xs);
   grthSM->SetName("SMXSection");
 
-  TCanvas *cMCMC = new TCanvas("cMCMC", "", 1000, 800);
+  TCanvas *cMCMC = new TCanvas("cMCMC", "", 0, 0, 1000, 800);
 
   cMCMC->cd();
   cMCMC->SetGridx(1);

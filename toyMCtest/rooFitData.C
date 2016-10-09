@@ -420,9 +420,12 @@ void rooFitData(string channel, string catcut){
   
   for( int n = 1; n <= bin_mZH.numBins() ; ++n ){
   
+    float tempDown = central_predict->Eval(x)-(central_predict->Eval(x)-loBound->Eval(x))*pullSigma;
+    float Down = (tempDown < 0) ? 0 : tempDown;
+
     h_shape[0]->SetBinContent(n, central_predict->Eval(x));
     h_shape[1]->SetBinContent(n, central_predict->Eval(x)+(upBound->Eval(x)-central_predict->Eval(x))*pullSigma);
-    h_shape[2]->SetBinContent(n, central_predict->Eval(x)-(central_predict->Eval(x)-loBound->Eval(x))*pullSigma);
+    h_shape[2]->SetBinContent(n, Down);
 
     x += bin_mZH.binWidth(1);
     

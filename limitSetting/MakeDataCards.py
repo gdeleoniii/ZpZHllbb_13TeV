@@ -31,7 +31,7 @@ kmax    *        number of nuisance parameters (sources of systematical uncertai
 
 ---------------------------------------------------------------------------
 
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
+shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $SYSTEMATIC
 
 ---------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ background_JES      shape    -            1.000        -
 background_FitDev   shape    -            1.000        - 
 background_FitGood  lnN      -            FITGOOD      -      
 background_Norm     lnN      -            NORM         -
-background_SubDom   lnN      -            -            SUBDOM
+background_SubDom   lnN      -            -            SUBRATE
 signal_bTag         lnN      SIGBTAG      -            -              
 signal_QCD          lnN      SIGQCD       -            -              
 signal_PDF          lnN      SIGPDF       -            -              
@@ -190,7 +190,7 @@ def MakeDataCard(masspoint):
 
         line = line.replace('FITGOOD', otherUncValue('fitGood'))
         line = line.replace('NORM',    otherUncValue('norm'))
-        line = line.replace('SUBDOM',  otherUncValue('subDom'))
+        line = line.replace('SUBRATE', otherUncValue('subDom'))
 
         datacard600.write(line)
     datacard600.close()

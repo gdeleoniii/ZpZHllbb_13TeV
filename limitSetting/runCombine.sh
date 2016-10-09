@@ -50,7 +50,7 @@ for ((i=0; i<${#CHAN[@]}; i++)); do
 	mv $rootfile $dataCarddr
 
         ## use the combine tool ##
-:'	
+
 	cd $cmsswdr/HiggsAnalysis/CombinedLimit/src
 	
 	for ((k=0; k<${#mass[@]}; k++)); do
@@ -70,14 +70,14 @@ for ((i=0; i<${#CHAN[@]}; i++)); do
 	cd $pwd
 	echo -e "*** Plot the results using plotAsymptotic.C ***"
 	
-	root -q -b -l plotAsymptotic.C\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\)
+	root -q -b -l plotAsymptotic.C+\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\)
 
 	echo -e ""
 	echo -e ""
-'
+
     done
 done
-:'
+
 ## combine data cards ##
 
 combineCarddr=combineCards
@@ -118,7 +118,7 @@ done
 cd $pwd
 echo -e "*** Plot the combine results using plotAsymptotic.C ***"
 
-root -q -b -l plotAsymptotic.C++\(\"ele+mu\"\,\"1+2\"\)
+root -q -b -l plotAsymptotic.C+\(\"ele+mu\"\,\"1+2\"\)
 
 ## all jobs are completed ##
 
@@ -132,5 +132,5 @@ rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"
 echo -e ""
-'
+
 exit

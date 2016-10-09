@@ -45,9 +45,9 @@ void murUnc(string channel, string catcut){
 
   TFile f_shape(Form("background_QCD_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
 
-  h_shape[0]->Write("background_QCD_central");
-  h_shape[1]->Write("background_QCD_up");
-  h_shape[2]->Write("background_QCD_down");
+  h_shape[0]->Write("background_QCD");
+  h_shape[1]->Write("background_QCDUp");
+  h_shape[2]->Write("background_QCDDown");
 
   // Output the results
 
@@ -215,7 +215,7 @@ void getAlphaUnc(string channel, string catcut){
 
   fprintf(stdout, "QCD sacle\n");
   murUnc(channel.data(), catcut.data());
-  fprintf(stdout, "PDF sacle\n");
-  pdfUnc(channel.data(), catcut.data());
+  //fprintf(stdout, "PDF sacle\n");
+  //pdfUnc(channel.data(), catcut.data());
 
 }

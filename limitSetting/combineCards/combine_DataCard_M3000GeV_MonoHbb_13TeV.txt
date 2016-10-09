@@ -1,0 +1,34 @@
+Combination of Name1=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag1/DataCard_M3000GeV_MonoHbb_13TeV.txt  Name2=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag2/DataCard_M3000GeV_MonoHbb_13TeV.txt  Name3=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag1/DataCard_M3000GeV_MonoHbb_13TeV.txt  Name4=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag2/DataCard_M3000GeV_MonoHbb_13TeV.txt
+imax 4 number of bins
+jmax 2 number of processes minus 1
+kmax 16 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *      Name1  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag1/input_ele_cat1.root $PROCESS $SYSTEMATIC
+shapes *      Name2  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag2/input_ele_cat2.root $PROCESS $SYSTEMATIC
+shapes *      Name3  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag1/input_mu_cat1.root $PROCESS $SYSTEMATIC
+shapes *      Name4  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag2/input_mu_cat2.root $PROCESS $SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          Name1  Name2  Name3  Name4
+observation  7.0    1.0    17.0   1.0  
+----------------------------------------------------------------------------------------------------------------------------------
+bin                                    Name1     Name1     Name1     Name2     Name2     Name2     Name3     Name3     Name3     Name4     Name4     Name4   
+process                                SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM  
+process                                0         1         2         0         1         2         0         1         2         0         1         2       
+rate                                   0.0104    12.5790   0.2421    0.0079    1.5243    0.2836    0.0119    18.7242   0.3231    0.0089    3.8198    0.2164  
+----------------------------------------------------------------------------------------------------------------------------------
+background_FitDev       shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
+background_FitGood      lnN            -         1.105     -         -         0.973     -         -         1.059     -         -         0.968     -       
+background_JES          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
+background_Norm         lnN            -         1.395     -         -         1.916     -         -         1.318     -         -         1.775     -       
+background_PDF          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
+background_QCD          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
+background_SubDom       lnN            -         -         1.019     -         -         1.16      -         -         1.017     -         -         1.055   
+background_bTag         shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
+lumi_13TeV              lnN            1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027   
+signal_JES              lnN            1.035     -         -         1.043     -         -         1.043     -         -         1.037     -         -       
+signal_Lep              lnN            1.007     -         -         1.008     -         -         1.077     -         -         1.087     -         -       
+signal_PDF              lnN            1.079     -         -         1.081     -         -         1.079     -         -         1.078     -         -       
+signal_PU               lnN            1.012     -         -         1.007     -         -         1.007     -         -         1.004     -         -       
+signal_QCD              lnN            1.107     -         -         1.107     -         -         1.107     -         -         1.107     -         -       
+signal_Trig             lnN            -         -         -         -         -         -         1.002     -         -         1.003     -         -       
+signal_bTag             lnN            1.031     -         -         1.093     -         -         1.028     -         -         1.093     -         -       
