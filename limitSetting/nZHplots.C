@@ -64,7 +64,7 @@ void nZHplots(string chan, string btag, string rootfilename, string textfilename
   TFile* outFile = new TFile(rootfilename.data(), "recreate");
 
   h_Data  ->Write("data_obs");		 
-  h_Dom   ->Write("DYJETS");
+  h_Dom   ->Write("ZJETS");
   h_SubDom->Write("SUBDOM");
   h_M800  ->Write("SIGM800");
   h_M1000 ->Write("SIGM1000");
@@ -84,7 +84,7 @@ void nZHplots(string chan, string btag, string rootfilename, string textfilename
   ftext.open(textfilename.data(), ios::out);
 
   ftext << "DATA\t"   << h_Data  ->Integral() << "\n"; 
-  ftext << "DYJETS\t" << h_Dom   ->Integral() << "\n";
+  ftext << "ZJETS\t" << h_Dom   ->Integral() << "\n";
   ftext << "SUBDOM\t" << h_SubDom->Integral() << "\n";
   ftext << "M800\t"   << h_M800  ->Integral() << "\n";
   ftext << "M1000\t"  << h_M1000 ->Integral() << "\n";

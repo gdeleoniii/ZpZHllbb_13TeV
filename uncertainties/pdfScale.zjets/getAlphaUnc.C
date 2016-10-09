@@ -137,8 +137,8 @@ void pdfUnc(string channel, string catcut){
         
   }
 
-  TH1F* h_shapeUp = new TH1F("h_shapeUp", "", 71, 750, 4300);
-  TH1F* h_shapeDw = new TH1F("h_shapeDw", "", 71, 750, 4300);
+  TH1D* h_shapeUp = new TH1D("h_shapeUp", "", 71, 750, 4300);
+  TH1D* h_shapeDw = new TH1D("h_shapeDw", "", 71, 750, 4300);
 
   // Calculate uncertainty of each predict bin
 

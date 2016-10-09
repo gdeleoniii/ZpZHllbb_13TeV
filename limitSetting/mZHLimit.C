@@ -52,12 +52,9 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
   // Declare the histogram
 
-  TH1F* h_totalEv = (TH1F*)f.Get("h_totalEv");
-     
-  TH1F* h_mZH = new TH1F("h_mZH", "h_mZH", 71, 750, 4300);
-
+  TH1D* h_totalEv = (TH1D*)f.Get("h_totalEv");     
+  TH1D* h_mZH = new TH1D("h_mZH", "", 71, 750, 4300);
   h_mZH->Sumw2();
-  h_mZH->GetXaxis()->SetTitle("mZH");
 
   // begin of event loop
 
@@ -70,12 +67,12 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
 
     data.GetEntry(ev);
 
-    Bool_t         isData      = data.GetBool("isData");
-    Float_t        eventWeight = data.GetFloat("ev_weight");
-    TClonesArray*  muP4        = (TClonesArray*) data.GetPtrTObject("muP4");
-    TClonesArray*  eleP4       = (TClonesArray*) data.GetPtrTObject("eleP4");
-    TClonesArray*  FATjetP4    = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-    vector<bool>& isHighPtMuon = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
+    Bool_t         isData       = data.GetBool("isData");
+    Float_t        eventWeight  = data.GetFloat("ev_weight");
+    TClonesArray*  muP4         = (TClonesArray*) data.GetPtrTObject("muP4");
+    TClonesArray*  eleP4        = (TClonesArray*) data.GetPtrTObject("eleP4");
+    TClonesArray*  FATjetP4     = (TClonesArray*) data.GetPtrTObject("FATjetP4");
+    vector<bool>&  isHighPtMuon = *((vector<bool>*) data.GetPtr("isHighPtMuon"));
 
     // select good reco level events
     // select good leptons
@@ -158,7 +155,7 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
     if( cat == 1 && nsubBjet != 1 ) continue;
     if( cat == 2 && nsubBjet != 2 ) continue;
     
-    float finalWeight = eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
+    float finalWeight = isData ? 1 : eventWeight * btagWeight * thisLepWeight * thatLepWeight * muTrigWeight;
 
     h_mZH->Fill(mllbb, finalWeight);
 
@@ -169,7 +166,7 @@ void mZHLimit(string inputFile, string outputFile, string channel, int cat, int 
   TFile* outFile = new TFile(Form("%s_mZHLimit.root", outputFile.data()), "recreate");
 
   h_mZH    ->Write("mZH");
-  h_totalEv->Write("totalEv");
+  h_totalEv->Write("totalEvents");
 
   outFile->Write();
 

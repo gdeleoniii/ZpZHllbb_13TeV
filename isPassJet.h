@@ -52,7 +52,7 @@ bool isPassJet(TreeReader& data, int *goodFATJetID, TLorentzVector* thisLep=NULL
  
   } // end of FatnJet loop
 
-  return findJet ? true : false;
+  return findJet;
 
 }
 

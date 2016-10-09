@@ -12,39 +12,45 @@ cd $pwd
 
 CHAN=(ele mu)
 BTAG=(1 2)
+mass=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
 
 ## generate the necessary text file (contain event numbers) and root file (contain hist of ZH mass) ##
-
-mass=(800 1000 1200 1400 1600 1800 2000 2500 3000 3500 4000)
 
 for ((i=0; i<${#CHAN[@]}; i++)); do
     for ((j=0; j<${#BTAG[@]}; j++)); do
 
 	echo -e "*** Generate the necessary text file and root file ***"
 	
-	rootfile=mZH${CHAN[$i]}btag${BTAG[$j]}.root
+	outroot=mZH${CHAN[$i]}btag${BTAG[$j]}.root
 	textfile=nEv${CHAN[$i]}btag${BTAG[$j]}.txt
 
-	root -q -b -l nZHplots.C\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\,\"$rootfile\"\,\"$textfile\"\)
+	root -q -b -l nZHplots.C\(\"${CHAN[$i]}\"\,\"${BTAG[$j]}\"\,\"$outroot\"\,\"$textfile\"\)
+
+	rootfile=input_${CHAN[$i]}_cat${BTAG[$j]}.root
+
+        ## combine the shape histograms together with distibution histogram
+
+	hadd $rootfile $outroot systUncOnShapes/*/*_${CHAN[$i]}_cat${BTAG[$j]}.root
 	
         ## make data cards for the combine tool ##
 	
 	dataCarddr=dataCards${CHAN[$i]}btag${BTAG[$j]}
 	
-	mkdir $dataCarddr
+	mkdir -p $dataCarddr
 	
 	echo -e "*** Make data cards for the combine tool by using: " $textfile " ***"
 	echo -e "*** Data cards move to: " $dataCarddr " ***"
 	
-	uncertaintyfile=systUncOnSigEff/${CHAN[$i]}_${BTAG[$j]}btag_systUncOnSigEff.txt
+	signaluncfile=systUncOnSigEff/${CHAN[$i]}_${BTAG[$j]}btag_systUncOnSigEff.txt
+	otheruncfile=systUncOnOthers/${CHAN[$i]}_${BTAG[$j]}btag_otherSystUnc.txt
 
-	python MakeDataCards.py $textfile $rootfile ./$dataCarddr $uncertaintyfile
+	python MakeDataCards.py $textfile $rootfile $signaluncfile $otheruncfile ./$dataCarddr
 	
 	rm -f DataCard_MXXXGeV.txt
 	mv $rootfile $dataCarddr
 
         ## use the combine tool ##
-	
+:'	
 	cd $cmsswdr/HiggsAnalysis/CombinedLimit/src
 	
 	for ((k=0; k<${#mass[@]}; k++)); do
@@ -68,14 +74,14 @@ for ((i=0; i<${#CHAN[@]}; i++)); do
 
 	echo -e ""
 	echo -e ""
-	
+'
     done
 done
-
+:'
 ## combine data cards ##
 
 combineCarddr=combineCards
-mkdir $combineCarddr
+mkdir -p $combineCarddr
 
 eachCarddr=($(ls -d dataCards*))
 
@@ -119,12 +125,12 @@ root -q -b -l plotAsymptotic.C++\(\"ele+mu\"\,\"1+2\"\)
 resultsdr=/afs/cern.ch/user/h/htong/www/limitResults
 
 rm -rf $resultsdr
-mkdir $resultsdr
+mkdir -p $resultsdr
 mv *pdf $resultsdr
 rm -f *.d *.so *.pcm 
 rm -f higgsCombineCounting*root
 
 echo -e "*** All jobs are completed ***"
 echo -e ""
-
+'
 exit
