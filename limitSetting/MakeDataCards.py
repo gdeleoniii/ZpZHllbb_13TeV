@@ -1,5 +1,6 @@
 import sys
 import os
+import csv
 #import ROOT
 #ROOT.gROOT.SetBatch(True)  
 #from DataSetInfo import *
@@ -9,13 +10,13 @@ if len(sys.argv) < 6 :
     exit (1)
 
 if len(sys.argv) == 6 :
-    print ('You are making datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[3])
+    print ('You are making datacards for '+sys.argv[1]+' with '+sys.argv[2]+' and datacards will be saved in '+sys.argv[5])
 
 inputtextfilename=sys.argv[1]
 inputrootfilename=sys.argv[2]
-dirtosave=sys.argv[3]
-inputsignaluncfile=sys.argv[4]
-inputotheruncfile=sys.argv[5]
+inputsignaluncfile=sys.argv[3]
+inputotheruncfile=sys.argv[4]
+dirtosave=sys.argv[5]
 
 os.system('mkdir -p '+dirtosave)
 
@@ -31,11 +32,6 @@ kmax    *        number of nuisance parameters (sources of systematical uncertai
 ---------------------------------------------------------------------------
 
 shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
-shapes  *        ZPTOZHMM  INPUTROOTFILE  $PROCESS  $PROCESS_$SYSTEMATIC
 
 ---------------------------------------------------------------------------
 
@@ -45,9 +41,9 @@ observation      DATARATE
 ---------------------------------------------------------------------------
 
 bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM  
-process                      SIGNAL       DYJETS       SUBDOM
+process                      SIGNAL       ZJETS        SUBDOM
 process                      0            1            2         
-rate                         SIGNALRATE   DYJETSRATE   SUBDOMRATE
+rate                         SIGNALRATE   ZJETSRATE    SUBDOMRATE
 
 ---------------------------------------------------------------------------
 
@@ -84,7 +80,7 @@ def Normalize(n,xs,tot):
 ## map of placeholder used in the Template datacard.
 ## This is analysis specific.
 nameinnumber=['SUBDOM',
-              'DYJETS',
+              'ZJETS',
               'DATA']
 
 ## List of signal samples for which limit is needed. 
@@ -148,7 +144,7 @@ print signalvaluemap
 #print scaledsig
 
 # Read the uncertainty numbers according mass point and sources
-def sigUncValue(source):
+def sigUncValue(source,masspoint):
     myData = csv.DictReader(open(inputsignaluncfile), delimiter="\t")
     for row in myData:
         if row['mass'] == masspoint:
@@ -156,7 +152,7 @@ def sigUncValue(source):
 
 # Read the uncertainty numbers 
 def otherUncValue(source):
-    myData = csv.DictReader(open(inputotheruncfile), delimiter="\t")
+    myData = csv.DictReader(open(inputotheruncfile), delimiter=" ")
     for row in myData:
         return row[source]
 
@@ -181,15 +177,16 @@ def MakeDataCard(masspoint):
         ## replace the signal names
         massname = 'SIG'+masspoint
         line = line.replace('SIGNAL', massname)
-
+        
+        mass = masspoint.replace('M','')
         ## replace the uncertainty values
-        line = line.replace('SIGBTAG', sigUncValue('bTag'))
-        line = line.replace('SIGQCD',  sigUncValue('QCD'))
-        line = line.replace('SIGPDF',  sigUncValue('PDF'))
-        line = line.replace('SIGJES',  sigUncValue('JES'))
-        line = line.replace('SIGPU',   sigUncValue('pileUp'))
-        line = line.replace('SIGLEP',  sigUncValue('lepton'))
-        line = line.replace('SIGTRIG', sigUncValue('Trigger'))
+        line = line.replace('SIGBTAG', sigUncValue('bTag',mass))
+        line = line.replace('SIGQCD',  sigUncValue('QCD',mass))
+        line = line.replace('SIGPDF',  sigUncValue('PDF',mass))
+        line = line.replace('SIGJES',  sigUncValue('JES',mass))
+        line = line.replace('SIGPU',   sigUncValue('pileUp',mass))
+        line = line.replace('SIGLEP',  sigUncValue('lepton',mass))
+        line = line.replace('SIGTRIG', sigUncValue('Trigger',mass))
 
         line = line.replace('FITGOOD', otherUncValue('fitGood'))
         line = line.replace('NORM',    otherUncValue('norm'))
@@ -200,5 +197,5 @@ def MakeDataCard(masspoint):
 
 for imasspoint in range(len(signalnameinnumber)):
     MakeDataCard(signalnameinnumber[imasspoint])
-
+    
 print "datacards produced"
