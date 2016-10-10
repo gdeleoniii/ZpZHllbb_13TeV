@@ -10,7 +10,8 @@
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TGraphAsymmErrors.h>
-#include "../setNCUStyle.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/getIntersection.h"
+#include "/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/setNCUStyle.h"
 
 void plotAsymptotic(string chan, string btag){
 
@@ -80,7 +81,7 @@ void plotAsymptotic(string chan, string btag){
 	v_95h.push_back(limit);
       
       else
-        cout << "Error! Quantile =  " << quant << endl;
+        fprintf(stdout, "Error! Quantile = %f\n", quant);
       
     }
     
@@ -93,7 +94,7 @@ void plotAsymptotic(string chan, string btag){
   float up68err[nmZH], down68err[nmZH], up95err[nmZH], down95err[nmZH];
   int nMassEff = 0;
   
-  for(int im = 0; im < nmZH; ++im){
+  for( int im = 0; im < nmZH; ++im ){
 
     float fl_xs = float(v_xs.at(im));
 
@@ -107,23 +108,28 @@ void plotAsymptotic(string chan, string btag){
     down68err[nMassEff]   = (v_median.at(im) - v_68l.at(im)) * fl_xs;
     up95err[nMassEff]     = (v_95h.at(im) - v_median.at(im)) * fl_xs;
     down95err[nMassEff]   = (v_median.at(im) - v_95l.at(im)) * fl_xs;
-    
-    cout << "fl_xs:" << fl_xs << "\tv_obs" << v_obs.at(im) << "\tobs_lim_cls: " << obs_lim_cls[nMassEff] << "\t" << medianD[nMassEff] << "\tmass: " << mass[nMassEff] <<endl;
- 
+     
     ++nMassEff;
     
   } // end for loop over mass points
 
   TGraphAsymmErrors *grobslim_cls = new TGraphAsymmErrors(nMassEff, mass, obs_lim_cls);
-  grobslim_cls->SetName("LimitObservedCLs");
   TGraphAsymmErrors *grmedian_cls = new TGraphAsymmErrors(nMassEff, mass, medianD);
-  grmedian_cls->SetName("LimitExpectedCLs");
-  TGraphAsymmErrors *gr68_cls = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down68err, up68err);
-  gr68_cls->SetName("Limit68CLs");
-  TGraphAsymmErrors *gr95_cls = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down95err, up95err);
-  gr95_cls->SetName("Limit95CLs");
-  TGraph *grthSM = new TGraph(nMassEff,mass,xs);
-  grthSM->SetName("SMXSection");
+  TGraphAsymmErrors *gr68_cls     = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down68err, up68err);
+  TGraphAsymmErrors *gr95_cls     = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down95err, up95err);
+  TGraphAsymmErrors *grthSM       = new TGraphAsymmErrors(nMassEff, mass, xs, 0, 0, 0, 0);
+
+  // Get intersection point between observed limit and cross section
+
+  vector<double> insecX, insecY;
+
+  getIntersection(grobslim_cls, grthSM, &insecX, &insecY);
+
+  for( unsigned int i = 0; i < insecX.size(); ++i ){
+
+    fprintf(stdout, "Intersection point is (%f, %f)\n", insecX[i], insecY[i]);
+    
+  }
 
   TCanvas *cMCMC = new TCanvas("cMCMC", "", 0, 0, 1000, 800);
 
@@ -202,7 +208,7 @@ void plotAsymptotic(string chan, string btag){
   latex->SetNDC(kTRUE);
   latex->SetTextSize(0.035);
   latex->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
-  latex->DrawLatex(0.60, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->DrawLatex(0.62, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
   latex->DrawLatex(0.65, 0.85, Form("%s %s btag",chan.data(),btag.data()));
 
   gPad->RedrawAxis("");
