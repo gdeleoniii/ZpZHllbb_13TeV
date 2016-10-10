@@ -42,7 +42,7 @@ void plotAsymptotic(string chan, string btag){
 
     char limitfile[100];
 
-    sprintf(limitfile,"higgsCombineCounting.Asymptotic.mZH%d.root",v_mhxs[n]);
+    sprintf(limitfile, "higgsCombineCounting.Asymptotic.mZH%d.root", v_mhxs[n]);
       
     fFREQ[n] = new TFile(limitfile, "READ");
     t[n] = (TTree*)fFREQ[n]->Get("limit");
@@ -133,14 +133,14 @@ void plotAsymptotic(string chan, string btag){
 
   // draw a frame to define the range
 
-  float fr_left = 500.0, fr_down = 1E-4, fr_right = 4500.0, fr_up = 10;
+  float fr_left = 800, fr_down = 1e-4, fr_right = 4000, fr_up = 10;
 
   TH1F *hr = cMCMC->DrawFrame(fr_left, fr_down, fr_right, fr_up, "");
 
   hr->SetXTitle("M_{ZH} (GeV)");
   hr->SetYTitle("#sigma_{95%}#times B(X#rightarrow ZH) (pb)");
   hr->GetYaxis()->SetTitleSize(0.03);
-  hr->GetYaxis()->SetTitleOffset(1.6);
+  hr->GetYaxis()->SetTitleOffset(1.4);
 
   gr95_cls->SetFillColor(kYellow);
   gr95_cls->SetFillStyle(1001);
@@ -200,10 +200,10 @@ void plotAsymptotic(string chan, string btag){
   TLatex *latex = new TLatex();
 
   latex->SetNDC(kTRUE);
-  latex->SetTextSize(0.04);
+  latex->SetTextSize(0.035);
   latex->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
-  latex->DrawLatex(0.57, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  latex->DrawLatex(0.65, 0.85, Form("%s  %s btag",chan.data(),btag.data()));
+  latex->DrawLatex(0.60, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->DrawLatex(0.65, 0.85, Form("%s %s btag",chan.data(),btag.data()));
 
   gPad->RedrawAxis("");
   cMCMC->Update();

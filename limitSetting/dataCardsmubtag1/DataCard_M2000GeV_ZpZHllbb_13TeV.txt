@@ -1,0 +1,39 @@
+
+imax    1        number of channels
+jmax    *        number of backgrounds
+kmax    *        number of nuisance parameters (sources of systematical uncertainties)
+
+---------------------------------------------------------------------------
+
+shapes  *        ZPTOZHMM  input_mu_cat1.root  $PROCESS  $SYSTEMATIC
+
+---------------------------------------------------------------------------
+
+bin              ZPTOZHMM
+observation      17
+
+---------------------------------------------------------------------------
+
+bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM  
+process                      SIGM2000       ZJETS        SUBDOM
+process                      0            1            2         
+rate                         0.103928   18.7242    0.323084
+
+---------------------------------------------------------------------------
+
+background_bTag     shape    -            1.000        -              
+background_QCD      shape    -            1.000        -              
+background_PDF      shape    -            1.000        -              
+background_JES      shape    -            1.000        -              
+background_FitDev   shape    -            1.000        - 
+background_FitGood  lnN      -            1.059      -      
+background_Norm     lnN      -            1.318         -
+background_SubDom   lnN      -            -            1.017
+signal_bTag         lnN      1.096      -            -              
+signal_QCD          lnN      1.081       -            -              
+signal_PDF          lnN      1.056       -            -              
+signal_JES          lnN      1.027       -            -              
+signal_PU           lnN      1.012        -            -              
+signal_Lep          lnN      1.086       -            -              
+signal_Trig         lnN      1.003      -            -              
+lumi_13TeV          lnN      1.027        1.027        1.027

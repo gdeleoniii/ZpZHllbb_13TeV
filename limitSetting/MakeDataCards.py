@@ -159,7 +159,7 @@ def otherUncValue(source):
 # Make datacards
 def MakeDataCard(masspoint):
     datacard = open('DataCard_MXXXGeV.txt','r')
-    newdatacardname = dirtosave+'/DataCard_'+masspoint+'GeV_MonoHbb_13TeV.txt'
+    newdatacardname = dirtosave+'/DataCard_'+masspoint+'GeV_ZpZHllbb_13TeV.txt'
     datacard600 = open(newdatacardname,'w')
     
     for line in datacard:
