@@ -16,8 +16,8 @@
 void plotAsymptotic(string chan, string btag){
 
   setNCUStyle();  
-  gStyle->SetTitleSize(0.04,"XYZ");
-  gStyle->SetLabelSize(0.03,"XYZ");
+  gStyle->SetTitleSize(0.040,"XYZ");
+  gStyle->SetLabelSize(0.035,"XYZ");
 
   ifstream xsect_file("13TeV_xsec_Zh.txt", ios::in);
   float mH, CS;
@@ -96,7 +96,7 @@ void plotAsymptotic(string chan, string btag){
   
   for( int im = 0; im < nmZH; ++im ){
 
-    float fl_xs = float(v_xs.at(im));
+    float fl_xs = v_xs.at(im);
 
     /// This is the part where we multiply the limits in terms of signal strength by the cross-section, in order to have limits in picobarns.
 
@@ -117,7 +117,8 @@ void plotAsymptotic(string chan, string btag){
   TGraphAsymmErrors *grmedian_cls = new TGraphAsymmErrors(nMassEff, mass, medianD);
   TGraphAsymmErrors *gr68_cls     = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down68err, up68err);
   TGraphAsymmErrors *gr95_cls     = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down95err, up95err);
-  TGraphAsymmErrors *grthSM       = new TGraphAsymmErrors(nMassEff, mass, xs, 0, 0, 0, 0);
+
+  TGraph *grthSM = new TGraph(nMassEff, mass, xs);
 
   // Get intersection point between observed limit and cross section
 
@@ -127,26 +128,26 @@ void plotAsymptotic(string chan, string btag){
 
   for( unsigned int i = 0; i < insecX.size(); ++i ){
 
-    fprintf(stdout, "Intersection point is (%f, %f)\n", insecX[i], insecY[i]);
+    fprintf(stdout, "--------------------\nIntersection point is (%f, %f)\n--------------------\n", insecX[i], insecY[i]);
     
   }
 
   TCanvas *cMCMC = new TCanvas("cMCMC", "", 0, 0, 1000, 800);
 
   cMCMC->cd();
-  cMCMC->SetGridx(1);
-  cMCMC->SetGridy(1);
+  cMCMC->SetGrid(1,1);
 
   // draw a frame to define the range
 
-  float fr_left = 800, fr_down = 1e-4, fr_right = 4000, fr_up = 10;
+  float fr_left = 800, fr_down = 1e-2, fr_right = 4000, fr_up = 1e1;
 
   TH1F *hr = cMCMC->DrawFrame(fr_left, fr_down, fr_right, fr_up, "");
 
   hr->SetXTitle("M_{ZH} (GeV)");
-  hr->SetYTitle("#sigma_{95%}#times B(X#rightarrow ZH) (pb)");
-  hr->GetYaxis()->SetTitleSize(0.03);
-  hr->GetYaxis()->SetTitleOffset(1.4);
+  hr->SetYTitle("#sigma_{95%} #times B(X#rightarrow ZH) (pb)");
+  hr->GetYaxis()->SetTitleSize(0.04);
+  hr->GetYaxis()->SetTitleOffset(1.2);
+  hr->GetYaxis()->SetNdivisions(10);
 
   gr95_cls->SetFillColor(kYellow);
   gr95_cls->SetFillStyle(1001);
@@ -189,9 +190,10 @@ void plotAsymptotic(string chan, string btag){
   TH1D* postGrid = new TH1D("postGrid", "", 1, fr_left, fr_right);
 
   postGrid->GetYaxis()->SetRangeUser(fr_down, fr_up);
+  postGrid->GetYaxis()->SetNdivisions(10);
   postGrid->Draw("AXIGSAME");
 
-  TLegend *leg = new TLegend(.18, .20, .60, .35);
+  TLegend *leg = new TLegend(0.60, 0.70, 0.90, 0.85);
 
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
@@ -205,15 +207,14 @@ void plotAsymptotic(string chan, string btag){
 
   TLatex *latex = new TLatex();
 
-  latex->SetNDC(kTRUE);
   latex->SetTextSize(0.035);
-  latex->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
-  latex->DrawLatex(0.62, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
-  latex->DrawLatex(0.65, 0.85, Form("%s %s btag",chan.data(),btag.data()));
+  latex->DrawLatexNDC(0.14, 0.94, "CMS #it{#bf{2015}}");
+  latex->DrawLatexNDC(0.62, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->DrawLatexNDC(0.17, 0.85, Form("%s %s btag", chan.data(), btag.data()));
 
   gPad->RedrawAxis("");
   cMCMC->Update();
   gPad->SetLogy();
-  cMCMC->Print(Form("zhllbbCountingAsymptotic_%s_%sbtag.pdf",chan.data(),btag.data()));
+  cMCMC->Print(Form("zhllbbCountingAsymptotic_%s_%sbtag.pdf", chan.data(), btag.data()));
   
 }
