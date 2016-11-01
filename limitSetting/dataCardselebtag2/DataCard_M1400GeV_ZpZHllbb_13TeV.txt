@@ -17,7 +17,7 @@ observation      1
 bin                          ZPTOZHMM     ZPTOZHMM     ZPTOZHMM  
 process                      SIGM1400       ZJETS        SUBDOM
 process                      0            1            2         
-rate                         0.805647   1.5243    0.283607
+rate                         0.805647   6.5503    0.283607
 
 ---------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ background_QCD      shape    -            1.000        -
 background_PDF      shape    -            1.000        -              
 background_JES      shape    -            1.000        -              
 background_FitDev   shape    -            1.000        - 
-background_FitGood  lnN      -            0.973      -      
+background_FitGood  lnN      -            0.261      -      
 background_Norm     lnN      -            1.916         -
 background_SubDom   lnN      -            -            1.160
 signal_bTag         lnN      1.082      -            -              

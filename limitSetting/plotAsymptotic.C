@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -119,6 +120,9 @@ void plotAsymptotic(string chan, string btag){
   TGraphAsymmErrors *gr95_cls     = new TGraphAsymmErrors(nMassEff, mass, medianD, 0, 0, down95err, up95err);
 
   TGraph *grthSM = new TGraph(nMassEff, mass, xs);
+
+  fprintf(stdout, "--------------------\nMinimum upper limit: %f fb\n", *std::min_element(obs_lim_cls, obs_lim_cls+nMassEff));
+  fprintf(stdout, "Maximum upper limit: %f fb\n--------------------\n", *std::max_element(obs_lim_cls, obs_lim_cls+nMassEff));
 
   // Get intersection point between observed limit and cross section
 

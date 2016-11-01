@@ -98,6 +98,13 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   fprintf(stdout, "j_mc   = %.3f +- %.3f\n", j_mc  .getVal(), j_mc  .getError());
   fprintf(stdout, "j_sbmc = %.3f +- %.3f\n", j_sbmc.getVal(), j_sbmc.getError());
 
+  // Get real normalize factor from MC
+
+  RooAbsReal* nFit_sg = ext_sbMcJet.createIntegral(mJet, Range("SG"));
+  RooAbsReal* nFit_sb = ext_sbMcJet.createIntegral(mJet, Range("SB_l,SB_h"));
+
+  float realNormFactor = nEv_sbDom.getVal()*(nFit_sg->getVal()/nFit_sb->getVal());
+
   // Produce n toyMCs to study fit bias and pull  
   // Properties of pull: mean is 0 if there is no bias; width is 1 if error is correct
   // Fit is converge: the fit really finds a set of parameter values that minimizes -log likelihood instead of finding a local minima
@@ -105,12 +112,16 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   TH1F* h_bias = new TH1F("h_bias", "", 19, -9.5, 9.5);
   TH1F* h_pull = new TH1F("h_pull", "", 19, -9.5, 9.5);
 
+  // TFile toyOutput(Form("toyMCdataSet_%s_cat%s.root", channel.data(), catcut.data()), "recreate");
+
   for( int ntoy = 1000; ntoy > 0; --ntoy ){
 
     if( !pullTest ) break;
 
-    RooDataSet* set_toyMc = ext_McJet.generate(mJet, Extended(), ProtoData(set_Dom));
+    RooDataSet* set_toyMc = ext_sbMcJet.generate(mJet, Extended(), ProtoData(set_Dom));
     RooDataSet  thisToyMc("thisToyMc", "thisToyMc", RooArgSet(mJet), Cut(cut_sb), Import(*set_toyMc));
+
+    // thisToyMc.Write(Form("toy%04i", ntoy));
 
     RooRealVar nEv_toyMc("nEv_toyMc", "nEv_toyMc", thisToyMc.sumEntries(), thisToyMc.sumEntries()*0.5, thisToyMc.sumEntries()*1.5);
     RooRealVar j_toymc("j_toymc", "j_toymc", myVal.value("j_mc"), myVal.value("j_mcMin"), myVal.value("j_mcMax"));
@@ -143,18 +154,19 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
 
     RooRealVar nSBHist("nSBHist", "nSBHist", 0, 1e4);
 
-    nSBHist.setVal(set_toyMc->sumEntries(cut_sb));
+    nSBHist.setVal(thisToyMc.sumEntries());
     nSBHist.setConstant(true);
 
     float toyNormFactor = nSBHist.getVal()*(nSIGFit->getVal()/nSBFit->getVal());
-    float toyNormHiste  = set_toyMc->sumEntries(cut_sg);
 
     RooFormulaVar formula("formula", "formula", "@0*@1/@2", RooArgList(nSBHist, *nSIGFit, *nSBFit));
 
-    h_bias->Fill((toyNormFactor - toyNormHiste)/toyNormHiste);
-    h_pull->Fill((toyNormFactor - toyNormHiste)/formula.getPropagatedError(*res_toyMcJet));
+    h_bias->Fill((toyNormFactor - realNormFactor)/realNormFactor);
+    h_pull->Fill((toyNormFactor - realNormFactor)/formula.getPropagatedError(*res_toyMcJet));
 
   } // End of ntoy loop
+
+  // toyOutput.Close();
 
   RooRealVar bias("bias", "Bias", -9.5, 9.5);
   RooRealVar pull("pull", "Pull", -9.5, 9.5);

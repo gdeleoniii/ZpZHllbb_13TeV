@@ -14,10 +14,10 @@ observation  7.0       1.0       17.0      1.0
 bin                                    ele1btag  ele1btag  ele1btag  ele2btag  ele2btag  ele2btag  mu1btag   mu1btag   mu1btag   mu2btag   mu2btag   mu2btag 
 process                                SIGM1000  SUBDOM    ZJETS     SIGM1000  SUBDOM    ZJETS     SIGM1000  SUBDOM    ZJETS     SIGM1000  SUBDOM    ZJETS   
 process                                0         1         2         0         1         2         0         1         2         0         1         2       
-rate                                   1.2663    0.2421    12.5790   2.3466    0.2836    1.5243    1.5870    0.3231    18.7242   2.9769    0.2164    3.8198  
+rate                                   1.2663    0.2421    5.3452    2.3466    0.2836    6.5503    1.5870    0.3231    8.8624    2.9769    0.2164    6.3664  
 ----------------------------------------------------------------------------------------------------------------------------------
 background_FitDev       shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
-background_FitGood      lnN            -         -         1.105     -         -         0.973     -         -         1.059     -         -         0.968   
+background_FitGood      lnN            -         -         0.547     -         -         0.261     -         -         0.586     -         -         0.485   
 background_JES          shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
 background_Norm         lnN            -         -         1.395     -         -         1.916     -         -         1.318     -         -         1.775   
 background_PDF          shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     

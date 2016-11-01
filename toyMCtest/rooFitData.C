@@ -407,10 +407,12 @@ void rooFitData(string channel, string catcut){
 
   float pullSigma = 1;
 
-  if     ( channel=="ele" && catcut=="1" ) pullSigma = 1.708;
-  else if( channel=="ele" && catcut=="2" ) pullSigma = 2.578;
-  else if( channel=="mu"  && catcut=="1" ) pullSigma = 1.791;
-  else if( channel=="mu"  && catcut=="2" ) pullSigma = 2.460;
+  // pull sigma corrections. Input the numbers manually
+
+  if     ( channel=="ele" && catcut=="1" ) pullSigma = 1.813;
+  else if( channel=="ele" && catcut=="2" ) pullSigma = 1.578;
+  else if( channel=="mu"  && catcut=="1" ) pullSigma = 2.031;
+  else if( channel=="mu"  && catcut=="2" ) pullSigma = 2.970;
 
   TH1D* h_shape[3];
 

@@ -28,21 +28,14 @@ void nZHplots(string chan, string btag, string rootfilename, string textfilename
   string histName = "mZH";
 
   TH1D* h_Data   = (TH1D*)(data1.getHist(histName.data()))->Clone("h_Data");
-  TH1D* h_Dom    = (TH1D*)(dy100.getHist(histName.data()))->Clone("h_Dom");
   TH1D* h_SubDom = (TH1D*)(tt.getHist(histName.data()))->Clone("h_SubDom");
 
   h_Data->Reset();
-  h_Dom->Reset();
   h_SubDom->Reset();
 
   h_Data->Add(data1.getHist(histName.data()));
   h_Data->Add(data2.getHist(histName.data()));
     
-  h_Dom->Add(dy100.getHist(histName.data()));
-  h_Dom->Add(dy200.getHist(histName.data()));
-  h_Dom->Add(dy400.getHist(histName.data()));
-  h_Dom->Add(dy600.getHist(histName.data()));
-      
   h_SubDom->Add(tt.getHist(histName.data()));
   h_SubDom->Add(ww.getHist(histName.data()));
   h_SubDom->Add(wz.getHist(histName.data()));
@@ -61,6 +54,11 @@ void nZHplots(string chan, string btag, string rootfilename, string textfilename
   TH1D* h_M3500 = (TH1D*)(m3500.getHist(histName.data()));
   TH1D* h_M4000 = (TH1D*)(m4000.getHist(histName.data()));
         
+  // dominant background is comming from alpha method
+
+  TFile* f_Dom = TFile::Open(Form("systUncOnShapes/background_FitDev_root/background_FitDev_%s_cat%s.root",chan.data(),btag.data()));
+  TH1D*  h_Dom = (TH1D*)(f_Dom->Get("background_FitDev"));
+
   TFile* outFile = new TFile(rootfilename.data(), "recreate");
 
   h_Data  ->Write("data_obs");		 
@@ -84,7 +82,7 @@ void nZHplots(string chan, string btag, string rootfilename, string textfilename
   ftext.open(textfilename.data(), ios::out);
 
   ftext << "DATA\t"   << h_Data  ->Integral() << "\n"; 
-  ftext << "ZJETS\t" << h_Dom   ->Integral() << "\n";
+  ftext << "ZJETS\t"  << h_Dom   ->Integral() << "\n";
   ftext << "SUBDOM\t" << h_SubDom->Integral() << "\n";
   ftext << "M800\t"   << h_M800  ->Integral() << "\n";
   ftext << "M1000\t"  << h_M1000 ->Integral() << "\n";
