@@ -289,9 +289,18 @@ void rooFitUnc(string channel, string catcut, string region, TF1** f_alpha, TH1*
   RooAbsReal* nFit_sg = ext_dataJet.createIntegral(mJet, Range("SG"));
   RooAbsReal* nFit_sb = ext_dataJet.createIntegral(mJet, Range("SB_l,SB_h"));
 
+  // Correct the normalization factor by bias from toy MC test. Manually input.
+  
+  float bias = 0;
+  
+  if     ( channel=="ele" && catcut=="1" ) bias = 1-0.453;
+  //else if( channel=="ele" && catcut=="2" ) bias = 1-0.739;
+  else if( channel=="mu"  && catcut=="1" ) bias = 1-0.414;
+  //else if( channel=="mu"  && catcut=="2" ) bias = 1-0.515;
+  
   // Since the statistic of 2015 data is low, the jet mass distribution in 2 btag is consider as a flat distribution
 
-  float normFactorVal = (catcut=="1") ? nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal()) : 6;
+  float normFactorVal = (catcut=="1") ? nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal())/bias : 6;
 
   // Convert TF1 to TH1
   

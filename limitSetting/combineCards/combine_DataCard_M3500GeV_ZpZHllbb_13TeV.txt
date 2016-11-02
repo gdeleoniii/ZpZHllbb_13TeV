@@ -1,7 +1,7 @@
 Combination of ele1btag=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag1/DataCard_M3500GeV_ZpZHllbb_13TeV.txt  ele2btag=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag2/DataCard_M3500GeV_ZpZHllbb_13TeV.txt  mu1btag=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag1/DataCard_M3500GeV_ZpZHllbb_13TeV.txt  mu2btag=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardsmubtag2/DataCard_M3500GeV_ZpZHllbb_13TeV.txt
 imax 4 number of bins
 jmax 2 number of processes minus 1
-kmax 16 number of nuisance parameters
+kmax 14 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes *         ele1btag  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag1/input_ele_cat1.root $PROCESS $SYSTEMATIC
 shapes *         ele2btag  /afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/limitSetting/dataCardselebtag2/input_ele_cat2.root $PROCESS $SYSTEMATIC
@@ -14,15 +14,13 @@ observation  7.0       1.0       17.0      1.0
 bin                                    ele1btag  ele1btag  ele1btag  ele2btag  ele2btag  ele2btag  mu1btag   mu1btag   mu1btag   mu2btag   mu2btag   mu2btag 
 process                                SIGM3500  SUBDOM    ZJETS     SIGM3500  SUBDOM    ZJETS     SIGM3500  SUBDOM    ZJETS     SIGM3500  SUBDOM    ZJETS   
 process                                0         1         2         0         1         2         0         1         2         0         1         2       
-rate                                   0.0037    0.2421    5.3452    0.0020    0.2836    6.5503    0.0040    0.3231    8.8624    0.0024    0.2164    6.3664  
+rate                                   0.0037    0.2421    9.7719    0.0020    0.2836    6.5503    0.0040    0.3231    15.1236   0.0024    0.2164    6.3664  
 ----------------------------------------------------------------------------------------------------------------------------------
 background_FitDev       shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
-background_FitGood      lnN            -         -         0.547     -         -         0.261     -         -         0.586     -         -         0.485   
 background_JES          shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
-background_Norm         lnN            -         -         1.395     -         -         1.916     -         -         1.318     -         -         1.775   
+background_Norm         lnN            -         1.019     1.395     -         1.16      1.916     -         1.017     1.318     -         1.055     1.775   
 background_PDF          shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
 background_QCD          shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
-background_SubDom       lnN            -         1.019     -         -         1.16      -         -         1.017     -         -         1.055     -       
 background_bTag         shape          -         -         1.0       -         -         1.0       -         -         1.0       -         -         1.0     
 lumi_13TeV              lnN            1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027     1.027   
 signal_JES              lnN            1.036     -         -         1.043     -         -         1.04      -         -         1.054     -         -       

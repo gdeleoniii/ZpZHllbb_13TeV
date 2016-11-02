@@ -215,7 +215,7 @@ void getAlphaUnc(string channel, string catcut){
 
   fprintf(stdout, "QCD sacle\n");
   murUnc(channel.data(), catcut.data());
-  //fprintf(stdout, "PDF sacle\n");
-  //pdfUnc(channel.data(), catcut.data());
+  fprintf(stdout, "PDF sacle\n");
+  pdfUnc(channel.data(), catcut.data());
 
 }

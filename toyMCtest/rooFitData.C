@@ -270,8 +270,17 @@ void rooFitData(string channel, string catcut){
   float normFactorVal = nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal());
   float normFactorUnc = (catcut=="1") ? normFormula.getPropagatedError(*res_dataJet) : fabs(6-normFactorVal);
 
+  // Correct the normalization factor by bias from toy MC test. Manually input.
+
+  float bias = 0;
+
+  if     ( channel=="ele" && catcut=="1" ) bias = 1-0.453;
+  //else if( channel=="ele" && catcut=="2" ) bias = 1-0.739;
+  else if( channel=="mu"  && catcut=="1" ) bias = 1-0.414;
+  //else if( channel=="mu"  && catcut=="2" ) bias = 1-0.515;
+
   RooRealVar normFactor("normFactor", "normFactor", 0, 1e4);
-  normFactor.setVal((catcut=="1") ? normFactorVal : 6);
+  normFactor.setVal((catcut=="1") ? normFactorVal/bias : 6);
 
   // Print everything
 

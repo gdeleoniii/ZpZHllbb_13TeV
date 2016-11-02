@@ -26,9 +26,7 @@ background_QCD      shape    -            1.000        -
 background_PDF      shape    -            1.000        -              
 background_JES      shape    -            1.000        -              
 background_FitDev   shape    -            1.000        - 
-background_FitGood  lnN      -            0.485      -      
-background_Norm     lnN      -            1.775         -
-background_SubDom   lnN      -            -            1.055
+background_Norm     lnN      -            1.775         1.055
 signal_bTag         lnN      1.095      -            -              
 signal_QCD          lnN      1.130       -            -              
 signal_PDF          lnN      1.130       -            -              
