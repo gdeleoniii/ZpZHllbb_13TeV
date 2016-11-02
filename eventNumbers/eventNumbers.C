@@ -10,14 +10,14 @@ void myEvNum(string channel, int btag){
 
   FILE* f_out = fopen(Form("%s_%ibtag_nEvents.txt",channel.data(),btag), "w");
 
-  fprintf(f_out, "mass(>)\tN_Data\tDataStatUnc\tN_Zjets\n");
+  fprintf(f_out, "mass(>)\tN_Data\tN_Zjets\n");
 
   for( int i = 0; i < 7; ++i ){
 
     float ev_data = h_data->Integral(h_data->FindBin(mzh[i]), h_data->GetNbinsX());
     float ev_bkgs = h_bkgs->Integral(h_bkgs->FindBin(mzh[i]), h_bkgs->GetNbinsX());
 
-    fprintf(f_out, "%i\t%.3f\t%.3f\t%.3f\n", (int)mzh[i], ev_data, sqrt(ev_data), ev_bkgs);
+    fprintf(f_out, "%i\t%.3f\t%.3f\n", (int)mzh[i], ev_data, ev_bkgs);
       
   }
 

@@ -52,9 +52,7 @@ background_QCD      shape    -            1.000        -
 background_PDF      shape    -            1.000        -              
 background_JES      shape    -            1.000        -              
 background_FitDev   shape    -            1.000        - 
-background_FitGood  lnN      -            FITGOOD      -      
-background_Norm     lnN      -            NORM         -
-background_SubDom   lnN      -            -            SUBRATE
+background_Norm     lnN      -            NORM         SUBRATE
 signal_bTag         lnN      SIGBTAG      -            -              
 signal_QCD          lnN      SIGQCD       -            -              
 signal_PDF          lnN      SIGPDF       -            -              
@@ -187,8 +185,6 @@ def MakeDataCard(masspoint):
         line = line.replace('SIGPU',   sigUncValue('pileUp',mass))
         line = line.replace('SIGLEP',  sigUncValue('lepton',mass))
         line = line.replace('SIGTRIG', sigUncValue('Trigger',mass))
-
-        line = line.replace('FITGOOD', otherUncValue('fitGood'))
         line = line.replace('NORM',    otherUncValue('norm'))
         line = line.replace('SUBRATE', otherUncValue('subDom'))
 
