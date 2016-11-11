@@ -255,7 +255,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   mJetFrame->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.62, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.62, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
 
   c0_up->RedrawAxis();
@@ -304,7 +304,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   mJetSBFrame->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.62, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.62, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
 
   c1_up->RedrawAxis();
@@ -333,7 +333,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   biasFrame->SetTitle("");  
   biasFrame->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.72, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
   c.Print(Form("rooFit_toyMC_%s_cat%s.pdf",  channel.data(), catcut.data()));
 
@@ -343,7 +343,7 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   pullFrame->SetTitle("");
   pullFrame->Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.55, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.55, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.72, 0.83, Form("%s, %s btag", channel.data(), catcut.data()));
   c.Print(Form("rooFit_toyMC_%s_cat%s.pdf)", channel.data(), catcut.data()));
 

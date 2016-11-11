@@ -213,7 +213,7 @@ void plotAsymptotic(string chan, string btag){
 
   latex->SetTextSize(0.035);
   latex->DrawLatexNDC(0.14, 0.94, "CMS #it{#bf{2015}}");
-  latex->DrawLatexNDC(0.62, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  latex->DrawLatexNDC(0.62, 0.94, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   latex->DrawLatexNDC(0.17, 0.85, Form("%s %s btag", chan.data(), btag.data()));
 
   gPad->RedrawAxis("");

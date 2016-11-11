@@ -8,21 +8,21 @@ processEle=(Barrel Endcap Zjet)
 processMu=(HighPt Tracker Zjet)
 
 cd $pwd/ele
-#for ((j=0; j<${#processEle[@]}; j++)); do
+for ((j=0; j<${#processEle[@]}; j++)); do
 
 #    /bin/bash $pwd/globalRun.sh ele${processEle[$j]}Variable ele 1 1 1 1 1 0
-#    mv *root output_ele${processEle[$j]}Variable
-#    root -q -b -l $pwd/dataMCplots.C+\(\"Electron\"\,\"output_ele${processEle[$j]}Variable\"\,\"ele${processEle[$j]}Variable\"\)
+    mv *root output_ele${processEle[$j]}Variable
+    root -q -b -l $pwd/dataMCplots.C+\(\"Electron\"\,\"output_ele${processEle[$j]}Variable\"\,\"ele${processEle[$j]}Variable\"\)
 
-#done
+done
 
-#rm -f *.pcm *.d *.so
-#mv *pdf /afs/cern.ch/user/h/htong/www/dataMCcompare
+rm -f *.pcm *.d *.so
+mv *pdf /afs/cern.ch/user/h/htong/www/dataMCcompare
 
 cd $pwd/mu
 for ((j=0; j<${#processMu[@]}; j++)); do
 
-    /bin/bash $pwd/globalRun.sh mu${processMu[$j]}Variable mu 1 1 1 1 1 0
+#    /bin/bash $pwd/globalRun.sh mu${processMu[$j]}Variable mu 1 1 1 1 1 0
     mv *root output_mu${processMu[$j]}Variable
     root -q -b -l $pwd/dataMCplots.C+\(\"Muon\"\,\"output_mu${processMu[$j]}Variable\"\,\"mu${processMu[$j]}Variable\"\)
 

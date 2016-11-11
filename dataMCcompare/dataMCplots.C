@@ -118,7 +118,7 @@ void myPlot(TH1D* h_Zjets100, TH1D* h_Zjets200, TH1D* h_Zjets400, TH1D* h_Zjets6
   lar->SetTextSize(0.04);
   lar->SetLineWidth(5);
   lar->DrawLatex(0.14, 0.94, "CMS #it{#bf{2015}}");
-  lar->DrawLatex(0.60, 0.94, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar->DrawLatex(0.60, 0.94, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
 
 }
 

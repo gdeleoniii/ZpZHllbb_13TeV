@@ -480,7 +480,7 @@ void rooFitData(string channel, string catcut){
   frm_sbDomZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Z+jets in sidebands");
 
@@ -523,7 +523,7 @@ void rooFitData(string channel, string catcut){
   frm_sgDomZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Z+jets in signal region");
 
@@ -566,7 +566,7 @@ void rooFitData(string channel, string catcut){
   frm_sbDataZh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "data in sidebands");
 
@@ -609,7 +609,7 @@ void rooFitData(string channel, string catcut){
   frm_sbSub1Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (VV+t#bar{t}) in sidebands");
   
@@ -652,7 +652,7 @@ void rooFitData(string channel, string catcut){
   frm_sgSub1Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Subdominant (VV+t#bar{t}) in signal region");
 
@@ -695,7 +695,7 @@ void rooFitData(string channel, string catcut){
   frm_sbSub2Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (ZH) in sidebands");
 
@@ -738,9 +738,9 @@ void rooFitData(string channel, string catcut){
   frm_sgSub2Zh->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "Subdominant in (ZH) signal region");
+  lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (ZH) in signal region");
 
   c6_up->RedrawAxis();
   c6_dw->cd()->SetLogy(0);
@@ -781,7 +781,7 @@ void rooFitData(string channel, string catcut){
   frm_dataJet->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "data jet mass in sidebands");
   lar.DrawLatexNDC(0.15, 0.78, Form("Normalization factor: %.3f#pm%.3f", normFactor.getVal(), normFactorUnc));
@@ -823,7 +823,7 @@ void rooFitData(string channel, string catcut){
   frm_predict->Draw();
 
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{2015}}");
-  lar.DrawLatexNDC(0.65, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
   lar.DrawLatexNDC(0.15, 0.82, "expected background in data signal region");
 
@@ -861,7 +861,7 @@ void rooFitData(string channel, string catcut){
   leg.Draw();
   frm_alpha->addObject(&leg);
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.62, 0.82, Form("%s, %s b-tag", channel.data(), catcut.data()));
   c9.Print(Form("rooFit_forData_%s_cat%s.pdf", channel.data(), catcut.data()));
 

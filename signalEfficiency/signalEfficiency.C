@@ -76,7 +76,7 @@ void signalEfficiency(){
   g_eff_muc2->Draw("3lpsame");
   leg.Draw();
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
-  lar.DrawLatexNDC(0.60, 0.92, "L = 2.512 fb^{-1} at #sqrt{s} = 13 TeV");
+  lar.DrawLatexNDC(0.60, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   c.Print("signalEfficiency.pdf");
 
   gSystem->Exec("mv signalEfficiency.pdf $HOME/www");
