@@ -19,7 +19,7 @@ bool isPassZee(TreeReader &data, vector<Int_t>& goodEleID){
         
   std::vector<Int_t> goodElectrons;
 
-  for( int ie = nEle-1; ie >= 0; --ie ){
+  for( int ie = 0; ie < nEle; ++ie ){
 
     TLorentzVector* myEle = (TLorentzVector*)eleP4->At(ie);
 
@@ -64,6 +64,9 @@ bool isPassZee(TreeReader &data, vector<Int_t>& goodEleID){
       break;
 
     }
+
+    if( findEpair ) break;
+
   }
 
   return findEPair;

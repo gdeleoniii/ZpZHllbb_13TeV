@@ -5,12 +5,8 @@ if [ -z $1 ]; then
     exit 0
 fi
 
-pwd=$PWD
-cmsswdr=/afs/cern.ch/work/h/htong/CMSSW_7_4_15/src
-cd $cmsswdr
-export SCRAM_ARCH=slc6_amd64_gcc481
-eval `scramv1 runtime -sh`
-cd $pwd
+source /afs/cern.ch/sw/lcg/external/gcc/4.9/x86_64-slc6-gcc49-opt/setup.sh
+source /afs/cern.ch/sw/lcg/app/releases/ROOT/6.04.10/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
 
 ana=/afs/cern.ch/work/h/htong/ZpZHllbb_13TeV/skimSamples
 dataPath=/data7/syu/NCUGlobalTuples

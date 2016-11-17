@@ -21,7 +21,7 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
   std::vector<Int_t> goodMuons;
   bool hasTrigMuon = false;  
 
-  for( int im = nMu-1; im >= 0; --im ){
+  for( int im = 0; im < nMu; ++im ){
       
     TLorentzVector* myMu = (TLorentzVector*)muP4->At(im);
 
@@ -77,6 +77,9 @@ bool isPassZmumu(TreeReader &data, vector<Int_t>& goodMuID){
       break;
 
     }
+
+    if( findMPair ) break;
+
   }
 
   return findMPair;
