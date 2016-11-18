@@ -264,20 +264,19 @@ void rooFitData(string channel, string catcut){
   RooAbsReal* nFit_sb = ext_dataJet.createIntegral(mJet, Range("SB_l,SB_h"));
 
   // Since the statistic of 2015 data is low, the jet mass distribution in 2 btag is consider as a flat distribution
-
-  RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nFit_sg, *nFit_sb));
-
-  float normFactorVal = nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal());
-  float normFactorUnc = (catcut=="1") ? normFormula.getPropagatedError(*res_dataJet) : fabs(6-normFactorVal);
-
   // Correct the normalization factor by bias from toy MC test. Manually input.
 
   float bias = 0;
 
   if     ( channel=="ele" && catcut=="1" ) bias = 1-0.453;
-  //else if( channel=="ele" && catcut=="2" ) bias = 1-0.739;
+  else if( channel=="ele" && catcut=="2" ) bias = 1-0.739;
   else if( channel=="mu"  && catcut=="1" ) bias = 1-0.414;
-  //else if( channel=="mu"  && catcut=="2" ) bias = 1-0.515;
+  else if( channel=="mu"  && catcut=="2" ) bias = 1-0.515;
+
+  RooFormulaVar normFormula("normFormula", "normFormula", "@0*@1/@2", RooArgList(nEv_sbData, *nFit_sg, *nFit_sb));
+
+  float normFactorVal = nEv_sbData.getVal()*(nFit_sg->getVal()/nFit_sb->getVal());
+  float normFactorUnc = (catcut=="1") ? normFormula.getPropagatedError(*res_dataJet) : fabs(6-normFactorVal/bias);
 
   RooRealVar normFactor("normFactor", "normFactor", 0, 1e4);
   normFactor.setVal((catcut=="1") ? normFactorVal/bias : 6);
@@ -654,7 +653,7 @@ void rooFitData(string channel, string catcut){
   lar.DrawLatexNDC(0.12, 0.92, "CMS #it{#bf{Simulation}}");
   lar.DrawLatexNDC(0.65, 0.92, "L = 2.51 fb^{-1} at #sqrt{s} = 13 TeV");
   lar.DrawLatexNDC(0.15, 0.86, Form("%s, %s b-tag", channel.data(), catcut.data()));
-  lar.DrawLatexNDC(0.15, 0.82, "Subdominant (VV+t#bar{t}) in signal region");
+  lar.DrawLatexNDC(0.15, 0.82, "Subdominant background (VV+t#bar{t}) in signal region");
 
   c4_up->RedrawAxis();
   c4_dw->cd()->SetLogy(0);

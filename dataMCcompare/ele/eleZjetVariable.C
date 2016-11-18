@@ -36,9 +36,6 @@ void eleZjetVariable(string inputFile, string outputFile){
   TH1D* h_FATjetSDmass     = new TH1D("h_FATjetSDmass",     "FATjetSDmass",     20,    0,  200);
   TH1D* h_FATjetPRmass     = new TH1D("h_FATjetPRmass",     "FATjetPRmass",     20,    0,  200);
   TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "FATjetPRmassCorr", 20,    0,  200);
-  TH1D* h_FATjetTau1       = new TH1D("h_FATjetTau1",       "FATjetTau1",       20,    0,    1);
-  TH1D* h_FATjetTau2       = new TH1D("h_FATjetTau2",       "FATjetTau2",       20,    0,    1);
-  TH1D* h_FATjetTau2dvTau1 = new TH1D("h_FATjetTau2dvTau1", "FATjetTau2dvTau1", 20,    0,    1);
   TH1D* h_FATsubjetPt      = new TH1D("h_FATsubjetPt",      "FATsubjetPt",      20,    0,  800);
   TH1D* h_FATsubjetEta     = new TH1D("h_FATsubjetEta",     "FATsubjetEta",     20,   -4,    4);  
   TH1D* h_FATsubjetSDCSV   = new TH1D("h_FATsubjetSDCSV",   "FATsubjetSDCSV",   20,    0,  1.2);
@@ -58,9 +55,6 @@ void eleZjetVariable(string inputFile, string outputFile){
   h_FATjetSDmass    ->Sumw2();
   h_FATjetPRmass    ->Sumw2();
   h_FATjetPRmassCorr->Sumw2();
-  h_FATjetTau1      ->Sumw2();
-  h_FATjetTau2      ->Sumw2();
-  h_FATjetTau2dvTau1->Sumw2();
   h_FATsubjetPt     ->Sumw2();
   h_FATsubjetEta    ->Sumw2();
   h_FATsubjetSDCSV  ->Sumw2();
@@ -80,9 +74,6 @@ void eleZjetVariable(string inputFile, string outputFile){
   h_FATjetSDmass    ->GetXaxis()->SetTitle("FATjetSDmass");
   h_FATjetPRmass    ->GetXaxis()->SetTitle("FATjetPRmass");
   h_FATjetPRmassCorr->GetXaxis()->SetTitle("FATjetPRmassL2L3Corr");
-  h_FATjetTau1      ->GetXaxis()->SetTitle("FATjetTau1");
-  h_FATjetTau2      ->GetXaxis()->SetTitle("FATjetTau2");
-  h_FATjetTau2dvTau1->GetXaxis()->SetTitle("FATjetTau2dvTau1");
   h_FATsubjetPt     ->GetXaxis()->SetTitle("FATsubjetPt");
   h_FATsubjetEta    ->GetXaxis()->SetTitle("FATsubjetEta");
   h_FATsubjetSDCSV  ->GetXaxis()->SetTitle("FATsubjetSDCSV");
@@ -107,8 +98,6 @@ void eleZjetVariable(string inputFile, string outputFile){
     Float_t*       FATjetSDmass      = data.GetPtrFloat("FATjetSDmass");
     Float_t*       FATjetPRmass      = data.GetPtrFloat("FATjetPRmass");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
-    Float_t*       FATjetTau1        = data.GetPtrFloat("FATjetTau1");
-    Float_t*       FATjetTau2        = data.GetPtrFloat("FATjetTau2");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
     vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
@@ -157,7 +146,7 @@ void eleZjetVariable(string inputFile, string outputFile){
 
     Float_t mllbb;
 
-    noiseCleaning(&mllbb, thisLep, thatLep, thisJet);
+    if( !noiseCleaning(thisLep, thatLep, thisJet, &mllbb) ) continue;
 
     h_nVtx            ->Fill(nVtx,eventWeight);
     h_FATjetPt        ->Fill(thisJet->Pt(),eventWeight);
@@ -166,9 +155,6 @@ void eleZjetVariable(string inputFile, string outputFile){
     h_FATjetSDmass    ->Fill(FATjetSDmass[goodFATJetID],eventWeight);
     h_FATjetPRmass    ->Fill(FATjetPRmass[goodFATJetID],eventWeight);
     h_FATjetPRmassCorr->Fill(FATjetPRmassCorr[goodFATJetID],eventWeight);
-    h_FATjetTau1      ->Fill(FATjetTau1[goodFATJetID],eventWeight);
-    h_FATjetTau2      ->Fill(FATjetTau2[goodFATJetID],eventWeight);
-    h_FATjetTau2dvTau1->Fill(FATjetTau2[goodFATJetID]/FATjetTau1[goodFATJetID],eventWeight);
 
     for(Int_t is = 0; is < FATnSubSDJet[goodFATJetID]; ++is){
 
@@ -206,9 +192,6 @@ void eleZjetVariable(string inputFile, string outputFile){
   h_FATjetSDmass    ->Write("FATjetSDmass");
   h_FATjetPRmass    ->Write("FATjetPRmass");
   h_FATjetPRmassCorr->Write("FATjetPRmassCorr");
-  h_FATjetTau1      ->Write("FATjetTau1");
-  h_FATjetTau2      ->Write("FATjetTau2");
-  h_FATjetTau2dvTau1->Write("FATjetTau2dvTau1");
   h_FATsubjetPt     ->Write("FATsubjetPt");
   h_FATsubjetEta    ->Write("FATsubjetEta");
   h_FATsubjetSDCSV  ->Write("FATsubjetSDCSV");

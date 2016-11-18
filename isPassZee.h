@@ -65,7 +65,7 @@ bool isPassZee(TreeReader &data, vector<Int_t>& goodEleID){
 
     }
 
-    if( findEpair ) break;
+    if( findEPair ) break;
 
   }
 

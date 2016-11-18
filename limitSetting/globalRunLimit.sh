@@ -41,7 +41,7 @@ for ((i=0; i<${#chan[@]}; i++)); do
 	root -q -b -l mZHLimit.C\(\"$samplePath/skim_${chan[$i]}_crab_TT_TuneCUETP8M1_13TeV-powheg-pythia8.root\"\,\"TT_TuneCUETP8M1_13TeV\"\,\"${chan[$i]}\"\,${btag[$j]}\)
 
 	outputName=output_${chan[$i]}_${btag[$j]}btag
-	mkdir $outputName
+	mkdir -p $outputName
 	mv *_mZHLimit.root $outputName
 	
     done

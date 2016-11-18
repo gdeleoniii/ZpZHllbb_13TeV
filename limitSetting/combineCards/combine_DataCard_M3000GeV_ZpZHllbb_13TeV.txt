@@ -14,11 +14,11 @@ observation  7.0       1.0       17.0      1.0
 bin                                    ele1btag  ele1btag  ele1btag  ele2btag  ele2btag  ele2btag  mu1btag   mu1btag   mu1btag   mu2btag   mu2btag   mu2btag 
 process                                SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM    SIGM3000  ZJETS     SUBDOM  
 process                                0         1         2         0         1         2         0         1         2         0         1         2       
-rate                                   0.0104    9.7719    0.2421    0.0079    6.5503    0.2836    0.0119    15.1236   0.3231    0.0089    6.3664    0.2164  
+rate                                   0.0104    9.7703    0.2419    0.0079    6.5503    0.2835    0.0119    15.1170   0.9213    0.0089    6.3646    0.2163  
 ----------------------------------------------------------------------------------------------------------------------------------
 background_FitDev       shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
 background_JES          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
-background_Norm         lnN            -         1.395     1.019     -         1.916     1.16      -         1.318     1.017     -         1.775     1.055   
+background_Norm         lnN            -         1.216     1.019     -         1.679     1.16      -         1.186     1.048     -         1.536     1.055   
 background_PDF          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
 background_QCD          shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
 background_bTag         shape          -         1.0       -         -         1.0       -         -         1.0       -         -         1.0       -       
