@@ -117,7 +117,7 @@ float jetEnergyScale(string inputFile, string channel, int cat, int mzh, int jes
 
     int goodFATJetID = -1;
 
-    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, true, false, jes) ) continue;
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, true, false, false, jes) ) continue;
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 

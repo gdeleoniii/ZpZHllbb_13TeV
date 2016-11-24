@@ -99,7 +99,6 @@ void muZjetVariable(string inputFile, string outputFile){
     Float_t*       FATjetPRmass      = data.GetPtrFloat("FATjetPRmass");
     Float_t*       FATjetPRmassCorr  = data.GetPtrFloat("FATjetPRmassL2L3Corr");
     TClonesArray*  FATjetP4          = (TClonesArray*) data.GetPtrTObject("FATjetP4");
-    vector<bool>&  FATjetPassIDLoose = *((vector<bool>*) data.GetPtr("FATjetPassIDLoose"));
     vector<float>* FATsubjetSDPx     = data.GetPtrVectorFloat("FATsubjetSDPx", FATnJet);
     vector<float>* FATsubjetSDPy     = data.GetPtrVectorFloat("FATsubjetSDPy", FATnJet);
     vector<float>* FATsubjetSDPz     = data.GetPtrVectorFloat("FATsubjetSDPz", FATnJet);
@@ -136,7 +135,7 @@ void muZjetVariable(string inputFile, string outputFile){
 
     }
 
-    // select good FATjet
+    // select good FATjet (inclusive, only side bands)
 
     Int_t goodFATJetID = -1;
 

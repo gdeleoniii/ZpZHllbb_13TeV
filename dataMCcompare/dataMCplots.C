@@ -267,6 +267,13 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
     myRatio(h_data, h_bkg);
 
     c.Draw();
+
+    if( h_name.size()-1 == 1 ){
+
+      c.Print(Form("%s.pdf", pdfName.data()), "pdf");
+      break;
+
+    }
     
     if( i == 0 ) 
       c.Print(Form("%s.pdf(", pdfName.data()), "pdf");
@@ -274,6 +281,7 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
       c.Print(Form("%s.pdf)", pdfName.data()), "pdf");
     else 
       c.Print(Form("%s.pdf", pdfName.data()), "pdf");
+
     
   }
 

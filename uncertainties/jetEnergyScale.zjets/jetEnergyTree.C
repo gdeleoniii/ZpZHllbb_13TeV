@@ -88,7 +88,7 @@ void jetEnergyTree(string inputFile, string outputFile, string jes, string chann
     else if( jes == "down" ) JES = -1;
     else                     JES =  0;
 
-    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, false, JES) ) continue;
+    if( !isPassJet(data, &goodFATJetID, thisLep, thatLep, false, false, false, JES) ) continue;
 
     TLorentzVector* thisJet = (TLorentzVector*)FATjetP4->At(goodFATJetID);
 
