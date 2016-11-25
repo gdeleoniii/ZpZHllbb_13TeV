@@ -42,9 +42,9 @@ void muHighPtVariable(std::string inputFile, std::string outputFile){
   h_muTrkLayers      ->GetXaxis()->SetTitle("muTrkLayers");
   h_muPixelHits      ->GetXaxis()->SetTitle("muPixelHits");
   h_muTrkPtErrdvTrkPt->GetXaxis()->SetTitle("muTrkPtErrdvTrkPt");
-  h_mudxy            ->GetXaxis()->SetTitle("mudxy");
-  h_mudz             ->GetXaxis()->SetTitle("mudz");
-  h_muTrkIso         ->GetXaxis()->SetTitle("muTrkIso");
+  h_mudxy            ->GetXaxis()->SetTitle("mudxy (cm)");
+  h_mudz             ->GetXaxis()->SetTitle("mudz (cm)");
+  h_muTrkIso         ->GetXaxis()->SetTitle("muTrkIso (GeV)");
 
   // begin of event loop
 

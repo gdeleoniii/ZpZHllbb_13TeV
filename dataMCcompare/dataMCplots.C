@@ -240,10 +240,14 @@ void dataMCplots(std::string channel, std::string outputFolder, std::string pdfN
   
   for(unsigned int i = 0; i < h_name.size()-1; ++i){
 
-    if( h_name[i]=="eleHoverE")
-      c_up->cd()->SetLogy(1);
-    else
-      c_up->cd()->SetLogy(0);
+    if( h_name[i]=="eleHoverE"       or
+	h_name[i]=="eleRelIsoWithEA" or
+	h_name[i]=="eleEoverPInv"    or 
+	h_name[i]=="eleSigmaIEtaIEtaFull5x5" or
+	h_name[i]=="muTrkIso"        or
+	h_name[i]=="muTrkPtErrdvTrkPt" ) c_up->cd()->SetLogy(1);
+
+    else c_up->cd()->SetLogy(0);
     
     TH1D *h_data = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_data");
     TH1D *h_bkg  = (TH1D*)(data1.getHist(h_name[i].data()))->Clone("h_bkg");

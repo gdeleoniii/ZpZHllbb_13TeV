@@ -21,7 +21,7 @@ void eleZjetVariable(string inputFile, string outputFile){
   TFile f(inputFile.data());
   TH1D* h_totalEvents = (TH1D*)f.Get("h_totalEv");
 
-  TH1D* h_Zmass            = new TH1D("h_Zmass",             "Zmass",           30,   60,  120);
+  TH1D* h_Zmass            = new TH1D("h_Zmass",            "Zmass",            30,   60,  120);
   TH1D* h_Zpt              = new TH1D("h_Zpt",              "Zpt",              50,    0, 1000);
   TH1D* h_Zeta             = new TH1D("h_Zeta",             "Zeta",             40,   -4,    4);
   TH1D* h_ZRapidity        = new TH1D("h_ZRapidity",        "ZRapidity",        40,   -4,    4);
@@ -59,22 +59,22 @@ void eleZjetVariable(string inputFile, string outputFile){
   h_FATsubjetEta    ->Sumw2();
   h_FATsubjetSDCSV  ->Sumw2();
   
-  h_Zmass           ->GetXaxis()->SetTitle("Zmass"); 
-  h_Zpt             ->GetXaxis()->SetTitle("Zpt");   
+  h_Zmass           ->GetXaxis()->SetTitle("Zmass (GeV)"); 
+  h_Zpt             ->GetXaxis()->SetTitle("Zpt (GeV)");   
   h_Zeta            ->GetXaxis()->SetTitle("Zeta");    
   h_ZRapidity       ->GetXaxis()->SetTitle("ZRapidity");
-  h_leadLepPt       ->GetXaxis()->SetTitle("leadLepPt");  
+  h_leadLepPt       ->GetXaxis()->SetTitle("leadLepPt (GeV)");  
   h_leadLepEta      ->GetXaxis()->SetTitle("leadLepEta");
-  h_subleadLepPt    ->GetXaxis()->SetTitle("subleadLepPt");   
+  h_subleadLepPt    ->GetXaxis()->SetTitle("subleadLepPt (GeV)");   
   h_subleadLepEta   ->GetXaxis()->SetTitle("subleadLepEta"); 
   h_nVtx            ->GetXaxis()->SetTitle("nVtx");
-  h_FATjetPt        ->GetXaxis()->SetTitle("FATjetPt");
+  h_FATjetPt        ->GetXaxis()->SetTitle("FATjetPt (GeV)");
   h_FATjetEta       ->GetXaxis()->SetTitle("FATjetEta");
   h_FATjetCISVV2    ->GetXaxis()->SetTitle("FATjetCISVV2");
-  h_FATjetSDmass    ->GetXaxis()->SetTitle("FATjetSDmass");
-  h_FATjetPRmass    ->GetXaxis()->SetTitle("FATjetPRmass");
-  h_FATjetPRmassCorr->GetXaxis()->SetTitle("FATjetPRmassL2L3Corr");
-  h_FATsubjetPt     ->GetXaxis()->SetTitle("FATsubjetPt");
+  h_FATjetSDmass    ->GetXaxis()->SetTitle("FATjetSDmass (GeV)");
+  h_FATjetPRmass    ->GetXaxis()->SetTitle("FATjetPRmass (GeV)");
+  h_FATjetPRmassCorr->GetXaxis()->SetTitle("FATjetPRmassL2L3Corr (GeV)");
+  h_FATsubjetPt     ->GetXaxis()->SetTitle("FATsubjetPt (GeV)");
   h_FATsubjetEta    ->GetXaxis()->SetTitle("FATsubjetEta");
   h_FATsubjetSDCSV  ->GetXaxis()->SetTitle("FATsubjetSDCSV");
     

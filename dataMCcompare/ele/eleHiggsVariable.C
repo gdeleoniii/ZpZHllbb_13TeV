@@ -24,7 +24,7 @@ void eleHiggsVariable(string inputFile, string outputFile){
   TH1D* h_FATjetPRmassCorr = new TH1D("h_FATjetPRmassCorr", "HiggsMass", 20,    0,  200);
 
   h_FATjetPRmassCorr->Sumw2();
-  h_FATjetPRmassCorr->GetXaxis()->SetTitle("HiggsMass");
+  h_FATjetPRmassCorr->GetXaxis()->SetTitle("FATjetPRmassL2L3Corr (GeV)");
     
   // begin of event loop
 

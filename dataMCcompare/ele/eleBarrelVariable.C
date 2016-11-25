@@ -59,10 +59,10 @@ void eleBarrelVariable(std::string inputFile, std::string outputFile){
   h_eleEtaseedAtVtx        ->GetXaxis()->SetTitle("eleEtaseedAtVtx"); 
   h_eledPhiAtVtx           ->GetXaxis()->SetTitle("eledPhiAtVtx");   
   h_eleHoverE              ->GetXaxis()->SetTitle("eleHoverE");    
-  h_eleRelIsoWithEA        ->GetXaxis()->SetTitle("eleRelIsoWithEA");
+  h_eleRelIsoWithEA        ->GetXaxis()->SetTitle("eleRelIsoWithEA (GeV)");
   h_eleEoverPInv           ->GetXaxis()->SetTitle("eleEoverPInv");
-  h_eleD0                  ->GetXaxis()->SetTitle("eleD0");
-  h_eleDz                  ->GetXaxis()->SetTitle("eleDz");
+  h_eleD0                  ->GetXaxis()->SetTitle("eleD0 (cm)");
+  h_eleDz                  ->GetXaxis()->SetTitle("eleDz (cm)");
   h_eleMissHits            ->GetXaxis()->SetTitle("eleMissHits"); 
 
   // begin of event loop
