@@ -60,7 +60,7 @@ void eleEndcapVariable(std::string inputFile, std::string outputFile){
   h_eledPhiAtVtx           ->GetXaxis()->SetTitle("eledPhiAtVtx");   
   h_eleHoverE              ->GetXaxis()->SetTitle("eleHoverE");    
   h_eleRelIsoWithEA        ->GetXaxis()->SetTitle("eleRelIsoWithEA (GeV)");
-  h_eleEoverPInv           ->GetXaxis()->SetTitle("eleEoverPInv");
+  h_eleEoverPInv           ->GetXaxis()->SetTitle("eleEoverPInv (GeV^{-1})");
   h_eleD0                  ->GetXaxis()->SetTitle("eleD0 (cm)");
   h_eleDz                  ->GetXaxis()->SetTitle("eleDz (cm)");
   h_eleMissHits            ->GetXaxis()->SetTitle("eleMissHits"); 
