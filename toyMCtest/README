@@ -1,0 +1,11 @@
+This Readme describe how to study alpha ratio with codes in this folder.
+
+1. alphaTree.C : Further select good leptons/jets and apply weights with my skimmed samples. Output a small tree (a root file) with only neccessary variables only. Note all the header files can be found in https://github.com/henrytongCMS/ZpZHllbb_13TeV
+
+2. rooFitData.C : Use the trees created by step 1 and study the alpha ratio. The study is performed by RooFit. The output is a pdf book with all plots.
+
+3. runTree.sh : Use this script to run alphaTree.C automatically. (Automatically = run all samples)
+
+4. runRooFitData.sh : Use this script to run rooFitData automatically. (Automatically = run all categories)
+
+In summary, run ./runTree.sh and then run ./runRooFitData.sh, everything is done and the results are saved in http://htong.web.cern.ch/htong/rooFitDataResults/
