@@ -196,14 +196,14 @@ void rooFitTest(string channel, string catcut, bool pullTest=true){
   RooPlot* mJetSBPullFrame  = mJet.frame();
 
   set_Dom  .plotOn(mJetFrame, Binning(bin_mJet)); 
-  ext_McJet.plotOn(mJetFrame, Range("All"), VisualizeError(*res_McJet,1,false), FillStyle(3002));
+  ext_McJet.plotOn(mJetFrame, Range("All"), VisualizeError(*res_McJet,1,false), FillStyle(1001), FillColor(kYellow));
   set_Dom  .plotOn(mJetFrame, Binning(bin_mJet));
   ext_McJet.plotOn(mJetFrame, Range("All"));
 
   mJetPullFrame->addObject(mJetFrame->pullHist(), "P");
 
   set_sbDom  .plotOn(mJetSBFrame, Binning(bin_mJet));
-  ext_sbMcJet.plotOn(mJetSBFrame, Range("All"), VisualizeError(*res_sbMcJet,1,false), FillStyle(3002));
+  ext_sbMcJet.plotOn(mJetSBFrame, Range("All"), VisualizeError(*res_sbMcJet,1,false), FillStyle(1001), FillColor(kYellow));
   set_sbDom  .plotOn(mJetSBFrame, Binning(bin_mJet));
   ext_sbMcJet.plotOn(mJetSBFrame, Range("All"));
 
